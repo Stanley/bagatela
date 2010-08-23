@@ -1,0 +1,21 @@
+h1. Bagatela - wyszukiwarka połączeń komunikacji miejskiej.
+
+Bagatela udostępnia interfejs programistyczny do wyszukiwania optymalnych połączeń w sieci komunikacji miejskiej, w oparciu o zadane parametry. Szybkość działania, nasz cel nadrzędny, jest osiągana dzięki reprezentacji przystanków i ich rozkładów jazdy w formie grafu w samej warstwie bazy danych. Dodaj do tego wydajny aglorytm wyszukiwania najkrótszych ścieżek na grafie i zapewnij niezawodność, a znajdziesz się w domu.
+
+h2. Wykorzystywane technologie
+
+Język programowania: Ruby (implementacja JRuby)
+Web framework: Sinatra.rb
+Testing framework: RSpec + Cucumber
+Baza danych: Neo4j
+Język zapytań do bazy danych: Gremlin
+
+h2. Instalacja
+
+h2. Uruchomienie
+
+h2. Dokumentacja API
+
+[[ http://stanley.github.com/Bagatela ]]
+
+h2. Kontrybucja
