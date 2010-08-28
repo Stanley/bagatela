@@ -12,7 +12,23 @@ Język zapytań do bazy danych: Gremlin
 
 h2. Instalacja
 
+bc. $ git clone http://github.com/Stanley/Bagatela
+$ cd Bagatela
+$ bundle install
+
 h2. Uruchomienie
+
+Aplikacji:
+
+bc. $ rackup
+
+Testów:
+
+bc. $ bundle exec rspec spec/
+
+Konsoli:
+
+bc. $ bundle exec irb -r app/main.rb
 
 h2. Dokumentacja API
 
