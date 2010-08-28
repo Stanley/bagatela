@@ -1,0 +1,46 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    bouncy-castle-java (1.5.0145.2)
+    cgi_multipart_eof_fix (2.5.0)
+    couchrest (1.0.1)
+      json (>= 1.4.6)
+      mime-types (>= 1.15)
+      rest-client (>= 1.5.1)
+    daemons (1.1.0)
+    fastthread (1.0.7)
+    gem_plugin (0.2.3)
+    jruby-openssl (0.7.1)
+      bouncy-castle-java
+    json (1.4.6)
+    json (1.4.6-java)
+    mime-types (1.16)
+    mongrel (1.1.5)
+      cgi_multipart_eof_fix (>= 2.4)
+      daemons (>= 1.0.3)
+      fastthread (>= 1.0.1)
+      gem_plugin (>= 0.2.3)
+    mongrel (1.1.5-java)
+      gem_plugin (>= 0.2.3)
+    neo4j (0.4.5)
+    rack (1.2.1)
+    rack-test (0.5.4)
+      rack (>= 1.0)
+    rest-client (1.6.0)
+      mime-types (>= 1.16)
+    rspec (1.3.0)
+    sinatra (1.0)
+      rack (>= 1.0)
+
+PLATFORMS
+  java
+  ruby
+
+DEPENDENCIES
+  couchrest
+  jruby-openssl
+  mongrel
+  neo4j
+  rack-test
+  rspec (~> 1.3)
+  sinatra
