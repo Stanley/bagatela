@@ -4,13 +4,20 @@ Bagatela udostępnia interfejs programistyczny do wyszukiwania optymalnych poł�
 
 h2. Wykorzystywane technologie
 
-Język programowania: Ruby (implementacja JRuby)
-Web framework: Sinatra.rb
-Testing framework: RSpec + Cucumber
-Baza danych: Neo4j
-Język zapytań do bazy danych: Gremlin
+* Język programowania: "Ruby":http://www.ruby-lang.org/ (implementacja "JRuby":http://jruby.org/)
+* Web framework: "Sinatra.rb":http://www.sinatrarb.com/
+* Testing framework: "RSpec":http://rspec.info/ + "Rack::Test":http://brynary.github.com/rack-test/
+* Baza danych: "Neo4j":http://neo4j.org/
+* Język zapytań do bazy danych: "Gremlin":http://gremlin.tinkerpop.com
 
 h2. Instalacja
+
+Ustawiamy domyślny interpreter ruby na jruby (jeżeli nie korszystasz z "Ruby Version Manager":http://rvm.beginrescueend.com/ - "zainstaluj":http://rvm.beginrescueend.com/rvm/install/):
+
+bc. $ rvm use jruby
+info: Using jruby 1.5.2
+
+Ściągamy kod i zainstalemy zależne pakiety (wymagany "git":http://git-scm.com/ i "bundler":http://gembundler.com/):
 
 bc. $ git clone http://github.com/Stanley/Bagatela
 $ cd Bagatela
@@ -24,7 +31,7 @@ bc. $ rackup
 
 Testów:
 
-bc. $ bundle exec rspec spec/
+bc. $ bundle exec spec spec/
 
 Konsoli:
 
