@@ -13,12 +13,12 @@ describe 'search engine' do
     Neo4j::Transaction.finish
 
     post '/Beginning:Random'
-    last_response.ok?.should be_true
+    last_response.status.should eql(404)
     last_response.body.should be_json
 
     body = JSON.parse(last_response.body)
     body['error'].should eql("not_found")
-    body['reason'].should eql("stop_does_not_exist")
+    body['reason'].should eql("resource_not_found")
   end
 
   it "should be cool if beginning is ending" do
@@ -27,15 +27,15 @@ describe 'search engine' do
     Neo4j::Transaction.finish
 
     post '/Beginning:Beginning'
-    last_response.ok?.should be_true
+    last_response.status.should eql(400)
     last_response.body.should be_json
 
     body = JSON.parse(last_response.body)
-    body['error'].should eql("not_found")
+    body['error'].should eql("bad_request")
     body['reason'].should eql("two_different_stops_required")
   end
 
-  it "should apology if there is not connection" do
+  it "should apologize if there is not connection" do
 
     Stop.new :name => "Beginning"
     Stop.new :name => "Nowhere"

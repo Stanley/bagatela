@@ -4,15 +4,13 @@ require 'spec'
 require 'spec/interop/test'
 require 'rack/test'
 
-Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
-
 # set test environment
 Sinatra::Base.set :environment, :test
 Sinatra::Base.set :run, false
-Sinatra::Base.set :raise_errors, true
 Sinatra::Base.set :logging, false
 
 require 'app/main'
+Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
 
 Spec::Runner.configure do |config|
   config.before(:each) do

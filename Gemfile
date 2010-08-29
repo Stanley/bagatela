@@ -3,6 +3,7 @@ source :rubygems
 group :app do
   gem 'mongrel'
   gem 'sinatra'
+  gem 'json'
   gem 'neo4j'
 end
 

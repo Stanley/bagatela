@@ -39,6 +39,7 @@ PLATFORMS
 DEPENDENCIES
   couchrest
   jruby-openssl
+  json
   mongrel
   neo4j
   rack-test
