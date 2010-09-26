@@ -33,6 +33,8 @@ Testów:
 
 bc. $ bundle exec spec spec/
 
+Uwaga: jeżeli chcesz przywrócić wyświetlanie backtrace, które domyślnie jest wyłączone, zakomentuj @:raise_errors@ na początku deklaracji klasy @Bagatela@ w @app/main.rb@. 
+
 Konsoli:
 
 bc. $ bundle exec irb -r app/main.rb
