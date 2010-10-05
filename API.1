@@ -1,0 +1,494 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "BAGATELA" "1" "October 2010" "Stanisław Wasiutyński" ""
+.
+.SH "NAME"
+\fBbagatela\fR \- wyszukiwarka, bagatela, połączeń w komunikacji miejskiej
+.
+.SH "WSTĘP DO API"
+API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych i usług, np\. z poziomu aplikacji trzecich\. Zasoby danych są zorganizowane w następujących zbiorach:
+.
+.IP "\(bu" 4
+Rozkładów jazdy \fIROZK%C5%81AD%20JAZDY\fR\.
+.
+.IP "\(bu" 4
+Przystanków \fIPRZYSTANEK\fR\.
+.
+.IP "" 0
+.
+.P
+API jest zgodne ze wzorcem REST\. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE\. Dane przyjmowane i zwracane są w formacie JSON \fIhttp://json\.org\fR\.
+.
+.SS "Url"
+.
+.nf
+
+http://api\.bagate\.la/
+.
+.fi
+.
+.SS "Przykłady"
+Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli \fBcurl\fR i zostały wykonane w systemie GNU/Linux\.
+.
+.IP "" 4
+.
+.nf
+
+$ curl
+bla bla bla
+.
+.fi
+.
+.IP "" 0
+.
+.SS "Debugging"
+Jeżeli potrzebujesz dokładnie zdiagnozować zapytanie, dodaj flagę \fB\-\-verbose\fR, która wyświetli bardziej szczegółowe informacje o połączeniu\. Więcej informacji o narzędziu \fBcurl\fR znajdziesz w jego dokumentacji \fIhttp://curl\.haxx\.se/docs/manpage\.html\fR\. Przy nauce przydatne mogą okazać się również inne narzędzia \fIhttp://postbin\.org\fR\.
+.
+.SS "Kontrybucja"
+mile widziana! Weź \fIhttp://github\.com/stanley/bagatela/tree/gh\-pages\fR na widły i poproś o akceptacje zmian\.
+.
+.SH "ZAPYTANIA O DANE"
+Ponieważ dane są przechowywane w bazie danych CouchDB, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny\. Jego szczegóły opisano w dokumentacji CouchDB API \fIhttp://wiki\.apache\.org/couchdb/\fR\.
+.
+.SS "Dokumenty"
+Dokument jest podstawową strukturą organizacji danych w bazie\. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera\. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica z haszowaniem lub niezdefiniowany\. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz\.
+.
+.P
+Każdy dokument posiada unikalny identyfikator \fB_id\fR oraz numer rewizji \fB_rev\fR\. Atrybuty te są nadawane automatycznie przez bazę danych\. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator \fB_id\fR\. Np\.:
+.
+.IP "" 4
+.
+.nf
+
+curl http://api\.bagate\.la/d6e2a0dda625818966414846799bd9a9
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Url: \fBhttp://api\.bagate\.la/<id>?rev=<rev>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Paramtery: \fBid\fR, \fBrev\fR (opcjonalnie)
+.
+.br
+Odpowiedź: dokument o identyfikatorze \fBid\fR
+.
+.P
+Przeczytaj więcej o dokumentach w CouchDB na: \fIhttp://guide\.couchdb\.org/draft/api\.html#documents\fR\.
+.
+.SS "Widoki"
+Widok to predefiniowany indeks danych\. Definicja widoku jest w bazie danych specjalnym dokumentem i zawera funkcje: mapującą i, opcjonalnie, redukującą, które przetwarzają każdy dokument z osobna i zapisują ich wynik w posortowanej liście (widoku)\. Istnieją dwa rodzaje wyszukań tego indeksu: o jeden dokument i o wiele dokumentów\. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze \fBkey\fR, to w rezultacie otrzymamy wartość wygenerowaną przez jeden z dokumentów (wynik przetwarzania funkcą mapującą lub redukującą)\.
+.
+.P
+Znacznie częstrzym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale\. Aby ułatwić takie zapytania, klucze zawsze są wartościu typu lista, np\. \fI[2010, 10, 6]\fR\. Dzięki temu jesteśmy w stanie zapytać o wszyskie dokumenty, których klucz zawiera się w przedziale np\. od \fI[2010, 9]\fR do \fI[2010, 10, {}]\fR (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października)\.
+.
+.P
+Przeczytaj więcej o widokach w CouchDB na: \fIhttp://guide\.couchdb\.org/draft/views\.html\fR\.
+.
+.P
+\fBParametry\fR
+.
+.IP "\(bu" 4
+\fBdescending\fR \- jeżeli \fItrue\fR, odwórcona kolejność zwracanych dokumentów\.
+.
+.IP "\(bu" 4
+\fBendkey\fR\- koniec przedziału włącznie\.
+.
+.IP "\(bu" 4
+\fBgroup\fR
+.
+.IP "\(bu" 4
+\fBgroup_level\fR
+.
+.IP "\(bu" 4
+\fBinclude_docs\fR \- jeżeli \fItrue\fR, dołąłcza oryginalny dokument w polu \fBdoc\fR\. Domyślnie \fIfalse\fR\.
+.
+.IP "\(bu" 4
+\fBkey\fR \- wartość klucza\.
+.
+.IP "\(bu" 4
+\fBlimit\fR \- maksymalna liczba zwróconych dokumentów\.
+.
+.IP "\(bu" 4
+\fBstartkey\fR \- początek przedziału włącznie\.
+.
+.IP "" 0
+.
+.P
+Wszystkie parametry są opcjonalne\.
+.
+.SH "ZASOBY"
+Zasób jest podzbiorem danych w bazie wydzielonych względem typu (klasy) danej którą reprezentuje\. Typ zasobu do którego należy dokument jest określony w polu \fBtype\fR\.
+.
+.SH "ROZKŁAD JAZDY"
+Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z jednym przystankiem\. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów)\. Jest wiernym odzwierciedleniem tego co jest publikowane przez MPK Kraków na stronach http://rozklady\.mpk\.krakow\.pl i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów \fBstop_id\fR i \fBvalid_through\fR)\.
+.
+.SS "Atrybuty"
+.
+.IP "\(bu" 4
+\fB_id\fR \- identyfikator\.
+.
+.IP "\(bu" 4
+\fB_rev\fR \- numer rewizji\.
+.
+.IP "\(bu" 4
+\fBline\fR \- numer linii, którą opisuje rozkład\. Np\. \fI"4"\fR\.
+.
+.IP "\(bu" 4
+\fBroute\fR \- trasa linii\. Lista głównych ulic, którymi biegnie linia\. Np\. \fI"Al\. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"\fR\.
+.
+.IP "\(bu" 4
+\fBstop\fR \- nazwa przystanku na którym znajduje się rozkład\. Np\. \fI"Batorego"\fR\.
+.
+.IP "\(bu" 4
+\fBstop_id\fR (opcjonalnie) \- identyfikator przystanku \fBStop\fR przy którym zatrzymuje się transport\.
+.
+.IP "\(bu" 4
+\fBtable\fR \- tablice odjazdów\. Atrybut typu tablicy haszującej\. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów\. Opis dania (klucz) to np\. \fI"Dzień powszedni"\fR\. Tablica odjazdów (wartość) to np\. \fI{"4":["43"], "5":["02","17","38","48","58"]}\fR, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd\. odjeżdza transport\.
+.
+.IP "\(bu" 4
+\fBtype\fR \- typ\. Zawsze \fI"Timetable"\fR\.
+.
+.IP "\(bu" 4
+\fBurl\fR \- adres URL\. Źródło danych\. Np\. \fI"http://rozklady\.mpk\.krakow\.pl/aktualne/0004/0004t023\.htm"\fR
+.
+.IP "\(bu" 4
+\fBupdated_at\fR \- czas ostatniej modyfikacji w bazie danych (tj\. czas połączenia ze źródłem)\.
+.
+.IP "\(bu" 4
+\fBvalid_since\fR \- dzień od którego obowiązuje rozkład\. Np\. \fI"04\.10\.2010"\fR\.
+.
+.IP "\(bu" 4
+\fBvalid_through\fR (opcjonalnie) \- dzień do którego obowiązuje rozkład\. Jeżeli atrybut nie jest zdefiniowany i \fBvalid_since\fR wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym\. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana\.
+.
+.IP "" 0
+.
+.SS "Załączniki"
+.
+.IP "\(bu" 4
+\fBheaders\.json\fR \- nagłówki zwrócone przez serwer mpk\.krakow\.pl\.
+.
+.IP "\(bu" 4
+\fBsource\.html\fR \- oryginalna strona HTML z rozkładem jazdy\.
+.
+.IP "" 0
+.
+.SS "Widoki"
+Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze "_design/Timetable" \fIhttp://api\.bagate\.la/_design/Timetable\fR\.
+.
+.P
+\fB[map] by_line\fR
+.
+.P
+Url: \fBhttp://api\.bagate\.la/_design/Timetable/_view/by_line?key=<klucz>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBklucz\fR
+.
+.br
+Odpowiedź:
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Url: \fBhttp://api\.bagate\.la/_design/Timetable/_view/by_line?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBklucz_początkowy\fR oraz \fBklucz_końcowy\fR
+.
+.br
+Kolejność sortowania: \fBfoo\fR, \fBbar\fR
+.
+.br
+Odpowiedź:
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zobacz scenariusze testujące\.
+.
+.P
+\fB[reduce] by_line\fR
+.
+.P
+Jeżeli interesuje nas tylko opis danej lini, musimy skorzystać z widoku wygenerowanego funkcją redukującą (z wielu rozkładów jazdy generowany jest dokument jednej linii)\.
+.
+.P
+Url: \fBhttp://api\.bagate\.la/_design/Timetable/_view/by_stop\fR Odpowiedź:
+.
+.P
+Przykładowe użycia:
+.
+.P
+curl
+.
+.P
+curl
+.
+.P
+\fB[map] by_stop\fR
+.
+.P
+Url: \fBhttp://api\.bagate\.la/_design/Timetable/_view/by_stop?key=<klucz>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBklucz\fR
+.
+.br
+Odpowiedź:
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Url: \fBhttp://api\.bagate\.la/_design/Timetable/_view/by_stop?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBklucz_początkowy\fR oraz \fBklucz_końcowy\fR
+.
+.br
+Odpowiedź:
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zobacz scenariusze testujące\.
+.
+.P
+\fB[map] by_url\fR
+.
+.P
+Url: \fBhttp://api\.bagate\.la/_design/Timetable/_view/by_url?key=<klucz>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBklucz\fR
+.
+.br
+Odpowiedź:
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zobacz scenariusze testujące\.
+.
+.P
+\fB[list] polyline\fR
+.
+.P
+Url: \fBhttp://api\.bagate\.la/_design/Timetable/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>\fR
+.
+.P
+\fB[list] filter\fR
+.
+.P
+Url: \fBhttp://\fR
+.
+.SH "PRZYSTANEK"
+Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się pojazdy komunikacji\.
+.
+.SS "Atrybuty"
+.
+.IP "\(bu" 4
+\fB_id\fR \- identyfikator\.
+.
+.IP "\(bu" 4
+\fB_rev\fR \- numer rewizji\.
+.
+.IP "\(bu" 4
+\fBlat\fR \- szerokość geograficzna\. Np\. \fI50\.06309891\fR\.
+.
+.IP "\(bu" 4
+\fBlng\fR \- długość geograficzna\. Np\. \fI19\.9326992\fR\.
+.
+.IP "\(bu" 4
+\fBlocation\fR (opcjonalnie) \- ulica przy której znajduje się przystanej\. Np\. "Karmelicka"\.
+.
+.IP "\(bu" 4
+\fBname\fR \- nazwa przystanku\. Np\. \fI"Teatr Bagatela"\fR\.
+.
+.IP "\(bu" 4
+\fBpolylines\fR (opcjonalnie) \- tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących połączenie tych dwóch przystanków\.
+.
+.IP "\(bu" 4
+\fBtype\fR \- typ\. Zawsze \fI"Stop"\fR\.
+.
+.IP "\(bu" 4
+\fBupdate_at\fR \- czas ostatniej modyfikacji\.
+.
+.IP "" 0
+.
+.P
+Definicje funkcji mapujących, redukujących i listujących przystanki są dokumentem o idenyfikatorze "_design/Stop" \fIhttp://api\.bagate\.la/_design/Stop\fR\.
+.
+.SS "Widoki"
+\fB[map] by_name\fR
+.
+.P
+Url: \fBhttp://?key=<klucz>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBklucz\fR
+.
+.br
+Odpowiedź:
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Url: \fBhttp://?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBklucz_początkowy\fR oraz \fBklucz_końcowy\fR
+.
+.br
+Odpowiedź:
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zobacz scenariusze testujące\.
+.
+.SS "Listy"
+\fBfilter\fR
+.
+.P
+Url: \fBhttp://api\.bagate\.la/krk/_design/Stop/_list/filter/<widok>\fR Metoda: \fBGET\fR Parametry: \fBwidok\fR, \fBonly\fR lub \fBexclude\fR
+.
+.SS "Full\-text search"
+.
+.SH "REPLIKACJE"
+Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych\.
+.
+.P
+Url: \fBhttp://api\.bagate\.la/_replicate\fR
+.
+.br
+Metoda: \fBPOST\fR
+.
+.br
+Parametry: \fBtaret\fR
+.
+.br
+Odpowiedź: \fB{}\fR
+.
+.br
+Uwaga: To nie jest standardowe zapytanie\.
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.SH "SCENARIUSZE TESTUJĄCE"
+Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych\. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji został napisany odrępny test\. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia Cucumber \fIhttp://cukes\.info/\fR\.

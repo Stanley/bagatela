@@ -1,0 +1,245 @@
+bagatela(1) -- wyszukiwarka, bagatela, połączeń w komunikacji miejskiej
+====================================================================
+
+WSTĘP DO API
+------------
+API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych i usług z poziomu aplikacji trzecich. Zasoby danych są zorganizowane w następujących zbiorach:
+
+* [Rozkładów jazdy](ROZKŁAD JAZDY).
+* [Przystanków](PRZYSTANEK).
+
+API jest zgodne ze wzorcem REST. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE. Dane przyjmowane i zwracane są w formacie [JSON](http://json.org).
+
+### Url
+
+	http://api.bagate.la/
+
+### Przykłady
+Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli `curl` i zostały wykonane w systemie GNU/Linux.
+
+	$ curl
+	bla bla bla
+
+### Debugging
+Jeżeli potrzebujesz dokładnie zdiagnozować zapytanie, dodaj flagę `--verbose`, która wyświetli bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu `curl` znajdziesz w [jego dokumentacji](http://curl.haxx.se/docs/manpage.html). Przy nauce przydatne mogą okazać się również [inne narzędzia](http://postbin.org).
+
+### Kontrybucja
+mile widziana! Weź <http://github.com/stanley/bagatela/tree/gh-pages> na widły i poproś o akceptacje zmian.
+
+ZAPYTANIA O DANE
+----------------
+Ponieważ dane są przechowywane w bazie danych CouchDB, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny. Jego szczegóły opisano w [dokumentacji CouchDB API](http://wiki.apache.org/couchdb/).
+
+### Dokumenty
+Dokument jest podstawową strukturą organizacji danych w bazie. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica z haszowaniem lub niezdefiniowany. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz.
+
+Każdy dokument posiada unikalny identyfikator `_id` oraz numer rewizji `_rev`. Atrybuty te są nadawane automatycznie przez bazę danych. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator `_id`. Np.:
+
+	curl http://api.bagate.la/d6e2a0dda625818966414846799bd9a9
+
+Url: `http://api.bagate.la/<id>?rev=<rev>`  
+Metoda: `GET`  
+Paramtery: `id`, `rev` (opcjonalnie)  
+Odpowiedź: dokument o identyfikatorze `id` i numerze rewizji `rev` (domyślnie najnowsza rewizja).
+
+Przeczytaj więcej o dokumentach w CouchDB na: <http://guide.couchdb.org/draft/api.html#documents>.
+
+### Widoki
+Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i, opcjonalnie, redukującą, które przetwarzają każdy dokument z osobna i zapisują ich wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze `key`, to w rezultacie otrzymamy wartość wygenerowaną przez jeden lub więcej dokumentów (wynik przetwarzania funkcą mapującą lub redukującą).
+
+Znacznie częstrzym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale. Aby ułatwić takie zapytania, klucze zawsze są wartościu typu lista, np. *[2010, 10, 6]*. Dzięki temu jesteśmy w stanie zapytać o wszyskie dokumenty, których klucz zawiera się w przedziale np. od *[2010, 9]* do *[2010, 10, {}]* (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października).
+
+Przeczytaj więcej o widokach w CouchDB na: <http://guide.couchdb.org/draft/views.html>.
+
+**Parametry**
+
+* `descending` - jeżeli *true*, odwórcona kolejność zwracanych dokumentów.
+* `endkey`- koniec przedziału włącznie.
+* `group`
+* `group_level`
+* `include_docs` - jeżeli *true*, dołąłcza oryginalny dokument w polu `doc`. Domyślnie *false*.
+* `key` - wartość klucza.
+* `limit` - maksymalna liczba zwróconych dokumentów. Np. *10*.
+* `reduce` - użyj funkcji redukującej. Domyślna wartość gdy funkcja reduce jest zdefiniowana to *true*.
+* `startkey` - początek przedziału włącznie.
+
+Wszystkie parametry są opcjonalne.
+
+ZASOBY
+------
+Zasób jest podzbiorem danych w bazie wydzielonych względem typu (klasy) danej którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu `type`.
+
+ROZKŁAD JAZDY
+-------------
+Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z jednym przystankiem. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów). Jest wiernym odzwierciedleniem tego co jest publikowane przez MPK Kraków na stronach http://rozklady.mpk.krakow.pl i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów `stop_id` i `valid_through`).
+
+### Atrybuty
+
+* `_id` - identyfikator.
+* `_rev` - numer rewizji.
+* `line` - numer linii, którą opisuje rozkład. Np. *"4"*.
+* `route` - trasa linii. Lista głównych ulic, którymi biegnie linia. Np. *"Al. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"*.
+* `stop` - nazwa przystanku na którym znajduje się rozkład. Np. *"Batorego"*.
+* `stop_id` (opcjonalnie) - identyfikator przystanku `Stop` przy którym zatrzymuje się transport.
+* `table` - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. *"Dzień powszedni"*. Tablica odjazdów (wartość) to np. *{"4":["43"], "5":["02","17","38","48","58"]}*, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdza transport.
+* `type` - typ. Zawsze *"Timetable"*.
+* `source` - Źródło danych. Np. adres url: *"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"*
+* `updated_at` - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).
+* `valid_since` - dzień od którego obowiązuje rozkład. Np. *"04.10.2010"*.
+* `valid_through` (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i `valid_since` wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana.
+
+### Załączniki
+
+* `headers.json` - nagłówki zwrócone przez serwer mpk.krakow.pl.
+* `source.html` - oryginalna strona HTML z rozkładem jazdy.
+
+### Widoki
+Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze ["_design/Timetable"](http://api.bagate.la/_design/Timetable).
+
+**[map] by\_line**
+
+Url: `http://api.bagate.la/_design/Timetable/_view/by_line?key=<klucz>`  
+Metoda: `GET`  
+Parametry: `klucz`  
+Odpowiedź:  
+
+Przykładowe użycie:
+
+	curl
+
+Url: `http://api.bagate.la/_design/Timetable/_view/by_line?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
+Metoda: `GET`  
+Parametry: `klucz_początkowy` oraz `klucz_końcowy`  
+Kolejność sortowania: `foo`, `bar`  
+Odpowiedź:  
+
+Przykładowe użycie:
+
+	curl
+
+Zobacz scenariusze testujące.
+
+**[reduce] by\_line**
+
+Jeżeli interesuje nas tylko opis danej lini, musimy skorzystać z widoku wygenerowanego funkcją redukującą (z wielu rozkładów jazdy generowany jest dokument jednej linii).
+
+Url: `http://api.bagate.la/_design/Timetable/_view/by_stop`
+Odpowiedź:
+
+Przykładowe użycia:
+
+  curl
+
+  curl
+
+**[map] by\_stop**
+
+Url: `http://api.bagate.la/_design/Timetable/_view/by_stop?key=<klucz>`  
+Metoda: `GET`  
+Parametry: `klucz`  
+Odpowiedź:  
+
+Przykładowe użycie:
+
+	curl
+
+Url: `http://api.bagate.la/_design/Timetable/_view/by_stop?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
+Metoda: `GET`  
+Parametry: `klucz_początkowy` oraz `klucz_końcowy`  
+Odpowiedź:  
+
+Przykładowe użycie:
+
+	curl
+
+Zobacz scenariusze testujące.
+
+**[map] by\_url**
+
+Url: `http://api.bagate.la/_design/Timetable/_view/by_url?key=<klucz>`  
+Metoda: `GET`  
+Parametry: `klucz`  
+Odpowiedź:  
+
+Przykładowe użycie:
+
+	curl
+
+Zobacz scenariusze testujące.
+
+**[list] polyline**
+
+Url: `http://api.bagate.la/_design/Timetable/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>`
+
+**[list] filter**
+
+Url: `http://`
+
+PRZYSTANEK
+----------
+Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się pojazdy komunikacji.
+
+### Atrybuty
+
+* `_id` - identyfikator.
+* `_rev` - numer rewizji.
+* `lat` - szerokość geograficzna. Np. *50.06309891*.
+* `lng` - długość geograficzna. Np. *19.9326992*.
+* `location` (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".
+* `name` - nazwa przystanku. Np. *"Teatr Bagatela"*.
+* `polylines` (opcjonalnie) - tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.
+* `type` - typ. Zawsze *"Stop"*.
+* `update_at` - czas ostatniej modyfikacji.
+
+Definicje funkcji mapujących, redukujących i listujących przystanki są dokumentem o idenyfikatorze ["_design/Stop"](http://api.bagate.la/_design/Stop).
+
+### Widoki
+
+**[map] by\_name**
+
+Url: `http://?key=<klucz>`  
+Metoda: `GET`  
+Parametry: `klucz`  
+Odpowiedź:  
+
+Przykładowe użycie:
+
+	curl
+
+Url: `http://?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
+Metoda: `GET`  
+Parametry: `klucz_początkowy` oraz `klucz_końcowy`  
+Odpowiedź:  
+
+Przykładowe użycie:
+
+	curl
+
+Zobacz scenariusze testujące.
+
+### Listy
+
+**filter**
+
+Url: `http://api.bagate.la/kr/_design/Stop/_list/filter/<widok>`  
+Metoda: `GET`  
+Parametry: `widok`, `only` lub `exclude`
+
+### Full-text search
+
+REPLIKACJE
+----------
+Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych.
+
+Url: `http://api.bagate.la/kr/_replicate`  
+Metoda: `POST`  
+Parametry: `taret`  
+Odpowiedź: `{}`  
+
+Przykładowe użycie:
+
+	curl
+
+SCENARIUSZE TESTUJĄCE
+---------------------
+Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji został napisany odrępny test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia [Cucumber](http://cukes.info/).

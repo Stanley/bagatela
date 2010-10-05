@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>bagatela(1) - wyszukiwarka, bagatela, połączeń w komunikacji miejskiej</title>
+  <style type='text/css' media='all'>
+  /* style: man */
+  body#manpage {margin:0}
+  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
+  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
+  .mp h2 {margin:10px 0 0 0}
+  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
+  .mp h3 {margin:0 0 0 4ex}
+  .mp dt {margin:0;clear:left}
+  .mp dt.flush {float:left;width:8ex}
+  .mp dd {margin:0 0 0 9ex}
+  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
+  .mp pre {margin-bottom:20px}
+  .mp pre+h2,.mp pre+h3 {margin-top:22px}
+  .mp h2+pre,.mp h3+pre {margin-top:5px}
+  .mp img {display:block;margin:auto}
+  .mp h1.man-title {display:none}
+  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
+  .mp h2 {font-size:16px;line-height:1.25}
+  .mp h1 {font-size:20px;line-height:2}
+  .mp {text-align:justify;background:#fff}
+  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
+  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
+  .mp u {text-decoration:underline}
+  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
+  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
+  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
+  .mp b.man-ref {font-weight:normal;color:#434241}
+  .mp pre {padding:0 4ex}
+  .mp pre code {font-weight:normal;color:#434241}
+  .mp h2+pre,h3+pre {padding-left:0}
+  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
+  ol.man-decor {width:100%}
+  ol.man-decor li.tl {text-align:left}
+  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
+  ol.man-decor li.tr {text-align:right;float:right}
+  </style>
+  <style type='text/css' media='all'>
+  /* style: toc */
+  .man-navigation {display:block !important;position:fixed;top:0;left:113ex;height:100%;width:100%;padding:48px 0 0 0;border-left:1px solid #dbdbdb;background:#eee}
+  .man-navigation a,.man-navigation a:hover,.man-navigation a:link,.man-navigation a:visited {display:block;margin:0;padding:5px 2px 5px 30px;color:#999;text-decoration:none}
+  .man-navigation a:hover {color:#111;text-decoration:underline}
+  </style>
+</head>
+<!--
+  The following styles are deprecated and will be removed at some point:
+  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+
+  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
+  .man-navigation should be used instead.
+-->
+<body id='manpage'>
+  <div class='mp' id='man'>
+
+  <div class='man-navigation' style='display:none'>
+    <a href="#NAME">NAME</a>
+    <a href="#WST-P-DO-API">WSTĘP DO API</a>
+    <a href="#ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</a>
+    <a href="#ZASOBY">ZASOBY</a>
+    <a href="#ROZK-AD-JAZDY">ROZKŁAD JAZDY</a>
+    <a href="#PRZYSTANEK">PRZYSTANEK</a>
+    <a href="#REPLIKACJE">REPLIKACJE</a>
+    <a href="#SCENARIUSZE-TESTUJ-CE">SCENARIUSZE TESTUJĄCE</a>
+    </div>
+
+  <ol class='man-decor man-head man head'>
+    <li class='tl'>bagatela(1)</li>
+    <li class='tc'></li>
+    <li class='tr'>bagatela(1)</li>
+  </ol>
+
+  <h2 id="NAME">NAME</h2>
+<p class="man-name">
+  <code>bagatela</code> - <span class="man-whatis">wyszukiwarka, bagatela, połączeń w komunikacji miejskiej</span>
+</p>
+
+<h2 id="WST-P-DO-API">WSTĘP DO API</h2>
+
+<p>API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych i usług, np. z poziomu aplikacji trzecich. Zasoby danych są zorganizowane w następujących zbiorach:</p>
+
+<ul>
+<li><a href="ROZK%C5%81AD%20JAZDY">Rozkładów jazdy</a>.</li>
+<li><a href="PRZYSTANEK">Przystanków</a>.</li>
+</ul>
+
+
+<p>API jest zgodne ze wzorcem REST. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE. Dane przyjmowane i zwracane są w formacie <a href="http://json.org">JSON</a>.</p>
+
+<h3 id="Url">Url</h3>
+
+<pre><code>http://api.bagate.la/
+</code></pre>
+
+<h3 id="Przyk-ady">Przykłady</h3>
+
+<p>Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli <code>curl</code> i zostały wykonane w systemie GNU/Linux.</p>
+
+<pre><code>$ curl
+bla bla bla
+</code></pre>
+
+<h3 id="Debugging">Debugging</h3>
+
+<p>Jeżeli potrzebujesz dokładnie zdiagnozować zapytanie, dodaj flagę <code>--verbose</code>, która wyświetli bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu <code>curl</code> znajdziesz w <a href="http://curl.haxx.se/docs/manpage.html">jego dokumentacji</a>. Przy nauce przydatne mogą okazać się również <a href="http://postbin.org">inne narzędzia</a>.</p>
+
+<h3 id="Kontrybucja">Kontrybucja</h3>
+
+<p>mile widziana! Weź <a href="http://github.com/stanley/bagatela/tree/gh-pages" data-bare-link="true">http://github.com/stanley/bagatela/tree/gh-pages</a> na widły i poproś o akceptacje zmian.</p>
+
+<h2 id="ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</h2>
+
+<p>Ponieważ dane są przechowywane w bazie danych CouchDB, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny. Jego szczegóły opisano w <a href="http://wiki.apache.org/couchdb/">dokumentacji CouchDB API</a>.</p>
+
+<h3 id="Dokumenty">Dokumenty</h3>
+
+<p>Dokument jest podstawową strukturą organizacji danych w bazie. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica z haszowaniem lub niezdefiniowany. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz.</p>
+
+<p>Każdy dokument posiada unikalny identyfikator <code>_id</code> oraz numer rewizji <code>_rev</code>. Atrybuty te są nadawane automatycznie przez bazę danych. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator <code>_id</code>. Np.:</p>
+
+<pre><code>curl http://api.bagate.la/d6e2a0dda625818966414846799bd9a9
+</code></pre>
+
+<p>Url: <code>http://api.bagate.la/&lt;id>?rev=&lt;rev></code><br />
+Metoda: <code>GET</code><br />
+Paramtery: <code>id</code>, <code>rev</code> (opcjonalnie)<br />
+Odpowiedź: dokument o identyfikatorze <code>id</code></p>
+
+<p>Przeczytaj więcej o dokumentach w CouchDB na: <a href="http://guide.couchdb.org/draft/api.html#documents" data-bare-link="true">http://guide.couchdb.org/draft/api.html#documents</a>.</p>
+
+<h3 id="Widoki">Widoki</h3>
+
+<p>Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawera funkcje: mapującą i, opcjonalnie, redukującą, które przetwarzają każdy dokument z osobna i zapisują ich wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o jeden dokument i o wiele dokumentów. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze <code>key</code>, to w rezultacie otrzymamy wartość wygenerowaną przez jeden z dokumentów (wynik przetwarzania funkcą mapującą lub redukującą).</p>
+
+<p>Znacznie częstrzym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale. Aby ułatwić takie zapytania, klucze zawsze są wartościu typu lista, np. <em>[2010, 10, 6]</em>. Dzięki temu jesteśmy w stanie zapytać o wszyskie dokumenty, których klucz zawiera się w przedziale np. od <em>[2010, 9]</em> do <em>[2010, 10, {}]</em> (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października).</p>
+
+<p>Przeczytaj więcej o widokach w CouchDB na: <a href="http://guide.couchdb.org/draft/views.html" data-bare-link="true">http://guide.couchdb.org/draft/views.html</a>.</p>
+
+<p><strong>Parametry</strong></p>
+
+<ul>
+<li><code>descending</code> - jeżeli <em>true</em>, odwórcona kolejność zwracanych dokumentów.</li>
+<li><code>endkey</code>- koniec przedziału włącznie.</li>
+<li><code>group</code></li>
+<li><code>group_level</code></li>
+<li><code>include_docs</code> - jeżeli <em>true</em>, dołąłcza oryginalny dokument w polu <code>doc</code>. Domyślnie <em>false</em>.</li>
+<li><code>key</code> - wartość klucza.</li>
+<li><code>limit</code> - maksymalna liczba zwróconych dokumentów.</li>
+<li><code>startkey</code> - początek przedziału włącznie.</li>
+</ul>
+
+
+<p>Wszystkie parametry są opcjonalne.</p>
+
+<h2 id="ZASOBY">ZASOBY</h2>
+
+<p>Zasób jest podzbiorem danych w bazie wydzielonych względem typu (klasy) danej którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu <code>type</code>.</p>
+
+<h2 id="ROZK-AD-JAZDY">ROZKŁAD JAZDY</h2>
+
+<p>Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z jednym przystankiem. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów). Jest wiernym odzwierciedleniem tego co jest publikowane przez MPK Kraków na stronach http://rozklady.mpk.krakow.pl i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów <code>stop_id</code> i <code>valid_through</code>).</p>
+
+<h3 id="Atrybuty">Atrybuty</h3>
+
+<ul>
+<li><code>_id</code> - identyfikator.</li>
+<li><code>_rev</code> - numer rewizji.</li>
+<li><code>line</code> - numer linii, którą opisuje rozkład. Np. <em>"4"</em>.</li>
+<li><code>route</code> - trasa linii. Lista głównych ulic, którymi biegnie linia. Np. <em>"Al. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"</em>.</li>
+<li><code>stop</code> - nazwa przystanku na którym znajduje się rozkład. Np. <em>"Batorego"</em>.</li>
+<li><code>stop_id</code> (opcjonalnie) - identyfikator przystanku <code>Stop</code> przy którym zatrzymuje się transport.</li>
+<li><code>table</code> - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. <em>"Dzień powszedni"</em>. Tablica odjazdów (wartość) to np. <em>{"4":["43"], "5":["02","17","38","48","58"]}</em>, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdza transport.</li>
+<li><code>type</code> - typ. Zawsze <em>"Timetable"</em>.</li>
+<li><code>url</code> - adres URL. Źródło danych. Np. <em>"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"</em></li>
+<li><code>updated_at</code> - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).</li>
+<li><code>valid_since</code> - dzień od którego obowiązuje rozkład. Np. <em>"04.10.2010"</em>.</li>
+<li><code>valid_through</code> (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i <code>valid_since</code> wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana.</li>
+</ul>
+
+
+<h3 id="Za-czniki">Załączniki</h3>
+
+<ul>
+<li><code>headers.json</code> - nagłówki zwrócone przez serwer mpk.krakow.pl.</li>
+<li><code>source.html</code> - oryginalna strona HTML z rozkładem jazdy.</li>
+</ul>
+
+
+<h3 id="Widoki">Widoki</h3>
+
+<p>Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze <a href="http://api.bagate.la/_design/Timetable">"_design/Timetable"</a>.</p>
+
+<p><strong>[map] by_line</strong></p>
+
+<p>Url: <code>http://api.bagate.la/_design/Timetable/_view/by_line?key=&lt;klucz></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>klucz</code><br />
+Odpowiedź:</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<p>Url: <code>http://api.bagate.la/_design/Timetable/_view/by_line?startkey=&lt;klucz_początkowy>&amp;end_key=&lt;klucz_końcowy></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>klucz_początkowy</code> oraz <code>klucz_końcowy</code><br />
+Kolejność sortowania: <code>foo</code>, <code>bar</code><br />
+Odpowiedź:</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<p>Zobacz scenariusze testujące.</p>
+
+<p><strong>[reduce] by_line</strong></p>
+
+<p>Jeżeli interesuje nas tylko opis danej lini, musimy skorzystać z widoku wygenerowanego funkcją redukującą (z wielu rozkładów jazdy generowany jest dokument jednej linii).</p>
+
+<p>Url: <code>http://api.bagate.la/_design/Timetable/_view/by_stop</code>
+Odpowiedź:</p>
+
+<p>Przykładowe użycia:</p>
+
+<p>  curl</p>
+
+<p>  curl</p>
+
+<p><strong>[map] by_stop</strong></p>
+
+<p>Url: <code>http://api.bagate.la/_design/Timetable/_view/by_stop?key=&lt;klucz></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>klucz</code><br />
+Odpowiedź:</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<p>Url: <code>http://api.bagate.la/_design/Timetable/_view/by_stop?startkey=&lt;klucz_początkowy>&amp;end_key=&lt;klucz_końcowy></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>klucz_początkowy</code> oraz <code>klucz_końcowy</code><br />
+Odpowiedź:</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<p>Zobacz scenariusze testujące.</p>
+
+<p><strong>[map] by_url</strong></p>
+
+<p>Url: <code>http://api.bagate.la/_design/Timetable/_view/by_url?key=&lt;klucz></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>klucz</code><br />
+Odpowiedź:</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<p>Zobacz scenariusze testujące.</p>
+
+<p><strong>[list] polyline</strong></p>
+
+<p>Url: <code>http://api.bagate.la/_design/Timetable/_list/polyline/by_line?startkey=&lt;klucz_początkowy>&amp;endkey=&lt;klucz_końcowy></code></p>
+
+<p><strong>[list] filter</strong></p>
+
+<p>Url: <code>http://</code></p>
+
+<h2 id="PRZYSTANEK">PRZYSTANEK</h2>
+
+<p>Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się pojazdy komunikacji.</p>
+
+<h3 id="Atrybuty">Atrybuty</h3>
+
+<ul>
+<li><code>_id</code> - identyfikator.</li>
+<li><code>_rev</code> - numer rewizji.</li>
+<li><code>lat</code> - szerokość geograficzna. Np. <em>50.06309891</em>.</li>
+<li><code>lng</code> - długość geograficzna. Np. <em>19.9326992</em>.</li>
+<li><code>location</code> (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".</li>
+<li><code>name</code> - nazwa przystanku. Np. <em>"Teatr Bagatela"</em>.</li>
+<li><code>polylines</code> (opcjonalnie) - tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących połączenie tych dwóch przystanków.</li>
+<li><code>type</code> - typ. Zawsze <em>"Stop"</em>.</li>
+<li><code>update_at</code> - czas ostatniej modyfikacji.</li>
+</ul>
+
+
+<p>Definicje funkcji mapujących, redukujących i listujących przystanki są dokumentem o idenyfikatorze <a href="http://api.bagate.la/_design/Stop">"_design/Stop"</a>.</p>
+
+<h3 id="Widoki">Widoki</h3>
+
+<p><strong>[map] by_name</strong></p>
+
+<p>Url: <code>http://?key=&lt;klucz></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>klucz</code><br />
+Odpowiedź:</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<p>Url: <code>http://?startkey=&lt;klucz_początkowy>&amp;end_key=&lt;klucz_końcowy></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>klucz_początkowy</code> oraz <code>klucz_końcowy</code><br />
+Odpowiedź:</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<p>Zobacz scenariusze testujące.</p>
+
+<h3 id="Listy">Listy</h3>
+
+<p><strong>filter</strong></p>
+
+<p>Url: <code>http://api.bagate.la/krk/_design/Stop/_list/filter/&lt;widok></code>
+Metoda: <code>GET</code>
+Parametry: <code>widok</code>, <code>only</code> lub <code>exclude</code></p>
+
+<h3 id="Full-text-search">Full-text search</h3>
+
+<h2 id="REPLIKACJE">REPLIKACJE</h2>
+
+<p>Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych.</p>
+
+<p>Url: <code>http://api.bagate.la/_replicate</code><br />
+Metoda: <code>POST</code><br />
+Parametry: <code>taret</code><br />
+Odpowiedź: <code>{}</code><br />
+Uwaga: To nie jest standardowe zapytanie.</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<h2 id="SCENARIUSZE-TESTUJ-CE">SCENARIUSZE TESTUJĄCE</h2>
+
+<p>Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji został napisany odrępny test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia <a href="http://cukes.info/">Cucumber</a>.</p>
+
+
+  <ol class='man-decor man-foot man foot'>
+    <li class='tl'>Stanisław Wasiutyński</li>
+    <li class='tc'>October 2010</li>
+    <li class='tr'>bagatela(1)</li>
+  </ol>
+
+  </div>
+</body>
+</html>
