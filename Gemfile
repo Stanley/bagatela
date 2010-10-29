@@ -10,6 +10,7 @@ end
 group :test do
   gem 'rack-test'
   gem 'rspec', '~>1.3'
+  gem 'cucumber'
 end
 
 group :setup do
