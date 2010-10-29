@@ -1,14 +1,11 @@
 bagatela(1) -- wyszukiwarka, bagatela, połączeń w komunikacji miejskiej
-====================================================================
+=======================================================================
 
 WSTĘP DO API
 ------------
-API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych i usług z poziomu aplikacji trzecich. Zasoby danych są zorganizowane w następujących zbiorach:
+API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych ([przystanków]( #PRZYSTANEK ), [rozkładów jazdy]( #ROZK-AD-JAZDY )) i usług ([wyszukiwarka połączeń]( #WYSZUKIWARKA-PO-CZE- )) z poziomu aplikacji trzecich.
 
-* [Rozkładów jazdy](ROZKŁAD JAZDY).
-* [Przystanków](PRZYSTANEK).
-
-API jest zgodne ze wzorcem REST. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE. Dane przyjmowane i zwracane są w formacie [JSON](http://json.org).
+API jest zgodne ze wzorcem [REST](http://en.wikipedia.org/wiki/Representational_State_Transfer). Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE. Dane przyjmowane i zwracane są w formacie [JSON](http://json.org).
 
 ### Url
 
@@ -17,14 +14,32 @@ API jest zgodne ze wzorcem REST. Interakcja na zbiorach odbywa się protokołem 
 ### Przykłady
 Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli `curl` i zostały wykonane w systemie GNU/Linux.
 
-	$ curl
-	bla bla bla
+    $ curl api.bagate.la --verbose
+    * About to connect() to api.bagate.la port 80 (#0)
+    * Trying 77.79.226.169... connected
+    * Connected to db.wasiutynski.net (77.79.226.169) port 80 (#0)
+    > GET / HTTP/1.1
+    > User-Agent: curl/7.21.0 (x86\_64-pc-linux-gnu) libcurl/7.21.0 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18
+    > Host: api.bagate.la
+    > Accept: */*
+    > 
+    < HTTP/1.1 200 OK
+    < Server: nginx/0.5.36
+    < Date: Fri, 29 Oct 2010 10:49:50 GMT
+    < Content-Type: text/plain;charset=utf-8
+    < Connection: keep-alive
+    < Content-Length: 41
+    < Cache-Control: must-revalidate
+    < 
+    {"version":29102010}
+    * Connection #0 to host db.wasiutynski.net left intact
+    * Closing connection #0
 
 ### Debugging
-Jeżeli potrzebujesz dokładnie zdiagnozować zapytanie, dodaj flagę `--verbose`, która wyświetli bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu `curl` znajdziesz w [jego dokumentacji](http://curl.haxx.se/docs/manpage.html). Przy nauce przydatne mogą okazać się również [inne narzędzia](http://postbin.org).
+Flaga `--verbose` wyświetla bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu `curl` znajdziesz w [jego dokumentacji](http://curl.haxx.se/docs/manpage.html). Przy nauce protokołu, przydatne mogą okazać się również [inne narzędzia](http://postbin.org).
 
 ### Kontrybucja
-mile widziana! Weź <http://github.com/stanley/bagatela/tree/gh-pages> na widły i poproś o akceptacje zmian.
+jest mile widziana! Weź <http://github.com/stanley/bagatela/tree/gh-pages> na widły i poproś o akceptacje zmian.
 
 ZAPYTANIA O DANE
 ----------------
@@ -226,6 +241,10 @@ Metoda: `GET`
 Parametry: `widok`, `only` lub `exclude`
 
 ### Full-text search
+
+WYSZUKIWARKA POŁĄCZEŃ
+---------------------
+Comming soon.
 
 REPLIKACJE
 ----------

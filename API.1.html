@@ -65,6 +65,7 @@
     <a href="#ZASOBY">ZASOBY</a>
     <a href="#ROZK-AD-JAZDY">ROZKŁAD JAZDY</a>
     <a href="#PRZYSTANEK">PRZYSTANEK</a>
+    <a href="#WYSZUKIWARKA-PO-CZE-">WYSZUKIWARKA POŁĄCZEŃ</a>
     <a href="#REPLIKACJE">REPLIKACJE</a>
     <a href="#SCENARIUSZE-TESTUJ-CE">SCENARIUSZE TESTUJĄCE</a>
     </div>
@@ -82,15 +83,9 @@
 
 <h2 id="WST-P-DO-API">WSTĘP DO API</h2>
 
-<p>API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych i usług, np. z poziomu aplikacji trzecich. Zasoby danych są zorganizowane w następujących zbiorach:</p>
+<p>API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych (<a href="#PRZYSTANEK" data-bare-link="true">przystanków</a>, <a href="#ROZK-AD-JAZDY" data-bare-link="true">rozkładów jazdy</a>) i usług (<a href="#WYSZUKIWARKA-PO-CZE-" data-bare-link="true">wyszukiwarka połączeń</a>) z poziomu aplikacji trzecich.</p>
 
-<ul>
-<li><a href="ROZK%C5%81AD%20JAZDY">Rozkładów jazdy</a>.</li>
-<li><a href="PRZYSTANEK">Przystanków</a>.</li>
-</ul>
-
-
-<p>API jest zgodne ze wzorcem REST. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE. Dane przyjmowane i zwracane są w formacie <a href="http://json.org">JSON</a>.</p>
+<p>API jest zgodne ze wzorcem <a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE. Dane przyjmowane i zwracane są w formacie <a href="http://json.org">JSON</a>.</p>
 
 <h3 id="Url">Url</h3>
 
@@ -101,17 +96,35 @@
 
 <p>Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli <code>curl</code> i zostały wykonane w systemie GNU/Linux.</p>
 
-<pre><code>$ curl
-bla bla bla
+<pre><code>$ curl api.bagate.la --verbose
+* About to connect() to api.bagate.la port 80 (#0)
+* Trying 77.79.226.169... connected
+* Connected to db.wasiutynski.net (77.79.226.169) port 80 (#0)
+&gt; GET / HTTP/1.1
+&gt; User-Agent: curl/7.21.0 (x86\_64-pc-linux-gnu) libcurl/7.21.0 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18
+&gt; Host: api.bagate.la
+&gt; Accept: */*
+&gt; 
+&lt; HTTP/1.1 200 OK
+&lt; Server: nginx/0.5.36
+&lt; Date: Fri, 29 Oct 2010 10:49:50 GMT
+&lt; Content-Type: text/plain;charset=utf-8
+&lt; Connection: keep-alive
+&lt; Content-Length: 41
+&lt; Cache-Control: must-revalidate
+&lt; 
+{"version":29102010}
+* Connection #0 to host db.wasiutynski.net left intact
+* Closing connection #0
 </code></pre>
 
 <h3 id="Debugging">Debugging</h3>
 
-<p>Jeżeli potrzebujesz dokładnie zdiagnozować zapytanie, dodaj flagę <code>--verbose</code>, która wyświetli bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu <code>curl</code> znajdziesz w <a href="http://curl.haxx.se/docs/manpage.html">jego dokumentacji</a>. Przy nauce przydatne mogą okazać się również <a href="http://postbin.org">inne narzędzia</a>.</p>
+<p>Flaga <code>--verbose</code> wyświetla bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu <code>curl</code> znajdziesz w <a href="http://curl.haxx.se/docs/manpage.html">jego dokumentacji</a>. Przy nauce protokołu, przydatne mogą okazać się również <a href="http://postbin.org">inne narzędzia</a>.</p>
 
 <h3 id="Kontrybucja">Kontrybucja</h3>
 
-<p>mile widziana! Weź <a href="http://github.com/stanley/bagatela/tree/gh-pages" data-bare-link="true">http://github.com/stanley/bagatela/tree/gh-pages</a> na widły i poproś o akceptacje zmian.</p>
+<p>jest mile widziana! Weź <a href="http://github.com/stanley/bagatela/tree/gh-pages" data-bare-link="true">http://github.com/stanley/bagatela/tree/gh-pages</a> na widły i poproś o akceptacje zmian.</p>
 
 <h2 id="ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</h2>
 
@@ -129,13 +142,13 @@ bla bla bla
 <p>Url: <code>http://api.bagate.la/&lt;id>?rev=&lt;rev></code><br />
 Metoda: <code>GET</code><br />
 Paramtery: <code>id</code>, <code>rev</code> (opcjonalnie)<br />
-Odpowiedź: dokument o identyfikatorze <code>id</code></p>
+Odpowiedź: dokument o identyfikatorze <code>id</code> i numerze rewizji <code>rev</code> (domyślnie najnowsza rewizja).</p>
 
 <p>Przeczytaj więcej o dokumentach w CouchDB na: <a href="http://guide.couchdb.org/draft/api.html#documents" data-bare-link="true">http://guide.couchdb.org/draft/api.html#documents</a>.</p>
 
 <h3 id="Widoki">Widoki</h3>
 
-<p>Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawera funkcje: mapującą i, opcjonalnie, redukującą, które przetwarzają każdy dokument z osobna i zapisują ich wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o jeden dokument i o wiele dokumentów. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze <code>key</code>, to w rezultacie otrzymamy wartość wygenerowaną przez jeden z dokumentów (wynik przetwarzania funkcą mapującą lub redukującą).</p>
+<p>Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i, opcjonalnie, redukującą, które przetwarzają każdy dokument z osobna i zapisują ich wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze <code>key</code>, to w rezultacie otrzymamy wartość wygenerowaną przez jeden lub więcej dokumentów (wynik przetwarzania funkcą mapującą lub redukującą).</p>
 
 <p>Znacznie częstrzym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale. Aby ułatwić takie zapytania, klucze zawsze są wartościu typu lista, np. <em>[2010, 10, 6]</em>. Dzięki temu jesteśmy w stanie zapytać o wszyskie dokumenty, których klucz zawiera się w przedziale np. od <em>[2010, 9]</em> do <em>[2010, 10, {}]</em> (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października).</p>
 
@@ -150,7 +163,8 @@ Odpowiedź: dokument o identyfikatorze <code>id</code></p>
 <li><code>group_level</code></li>
 <li><code>include_docs</code> - jeżeli <em>true</em>, dołąłcza oryginalny dokument w polu <code>doc</code>. Domyślnie <em>false</em>.</li>
 <li><code>key</code> - wartość klucza.</li>
-<li><code>limit</code> - maksymalna liczba zwróconych dokumentów.</li>
+<li><code>limit</code> - maksymalna liczba zwróconych dokumentów. Np. <em>10</em>.</li>
+<li><code>reduce</code> - użyj funkcji redukującej. Domyślna wartość gdy funkcja reduce jest zdefiniowana to <em>true</em>.</li>
 <li><code>startkey</code> - początek przedziału włącznie.</li>
 </ul>
 
@@ -176,7 +190,7 @@ Odpowiedź: dokument o identyfikatorze <code>id</code></p>
 <li><code>stop_id</code> (opcjonalnie) - identyfikator przystanku <code>Stop</code> przy którym zatrzymuje się transport.</li>
 <li><code>table</code> - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. <em>"Dzień powszedni"</em>. Tablica odjazdów (wartość) to np. <em>{"4":["43"], "5":["02","17","38","48","58"]}</em>, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdza transport.</li>
 <li><code>type</code> - typ. Zawsze <em>"Timetable"</em>.</li>
-<li><code>url</code> - adres URL. Źródło danych. Np. <em>"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"</em></li>
+<li><code>source</code> - Źródło danych. Np. adres url: <em>"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"</em></li>
 <li><code>updated_at</code> - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).</li>
 <li><code>valid_since</code> - dzień od którego obowiązuje rozkład. Np. <em>"04.10.2010"</em>.</li>
 <li><code>valid_through</code> (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i <code>valid_since</code> wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana.</li>
@@ -292,7 +306,7 @@ Odpowiedź:</p>
 <li><code>lng</code> - długość geograficzna. Np. <em>19.9326992</em>.</li>
 <li><code>location</code> (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".</li>
 <li><code>name</code> - nazwa przystanku. Np. <em>"Teatr Bagatela"</em>.</li>
-<li><code>polylines</code> (opcjonalnie) - tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących połączenie tych dwóch przystanków.</li>
+<li><code>polylines</code> (opcjonalnie) - tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.</li>
 <li><code>type</code> - typ. Zawsze <em>"Stop"</em>.</li>
 <li><code>update_at</code> - czas ostatniej modyfikacji.</li>
 </ul>
@@ -330,21 +344,24 @@ Odpowiedź:</p>
 
 <p><strong>filter</strong></p>
 
-<p>Url: <code>http://api.bagate.la/krk/_design/Stop/_list/filter/&lt;widok></code>
-Metoda: <code>GET</code>
+<p>Url: <code>http://api.bagate.la/kr/_design/Stop/_list/filter/&lt;widok></code><br />
+Metoda: <code>GET</code><br />
 Parametry: <code>widok</code>, <code>only</code> lub <code>exclude</code></p>
 
 <h3 id="Full-text-search">Full-text search</h3>
+
+<h2 id="WYSZUKIWARKA-PO-CZE-">WYSZUKIWARKA POŁĄCZEŃ</h2>
+
+<p>Comming soon.</p>
 
 <h2 id="REPLIKACJE">REPLIKACJE</h2>
 
 <p>Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych.</p>
 
-<p>Url: <code>http://api.bagate.la/_replicate</code><br />
+<p>Url: <code>http://api.bagate.la/kr/_replicate</code><br />
 Metoda: <code>POST</code><br />
 Parametry: <code>taret</code><br />
-Odpowiedź: <code>{}</code><br />
-Uwaga: To nie jest standardowe zapytanie.</p>
+Odpowiedź: <code>{}</code></p>
 
 <p>Przykładowe użycie:</p>
 

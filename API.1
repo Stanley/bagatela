@@ -7,18 +7,10 @@
 \fBbagatela\fR \- wyszukiwarka, bagatela, połączeń w komunikacji miejskiej
 .
 .SH "WSTĘP DO API"
-API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych i usług, np\. z poziomu aplikacji trzecich\. Zasoby danych są zorganizowane w następujących zbiorach:
-.
-.IP "\(bu" 4
-Rozkładów jazdy \fIROZK%C5%81AD%20JAZDY\fR\.
-.
-.IP "\(bu" 4
-Przystanków \fIPRZYSTANEK\fR\.
-.
-.IP "" 0
+API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych (\fIprzystanków\fR, \fIrozkładów jazdy\fR) i usług (\fIwyszukiwarka połączeń\fR) z poziomu aplikacji trzecich\.
 .
 .P
-API jest zgodne ze wzorcem REST\. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE\. Dane przyjmowane i zwracane są w formacie JSON \fIhttp://json\.org\fR\.
+API jest zgodne ze wzorcem REST \fIhttp://en\.wikipedia\.org/wiki/Representational_State_Transfer\fR\. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE\. Dane przyjmowane i zwracane są w formacie JSON \fIhttp://json\.org\fR\.
 .
 .SS "Url"
 .
@@ -35,18 +27,36 @@ Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli 
 .
 .nf
 
-$ curl
-bla bla bla
+$ curl api\.bagate\.la \-\-verbose
+* About to connect() to api\.bagate\.la port 80 (#0)
+* Trying 77\.79\.226\.169\.\.\. connected
+* Connected to db\.wasiutynski\.net (77\.79\.226\.169) port 80 (#0)
+> GET / HTTP/1\.1
+> User\-Agent: curl/7\.21\.0 (x86\e_64\-pc\-linux\-gnu) libcurl/7\.21\.0 OpenSSL/0\.9\.8o zlib/1\.2\.3\.4 libidn/1\.18
+> Host: api\.bagate\.la
+> Accept: */*
+>
+< HTTP/1\.1 200 OK
+< Server: nginx/0\.5\.36
+< Date: Fri, 29 Oct 2010 10:49:50 GMT
+< Content\-Type: text/plain;charset=utf\-8
+< Connection: keep\-alive
+< Content\-Length: 41
+< Cache\-Control: must\-revalidate
+<
+{"version":29102010}
+* Connection #0 to host db\.wasiutynski\.net left intact
+* Closing connection #0
 .
 .fi
 .
 .IP "" 0
 .
 .SS "Debugging"
-Jeżeli potrzebujesz dokładnie zdiagnozować zapytanie, dodaj flagę \fB\-\-verbose\fR, która wyświetli bardziej szczegółowe informacje o połączeniu\. Więcej informacji o narzędziu \fBcurl\fR znajdziesz w jego dokumentacji \fIhttp://curl\.haxx\.se/docs/manpage\.html\fR\. Przy nauce przydatne mogą okazać się również inne narzędzia \fIhttp://postbin\.org\fR\.
+Flaga \fB\-\-verbose\fR wyświetla bardziej szczegółowe informacje o połączeniu\. Więcej informacji o narzędziu \fBcurl\fR znajdziesz w jego dokumentacji \fIhttp://curl\.haxx\.se/docs/manpage\.html\fR\. Przy nauce protokołu, przydatne mogą okazać się również inne narzędzia \fIhttp://postbin\.org\fR\.
 .
 .SS "Kontrybucja"
-mile widziana! Weź \fIhttp://github\.com/stanley/bagatela/tree/gh\-pages\fR na widły i poproś o akceptacje zmian\.
+jest mile widziana! Weź \fIhttp://github\.com/stanley/bagatela/tree/gh\-pages\fR na widły i poproś o akceptacje zmian\.
 .
 .SH "ZAPYTANIA O DANE"
 Ponieważ dane są przechowywane w bazie danych CouchDB, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny\. Jego szczegóły opisano w dokumentacji CouchDB API \fIhttp://wiki\.apache\.org/couchdb/\fR\.
@@ -77,13 +87,13 @@ Metoda: \fBGET\fR
 Paramtery: \fBid\fR, \fBrev\fR (opcjonalnie)
 .
 .br
-Odpowiedź: dokument o identyfikatorze \fBid\fR
+Odpowiedź: dokument o identyfikatorze \fBid\fR i numerze rewizji \fBrev\fR (domyślnie najnowsza rewizja)\.
 .
 .P
 Przeczytaj więcej o dokumentach w CouchDB na: \fIhttp://guide\.couchdb\.org/draft/api\.html#documents\fR\.
 .
 .SS "Widoki"
-Widok to predefiniowany indeks danych\. Definicja widoku jest w bazie danych specjalnym dokumentem i zawera funkcje: mapującą i, opcjonalnie, redukującą, które przetwarzają każdy dokument z osobna i zapisują ich wynik w posortowanej liście (widoku)\. Istnieją dwa rodzaje wyszukań tego indeksu: o jeden dokument i o wiele dokumentów\. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze \fBkey\fR, to w rezultacie otrzymamy wartość wygenerowaną przez jeden z dokumentów (wynik przetwarzania funkcą mapującą lub redukującą)\.
+Widok to predefiniowany indeks danych\. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i, opcjonalnie, redukującą, które przetwarzają każdy dokument z osobna i zapisują ich wynik w posortowanej liście (widoku)\. Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie\. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze \fBkey\fR, to w rezultacie otrzymamy wartość wygenerowaną przez jeden lub więcej dokumentów (wynik przetwarzania funkcą mapującą lub redukującą)\.
 .
 .P
 Znacznie częstrzym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale\. Aby ułatwić takie zapytania, klucze zawsze są wartościu typu lista, np\. \fI[2010, 10, 6]\fR\. Dzięki temu jesteśmy w stanie zapytać o wszyskie dokumenty, których klucz zawiera się w przedziale np\. od \fI[2010, 9]\fR do \fI[2010, 10, {}]\fR (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października)\.
@@ -113,7 +123,10 @@ Przeczytaj więcej o widokach w CouchDB na: \fIhttp://guide\.couchdb\.org/draft/
 \fBkey\fR \- wartość klucza\.
 .
 .IP "\(bu" 4
-\fBlimit\fR \- maksymalna liczba zwróconych dokumentów\.
+\fBlimit\fR \- maksymalna liczba zwróconych dokumentów\. Np\. \fI10\fR\.
+.
+.IP "\(bu" 4
+\fBreduce\fR \- użyj funkcji redukującej\. Domyślna wartość gdy funkcja reduce jest zdefiniowana to \fItrue\fR\.
 .
 .IP "\(bu" 4
 \fBstartkey\fR \- początek przedziału włącznie\.
@@ -156,7 +169,7 @@ Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z 
 \fBtype\fR \- typ\. Zawsze \fI"Timetable"\fR\.
 .
 .IP "\(bu" 4
-\fBurl\fR \- adres URL\. Źródło danych\. Np\. \fI"http://rozklady\.mpk\.krakow\.pl/aktualne/0004/0004t023\.htm"\fR
+\fBsource\fR \- Źródło danych\. Np\. adres url: \fI"http://rozklady\.mpk\.krakow\.pl/aktualne/0004/0004t023\.htm"\fR
 .
 .IP "\(bu" 4
 \fBupdated_at\fR \- czas ostatniej modyfikacji w bazie danych (tj\. czas połączenia ze źródłem)\.
@@ -382,7 +395,7 @@ Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się 
 \fBname\fR \- nazwa przystanku\. Np\. \fI"Teatr Bagatela"\fR\.
 .
 .IP "\(bu" 4
-\fBpolylines\fR (opcjonalnie) \- tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących połączenie tych dwóch przystanków\.
+\fBpolylines\fR (opcjonalnie) \- tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków\.
 .
 .IP "\(bu" 4
 \fBtype\fR \- typ\. Zawsze \fI"Stop"\fR\.
@@ -455,15 +468,24 @@ Zobacz scenariusze testujące\.
 \fBfilter\fR
 .
 .P
-Url: \fBhttp://api\.bagate\.la/krk/_design/Stop/_list/filter/<widok>\fR Metoda: \fBGET\fR Parametry: \fBwidok\fR, \fBonly\fR lub \fBexclude\fR
+Url: \fBhttp://api\.bagate\.la/kr/_design/Stop/_list/filter/<widok>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBwidok\fR, \fBonly\fR lub \fBexclude\fR
 .
 .SS "Full\-text search"
+.
+.SH "WYSZUKIWARKA POŁĄCZEŃ"
+Comming soon\.
 .
 .SH "REPLIKACJE"
 Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych\.
 .
 .P
-Url: \fBhttp://api\.bagate\.la/_replicate\fR
+Url: \fBhttp://api\.bagate\.la/kr/_replicate\fR
 .
 .br
 Metoda: \fBPOST\fR
@@ -473,9 +495,6 @@ Parametry: \fBtaret\fR
 .
 .br
 Odpowiedź: \fB{}\fR
-.
-.br
-Uwaga: To nie jest standardowe zapytanie\.
 .
 .P
 Przykładowe użycie:
