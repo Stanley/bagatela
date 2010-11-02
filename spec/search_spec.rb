@@ -136,18 +136,18 @@ describe 'search engine' do
     # ....5_6
 
     before :each do
-      h1 = Hub.new :name => 'Hub1', :lat => 0, :lon => 0
-      h2 = Hub.new :name => 'Hub2', :lat => 6, :lon => 0
-      h3 = Hub.new :name => 'Hub3', :lat => 2, :lon => 2
-      h4 = Hub.new :name => 'Hub4', :lat => 4, :lon => 4
-      h5 = Hub.new :name => 'Hub5', :lat => 4, :lon => 6
-      h6 = Hub.new :name => 'Hub6', :lat => 6, :lon => 6
+      h1 = Hub.new :name => 'Hub1', :lat => 0.00, :lon => 0.00
+      h2 = Hub.new :name => 'Hub2', :lat => 0.06, :lon => 0.00
+      h3 = Hub.new :name => 'Hub3', :lat => 0.02, :lon => 0.02
+      h4 = Hub.new :name => 'Hub4', :lat => 0.04, :lon => 0.04
+      h5 = Hub.new :name => 'Hub5', :lat => 0.04, :lon => 0.06
+      h6 = Hub.new :name => 'Hub6', :lat => 0.06, :lon => 0.06
 
       direction = h1.connections.new h2
       direction.timetables = {
-        12*60     => 2, # departures at 12:00 and arrives two minutes later
-        12*60 + 3 => 2, #               12:03
-        12*60 + 5 => 2  #               12:05
+        12*60     => 1, # departures at 12:00 and arrives one minute later
+        12*60 + 3 => 1, #               12:03
+        12*60 + 5 => 1  #               12:05
       }.to_json
 
       direction = h1.connections.new h3
@@ -218,7 +218,7 @@ describe 'search engine' do
         "arrival" => "12:04",
         "stop"    => "Hub6" })
       
-      body['duration'].should eql(6)
+      body['duration'].should eql(5)
 #      body['distance'].should be_close(GeoCostEvaluator.distance(0,0,6,0) + GeoCostEvaluator.distance(6,0,6,6), 1)
     end
 

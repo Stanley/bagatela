@@ -16,7 +16,8 @@ class Hub
     "Hub #{self.name}"
   end
 
-  def distance_to(hub)
+  # Resturns distance in meters to given hub
+  def by_dist(hub)
     a, b = [self.lat, self.lon], [hub.lat, hub.lon]
     dLat = (b[0] - a[0]) * RAD
     dLon = (b[1] - a[1]) * RAD
@@ -26,5 +27,10 @@ class Hub
         Math.sin(dLon / 2) ** 2
 
     R * 2 * Math.atan2(Math.sqrt(d), Math.sqrt(1-d))
+  end
+
+  def by_time(hub)
+    # estimated time to hub in minutes given average speed of 20km/h
+    by_dist(hub)/1000/20 *60 
   end
 end
