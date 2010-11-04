@@ -5,6 +5,8 @@ group :app do
   gem 'sinatra'
   gem 'json'
   gem 'neo4j'
+  gem 'picky-client'
+  gem 'rest-client'
 end
 
 group :test do

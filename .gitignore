@@ -3,3 +3,5 @@
 .idea/
 .bundle/
 tmp/
+log/
+utils/picky/index

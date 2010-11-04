@@ -13,11 +13,12 @@ class Bagatela < Sinatra::Base
     @result = {}
   end
 
-  post '/*:*' do
-    raise BadRequest, "two_different_stops_required" if params[:splat][0] == params[:splat][1]
+  # Search for connections
+  get '/Connection' do
+    #
+    from, to = params[:q].split(':')
+    raise BadRequest, "two_different_stops_required" unless from and to and from != to
     Neo4j::Transaction.run do
-      #
-      from, to = params[:splat]
       # Distance we've traveled so far
       distance = 0
       #
@@ -57,6 +58,14 @@ class Bagatela < Sinatra::Base
       @result[:results]  = results << stop
       @result.to_json
     end    
+  end
+
+  # search for stops
+  get '/Stop' do
+    Stops.search(:query => params[:q])[:allocations].     # Ask Picky, the search engine,
+      inject([]){|ids, allocation| ids + allocation[4]}.  # get ids,
+      map{|id| JSON.parse DB[id].get}.               # get documents from database.
+      to_json
   end
 
   error do
