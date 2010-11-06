@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BAGATELA" "1" "October 2010" "Stanisław Wasiutyński" ""
+.TH "BAGATELA" "1" "December 2010" "Stanisław Wasiutyński" ""
 .
 .SH "NAME"
 \fBbagatela\fR \- wyszukiwarka, bagatela, połączeń w komunikacji miejskiej
@@ -44,7 +44,7 @@ $ curl api\.bagate\.la \-\-verbose
 < Content\-Length: 41
 < Cache\-Control: must\-revalidate
 <
-{"version":29102010}
+{"version": 29102010, "message": "Welcome aboard!"}
 * Connection #0 to host db\.wasiutynski\.net left intact
 * Closing connection #0
 .
@@ -56,7 +56,7 @@ $ curl api\.bagate\.la \-\-verbose
 Flaga \fB\-\-verbose\fR wyświetla bardziej szczegółowe informacje o połączeniu\. Więcej informacji o narzędziu \fBcurl\fR znajdziesz w jego dokumentacji \fIhttp://curl\.haxx\.se/docs/manpage\.html\fR\. Przy nauce protokołu, przydatne mogą okazać się również inne narzędzia \fIhttp://postbin\.org\fR\.
 .
 .SS "Kontrybucja"
-jest mile widziana! Weź \fIhttp://github\.com/stanley/bagatela/tree/gh\-pages\fR na widły i poproś o akceptacje zmian\.
+jest mile widziana! Weź \fIhttp://github\.com/stanley/bagatela\fR na widły i poproś o akceptacje zmian\.
 .
 .SH "ZAPYTANIA O DANE"
 Ponieważ dane są przechowywane w bazie danych CouchDB, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny\. Jego szczegóły opisano w dokumentacji CouchDB API \fIhttp://wiki\.apache\.org/couchdb/\fR\.
@@ -108,7 +108,7 @@ Przeczytaj więcej o widokach w CouchDB na: \fIhttp://guide\.couchdb\.org/draft/
 \fBdescending\fR \- jeżeli \fItrue\fR, odwórcona kolejność zwracanych dokumentów\.
 .
 .IP "\(bu" 4
-\fBendkey\fR\- koniec przedziału włącznie\.
+\fBendkey\fR\- koniec przedziału włącznie\. Domyślnie największa możliwa wartość\.
 .
 .IP "\(bu" 4
 \fBgroup\fR
@@ -120,24 +120,24 @@ Przeczytaj więcej o widokach w CouchDB na: \fIhttp://guide\.couchdb\.org/draft/
 \fBinclude_docs\fR \- jeżeli \fItrue\fR, dołąłcza oryginalny dokument w polu \fBdoc\fR\. Domyślnie \fIfalse\fR\.
 .
 .IP "\(bu" 4
-\fBkey\fR \- wartość klucza\.
+\fBkey\fR \- dokładna wartość klucza\.
 .
 .IP "\(bu" 4
 \fBlimit\fR \- maksymalna liczba zwróconych dokumentów\. Np\. \fI10\fR\.
 .
 .IP "\(bu" 4
-\fBreduce\fR \- użyj funkcji redukującej\. Domyślna wartość gdy funkcja reduce jest zdefiniowana to \fItrue\fR\.
+\fBreduce\fR \- użyj funkcji redukującej\. Domyślna wartość, gdy funkcja reduce jest zdefiniowana, to \fItrue\fR\.
 .
 .IP "\(bu" 4
-\fBstartkey\fR \- początek przedziału włącznie\.
+\fBstartkey\fR \- początek przedziału włącznie\. Domyślnie najmniejsza możliwa wartość\.
 .
 .IP "" 0
 .
 .P
-Wszystkie parametry są opcjonalne\.
+Wszystkie wyżej wymienione parametry są opcjonalne\.
 .
 .SH "ZASOBY"
-Zasób jest podzbiorem danych w bazie wydzielonych względem typu (klasy) danej którą reprezentuje\. Typ zasobu do którego należy dokument jest określony w polu \fBtype\fR\.
+Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej, którą reprezentuje\. Typ zasobu do którego należy dokument jest określony w polu \fBtype\fR\.
 .
 .SH "ROZKŁAD JAZDY"
 Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z jednym przystankiem\. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów)\. Jest wiernym odzwierciedleniem tego co jest publikowane przez MPK Kraków na stronach http://rozklady\.mpk\.krakow\.pl i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów \fBstop_id\fR i \fBvalid_through\fR)\.
@@ -157,13 +157,16 @@ Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z 
 \fBroute\fR \- trasa linii\. Lista głównych ulic, którymi biegnie linia\. Np\. \fI"Al\. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"\fR\.
 .
 .IP "\(bu" 4
+\fBdestination\fR (tylko jeżeli parametr \fBroute\fR nie istnieje) \- przystanek docelowy\. Np\. \fI"Okęcie"\fR
+.
+.IP "\(bu" 4
 \fBstop\fR \- nazwa przystanku na którym znajduje się rozkład\. Np\. \fI"Batorego"\fR\.
 .
 .IP "\(bu" 4
 \fBstop_id\fR (opcjonalnie) \- identyfikator przystanku \fBStop\fR przy którym zatrzymuje się transport\.
 .
 .IP "\(bu" 4
-\fBtable\fR \- tablice odjazdów\. Atrybut typu tablicy haszującej\. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów\. Opis dania (klucz) to np\. \fI"Dzień powszedni"\fR\. Tablica odjazdów (wartość) to np\. \fI{"4":["43"], "5":["02","17","38","48","58"]}\fR, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd\. odjeżdza transport\.
+\fBtable\fR \- tablice odjazdów\. Atrybut typu tablicy haszującej\. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów\. Opis dania (klucz) to np\. \fI"Dzień powszedni"\fR\. Tablica odjazdów (wartość) to np\. \fI{"4":["43"], "5":["02","17","38","48","58"]}\fR, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd\. odjeżdza transport\. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu\. Np\. \fI"24A"\fR\.
 .
 .IP "\(bu" 4
 \fBtype\fR \- typ\. Zawsze \fI"Timetable"\fR\.
@@ -185,10 +188,10 @@ Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z 
 .SS "Załączniki"
 .
 .IP "\(bu" 4
-\fBheaders\.json\fR \- nagłówki zwrócone przez serwer mpk\.krakow\.pl\.
+\fBheaders\.json\fR \- nagłówki zwrócone przez serwer\.
 .
 .IP "\(bu" 4
-\fBsource\.html\fR \- oryginalna strona HTML z rozkładem jazdy\.
+\fBsource\.html\fR \- oryginalna strona HTML z rozkładem jazdy w kodowaniu UTF\-8\.
 .
 .IP "" 0
 .
@@ -476,7 +479,29 @@ Metoda: \fBGET\fR
 .br
 Parametry: \fBwidok\fR, \fBonly\fR lub \fBexclude\fR
 .
-.SS "Full\-text search"
+.SS "Small\-text search"
+Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji\.
+.
+.P
+Url: \fBhttp://api\.bagate\.la/kr/_search/Stop?q=<fraza>\fR Metoda: \fBGET\fR Paramerty: \fBq\fR \- fraza, \fBlimit\fR Odpowiedź: lista przystanków
+.
+.P
+Frazę można doprecyzować, dopisując przed nią \fBname:\fR lub \fBlocation:\fR, co ograniczy wyszukiwanie do określonego pola\.
+.
+.P
+Przykładowe użycia:
+.
+.IP "" 4
+.
+.nf
+
+curl http://api\.bagate\.la/kr/_search/Stop?q=baszt
+
+curl http://api\.bagate\.la/kr/_search/Stop?q=dworzec location:basztowa
+.
+.fi
+.
+.IP "" 0
 .
 .SH "WYSZUKIWARKA POŁĄCZEŃ"
 Comming soon\.

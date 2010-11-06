@@ -113,7 +113,7 @@
 &lt; Content-Length: 41
 &lt; Cache-Control: must-revalidate
 &lt; 
-{"version":29102010}
+{"version": 29102010, "message": "Welcome aboard!"}
 * Connection #0 to host db.wasiutynski.net left intact
 * Closing connection #0
 </code></pre>
@@ -124,7 +124,7 @@
 
 <h3 id="Kontrybucja">Kontrybucja</h3>
 
-<p>jest mile widziana! Weź <a href="http://github.com/stanley/bagatela/tree/gh-pages" data-bare-link="true">http://github.com/stanley/bagatela/tree/gh-pages</a> na widły i poproś o akceptacje zmian.</p>
+<p>jest mile widziana! Weź <a href="http://github.com/stanley/bagatela" data-bare-link="true">http://github.com/stanley/bagatela</a> na widły i poproś o akceptacje zmian.</p>
 
 <h2 id="ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</h2>
 
@@ -158,22 +158,22 @@ Odpowiedź: dokument o identyfikatorze <code>id</code> i numerze rewizji <code>r
 
 <ul>
 <li><code>descending</code> - jeżeli <em>true</em>, odwórcona kolejność zwracanych dokumentów.</li>
-<li><code>endkey</code>- koniec przedziału włącznie.</li>
+<li><code>endkey</code>- koniec przedziału włącznie. Domyślnie największa możliwa wartość.</li>
 <li><code>group</code></li>
 <li><code>group_level</code></li>
 <li><code>include_docs</code> - jeżeli <em>true</em>, dołąłcza oryginalny dokument w polu <code>doc</code>. Domyślnie <em>false</em>.</li>
-<li><code>key</code> - wartość klucza.</li>
+<li><code>key</code> - dokładna wartość klucza.</li>
 <li><code>limit</code> - maksymalna liczba zwróconych dokumentów. Np. <em>10</em>.</li>
-<li><code>reduce</code> - użyj funkcji redukującej. Domyślna wartość gdy funkcja reduce jest zdefiniowana to <em>true</em>.</li>
-<li><code>startkey</code> - początek przedziału włącznie.</li>
+<li><code>reduce</code> - użyj funkcji redukującej. Domyślna wartość, gdy funkcja reduce jest zdefiniowana, to <em>true</em>.</li>
+<li><code>startkey</code> - początek przedziału włącznie. Domyślnie najmniejsza możliwa wartość.</li>
 </ul>
 
 
-<p>Wszystkie parametry są opcjonalne.</p>
+<p>Wszystkie wyżej wymienione parametry są opcjonalne.</p>
 
 <h2 id="ZASOBY">ZASOBY</h2>
 
-<p>Zasób jest podzbiorem danych w bazie wydzielonych względem typu (klasy) danej którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu <code>type</code>.</p>
+<p>Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej, którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu <code>type</code>.</p>
 
 <h2 id="ROZK-AD-JAZDY">ROZKŁAD JAZDY</h2>
 
@@ -186,9 +186,10 @@ Odpowiedź: dokument o identyfikatorze <code>id</code> i numerze rewizji <code>r
 <li><code>_rev</code> - numer rewizji.</li>
 <li><code>line</code> - numer linii, którą opisuje rozkład. Np. <em>"4"</em>.</li>
 <li><code>route</code> - trasa linii. Lista głównych ulic, którymi biegnie linia. Np. <em>"Al. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"</em>.</li>
+<li><code>destination</code> (tylko jeżeli parametr <code>route</code> nie istnieje) - przystanek docelowy. Np. <em>"Okęcie"</em></li>
 <li><code>stop</code> - nazwa przystanku na którym znajduje się rozkład. Np. <em>"Batorego"</em>.</li>
 <li><code>stop_id</code> (opcjonalnie) - identyfikator przystanku <code>Stop</code> przy którym zatrzymuje się transport.</li>
-<li><code>table</code> - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. <em>"Dzień powszedni"</em>. Tablica odjazdów (wartość) to np. <em>{"4":["43"], "5":["02","17","38","48","58"]}</em>, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdza transport.</li>
+<li><code>table</code> - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. <em>"Dzień powszedni"</em>. Tablica odjazdów (wartość) to np. <em>{"4":["43"], "5":["02","17","38","48","58"]}</em>, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdza transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. <em>"24A"</em>.</li>
 <li><code>type</code> - typ. Zawsze <em>"Timetable"</em>.</li>
 <li><code>source</code> - Źródło danych. Np. adres url: <em>"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"</em></li>
 <li><code>updated_at</code> - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).</li>
@@ -200,8 +201,8 @@ Odpowiedź: dokument o identyfikatorze <code>id</code> i numerze rewizji <code>r
 <h3 id="Za-czniki">Załączniki</h3>
 
 <ul>
-<li><code>headers.json</code> - nagłówki zwrócone przez serwer mpk.krakow.pl.</li>
-<li><code>source.html</code> - oryginalna strona HTML z rozkładem jazdy.</li>
+<li><code>headers.json</code> - nagłówki zwrócone przez serwer.</li>
+<li><code>source.html</code> - oryginalna strona HTML z rozkładem jazdy w kodowaniu UTF-8.</li>
 </ul>
 
 
@@ -348,7 +349,23 @@ Odpowiedź:</p>
 Metoda: <code>GET</code><br />
 Parametry: <code>widok</code>, <code>only</code> lub <code>exclude</code></p>
 
-<h3 id="Full-text-search">Full-text search</h3>
+<h3 id="Small-text-search">Small-text search</h3>
+
+<p>Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji.</p>
+
+<p>Url: <code>http://api.bagate.la/kr/_search/Stop?q=&lt;fraza></code>
+Metoda: <code>GET</code>
+Paramerty: <code>q</code> - fraza, <code>limit</code>
+Odpowiedź: lista przystanków</p>
+
+<p>Frazę można doprecyzować, dopisując przed nią <code>name:</code> lub <code>location:</code>, co ograniczy wyszukiwanie do określonego pola.</p>
+
+<p>Przykładowe użycia:</p>
+
+<pre><code>curl http://api.bagate.la/kr/_search/Stop?q=baszt
+
+curl http://api.bagate.la/kr/_search/Stop?q=dworzec location:basztowa
+</code></pre>
 
 <h2 id="WYSZUKIWARKA-PO-CZE-">WYSZUKIWARKA POŁĄCZEŃ</h2>
 
@@ -375,7 +392,7 @@ Odpowiedź: <code>{}</code></p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Stanisław Wasiutyński</li>
-    <li class='tc'>October 2010</li>
+    <li class='tc'>December 2010</li>
     <li class='tr'>bagatela(1)</li>
   </ol>
 

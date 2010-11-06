@@ -31,7 +31,7 @@ Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli 
     < Content-Length: 41
     < Cache-Control: must-revalidate
     < 
-    {"version":29102010}
+    {"version": 29102010, "message": "Welcome aboard!"}
     * Connection #0 to host db.wasiutynski.net left intact
     * Closing connection #0
 
@@ -39,7 +39,7 @@ Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli 
 Flaga `--verbose` wyświetla bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu `curl` znajdziesz w [jego dokumentacji](http://curl.haxx.se/docs/manpage.html). Przy nauce protokołu, przydatne mogą okazać się również [inne narzędzia](http://postbin.org).
 
 ### Kontrybucja
-jest mile widziana! Weź <http://github.com/stanley/bagatela/tree/gh-pages> na widły i poproś o akceptacje zmian.
+jest mile widziana! Weź <http://github.com/stanley/bagatela> na widły i poproś o akceptacje zmian.
 
 ZAPYTANIA O DANE
 ----------------
@@ -69,20 +69,20 @@ Przeczytaj więcej o widokach w CouchDB na: <http://guide.couchdb.org/draft/view
 **Parametry**
 
 * `descending` - jeżeli *true*, odwórcona kolejność zwracanych dokumentów.
-* `endkey`- koniec przedziału włącznie.
+* `endkey`- koniec przedziału włącznie. Domyślnie największa możliwa wartość.
 * `group`
 * `group_level`
 * `include_docs` - jeżeli *true*, dołąłcza oryginalny dokument w polu `doc`. Domyślnie *false*.
-* `key` - wartość klucza.
+* `key` - dokładna wartość klucza.
 * `limit` - maksymalna liczba zwróconych dokumentów. Np. *10*.
-* `reduce` - użyj funkcji redukującej. Domyślna wartość gdy funkcja reduce jest zdefiniowana to *true*.
-* `startkey` - początek przedziału włącznie.
+* `reduce` - użyj funkcji redukującej. Domyślna wartość, gdy funkcja reduce jest zdefiniowana, to *true*.
+* `startkey` - początek przedziału włącznie. Domyślnie najmniejsza możliwa wartość.
 
-Wszystkie parametry są opcjonalne.
+Wszystkie wyżej wymienione parametry są opcjonalne.
 
 ZASOBY
 ------
-Zasób jest podzbiorem danych w bazie wydzielonych względem typu (klasy) danej którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu `type`.
+Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej, którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu `type`.
 
 ROZKŁAD JAZDY
 -------------
@@ -94,9 +94,10 @@ Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z j
 * `_rev` - numer rewizji.
 * `line` - numer linii, którą opisuje rozkład. Np. *"4"*.
 * `route` - trasa linii. Lista głównych ulic, którymi biegnie linia. Np. *"Al. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"*.
+* `destination` (tylko jeżeli parametr `route` nie istnieje) - przystanek docelowy. Np. *"Okęcie"*
 * `stop` - nazwa przystanku na którym znajduje się rozkład. Np. *"Batorego"*.
 * `stop_id` (opcjonalnie) - identyfikator przystanku `Stop` przy którym zatrzymuje się transport.
-* `table` - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. *"Dzień powszedni"*. Tablica odjazdów (wartość) to np. *{"4":["43"], "5":["02","17","38","48","58"]}*, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdza transport.
+* `table` - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. *"Dzień powszedni"*. Tablica odjazdów (wartość) to np. *{"4":["43"], "5":["02","17","38","48","58"]}*, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdza transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. *"24A"*.
 * `type` - typ. Zawsze *"Timetable"*.
 * `source` - Źródło danych. Np. adres url: *"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"*
 * `updated_at` - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).
@@ -105,8 +106,8 @@ Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z j
 
 ### Załączniki
 
-* `headers.json` - nagłówki zwrócone przez serwer mpk.krakow.pl.
-* `source.html` - oryginalna strona HTML z rozkładem jazdy.
+* `headers.json` - nagłówki zwrócone przez serwer.
+* `source.html` - oryginalna strona HTML z rozkładem jazdy w kodowaniu UTF-8.
 
 ### Widoki
 Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze ["_design/Timetable"](http://api.bagate.la/_design/Timetable).
@@ -240,7 +241,21 @@ Url: `http://api.bagate.la/kr/_design/Stop/_list/filter/<widok>`
 Metoda: `GET`  
 Parametry: `widok`, `only` lub `exclude`
 
-### Full-text search
+### Small-text search
+Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji.
+
+Url: `http://api.bagate.la/kr/_search/Stop?q=<fraza>`
+Metoda: `GET`
+Paramerty: `q` - fraza, `limit`
+Odpowiedź: lista przystanków
+
+Frazę można doprecyzować, dopisując przed nią `name:` lub `location:`, co ograniczy wyszukiwanie do określonego pola.
+
+Przykładowe użycia:
+ 
+    curl http://api.bagate.la/kr/_search/Stop?q=baszt
+
+    curl http://api.bagate.la/kr/_search/Stop?q=dworzec location:basztowa
 
 WYSZUKIWARKA POŁĄCZEŃ
 ---------------------
