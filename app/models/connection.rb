@@ -5,8 +5,10 @@ class Connection
 
   property :cost        # length in meters
   property :timetables  # every departure in direction
+  property :line        # used to determine if a passenger have to make a transfer
 
   # Returns nil if there are no more runs
+  # Otherwise return cost (that is waiting time + trip time), departure time and trip time
   def by_time(time)
     dep, dur = next_run(time) || next
     [dep-time+dur, dep, dur]
@@ -23,7 +25,8 @@ class Connection
   # Finds next run and returns its departure time and waiting time
   def next_run(time) 
     # TODO: do not use json!
-    JSON.parse(timetables) \
-      .sort.map{|dep, _| [dep.to_i, _]}.find{ |dep, _| dep.to_i >= time }
+    JSON.parse(timetables).sort.
+      map{|dep, _| [dep.to_i, _]}.
+      find{|dep, _| dep.to_i >= time}
   end
 end

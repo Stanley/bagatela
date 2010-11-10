@@ -12,7 +12,7 @@ describe 'search engine' do
     Hub.new :name => "Beginning"
     Neo4j::Transaction.finish
 
-    post '/Beginning:Random'
+    get '/Connection?q=Beginning:Random'
     last_response.status.should eql(404)
     last_response.body.should be_json
 
@@ -26,7 +26,7 @@ describe 'search engine' do
     Hub.new :name => "Beginning"
     Neo4j::Transaction.finish
 
-    post '/Beginning:Beginning'
+    get '/Connection?q=Beginning:Beginning'
     last_response.status.should eql(400)
     last_response.body.should be_json
 
@@ -41,7 +41,7 @@ describe 'search engine' do
     Hub.new :name => "Nowhere",   :lat => 1, :lon => 1
     Neo4j::Transaction.finish
 
-    post '/Beginning:Nowhere'
+    get '/Connection?q=Beginning:Nowhere'
     last_response.should_not be_ok
     last_response.body.should be_json
 
@@ -65,7 +65,7 @@ describe 'search engine' do
 
     Neo4j::Transaction.finish
 
-    post '/Beginning:Ending', {'time'=>'11:59'}
+    get '/Connection?q=Beginning:Ending', {'time'=>'11:59'}
     last_response.should be_ok
     last_response.body.should be_json
 
@@ -85,44 +85,77 @@ describe 'search engine' do
     })
   end
 
-  it "should find connection with transfer between two stops" do
+  describe "transfers" do
 
-    h1 = Hub.new :name => 'Begin', :lat => 0, :lon => 0
-    h2 = Hub.new :name => 'Transfer', :lat => 1, :lon => 1
-    h3 = Hub.new :name => 'End', :lat => 2, :lon => 2
+    before :each do
+      h1 = Hub.new :name => 'Begin'    , :lat => 0 , :lon => 0
+      h2 = Hub.new :name => 'Transfer' , :lat => 1 , :lon => 1
+      h3 = Hub.new :name => 'End'      , :lat => 2 , :lon => 2
 
+      connection = h1.connections.new(h2)
+      connection.line = "1"
+      connection.timetables = {
+        12*60     => 2, # departures at 12:00 and arrives two minutes later
+        12*60 + 2 => 2
+      }.to_json
 
-    h1.connections.new(h2).timetables = {
-      12*60     => 2, # departures at 12:00 and arrives two minutes later
-    }.to_json
+      connection = h2.connections.new(h3)
+      connection.line = "2"
+      connection.timetables = {
+        12*60 + 2 => 2, # departures at 12:02 and arrives two minutes later
+      }.to_json
 
-    h2.connections.new(h3).timetables = {
-      12*60     => 2, # departures at 12:00 and arrives two minutes later
-      12*60 + 5 => 2  #               12:05
-    }.to_json
+      connection = h2.connections.new(h3)
+      connection.line = "3"
+      connection.timetables = {
+        12*60 + 5 => 2, # departures at 12:05 and arrives two minutes later
+      }.to_json
 
-    Neo4j::Transaction.finish
+      Neo4j::Transaction.finish
+    end
 
-    post '/Begin:End', {'time'=>'11:55'}
-    last_response.should be_ok
-    last_response.body.should be_json
+    it "should be found" do
+      get '/Connection?q=Begin:End', {'time'=>'12:02'}
+      last_response.should be_ok
+      last_response.body.should be_json
 
-    body = JSON.parse(last_response.body)
-    body['duration'].should eql(12)
+      body = JSON.parse(last_response.body)
+      body['duration'].should eql(5)
 
-    body['results'].should have(3).stops
-    body['results'][1].should eql({
-      "arrival"   => "12:02",
-      "departure" => "12:05",
-      "stop"      => "Transfer"
-    })
-    body['results'][2].should eql({
-      "arrival" => "12:07",
-      "stop"    => "End"
-    })
+      body['results'].should have(3).stops
+      body['results'][1].should eql({
+        "arrival"   => "12:04",
+        "departure" => "12:05",
+        "stop"      => "Transfer"
+      })
+      body['results'][2].should eql({
+        "arrival" => "12:07",
+        "stop"    => "End"
+      })
+    end
+
+    describe "penatly" do 
+      it "should be added" do
+        get '/Connection?q=Begin:End', {'time'=>'11:55'}
+        last_response.should be_ok
+        last_response.body.should be_json
+
+        body = JSON.parse(last_response.body)
+        body['duration'].should eql(12)
+
+        body['results'].should have(3).stops
+        body['results'][0].should eql({
+          "departure" => "12:00",
+          "stop"      => "Begin"
+        })
+        body['results'][1].should eql({
+          "arrival"   => "12:02",
+          "departure" => "12:05", # Because we wouldn't have enough time to catch line "2"
+          "stop"      => "Transfer"
+        })
+      end
+    end
   end
-
-  it "should add a penalty time on transfer"
 
   describe "heuristics" do
 
@@ -191,7 +224,7 @@ describe 'search engine' do
   
     it "should find the shortest path between two stops" do
 
-      post '/Hub1:Hub6', {'time'=>'11:59'}
+      get '/Connection?q=Hub1:Hub6', {'time'=>'11:59'}
       last_response.should be_ok
       last_response.body.should be_json
 
@@ -208,7 +241,7 @@ describe 'search engine' do
 
     it "should find the fastest connection between two stops" do
 
-      post '/Hub1:Hub6', {'time'=>'11:59', 'priority'=>'time'}
+      get '/Connection?q=Hub1:Hub6', {'time'=>'11:59', 'priority'=>'time'}
       last_response.should be_ok
       last_response.body.should be_json
 
