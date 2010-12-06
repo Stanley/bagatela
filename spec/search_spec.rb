@@ -10,7 +10,7 @@ describe 'search engine' do
   it "should not find random stop" do
 
     Hub.new :name => "Beginning"
-    Neo4j::Transaction.finish
+    @tx.finish
 
     get '/Connection?q=Beginning:Random'
     last_response.status.should eql(404)
@@ -24,7 +24,7 @@ describe 'search engine' do
   it "should be cool if beginning is ending" do
 
     Hub.new :name => "Beginning"
-    Neo4j::Transaction.finish
+    @tx.finish
 
     get '/Connection?q=Beginning:Beginning'
     last_response.status.should eql(400)
@@ -39,7 +39,7 @@ describe 'search engine' do
 
     Hub.new :name => "Beginning", :lat => 0, :lon => 0
     Hub.new :name => "Nowhere",   :lat => 1, :lon => 1
-    Neo4j::Transaction.finish
+    @tx.finish
 
     get '/Connection?q=Beginning:Nowhere'
     last_response.should_not be_ok
@@ -63,7 +63,7 @@ describe 'search engine' do
       12*60 + 5 => 2  #               12:05
     }.to_json
 
-    Neo4j::Transaction.finish
+    @tx.finish
 
     get '/Connection?q=Beginning:Ending', {'time'=>'11:59'}
     last_response.should be_ok
@@ -111,7 +111,7 @@ describe 'search engine' do
         12*60 + 5 => 2, # departures at 12:05 and arrives two minutes later
       }.to_json
 
-      Neo4j::Transaction.finish
+      @tx.finish
     end
 
     it "should be found" do
@@ -219,7 +219,7 @@ describe 'search engine' do
         12*60 + 5 => 2, # departures at 12:05 and arrives two minutes later
       }.to_json
 
-      Neo4j::Transaction.finish
+      @tx.finish
     end
   
     it "should find the shortest path between two stops" do

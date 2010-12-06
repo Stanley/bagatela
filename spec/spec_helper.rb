@@ -1,7 +1,5 @@
-require 'rubygems'
-require 'sinatra'
-require 'spec'
-require 'spec/interop/test'
+require 'app/main'
+require 'rspec'
 require 'rack/test'
 
 # set test environment
@@ -9,20 +7,16 @@ Sinatra::Base.set :environment, :test
 Sinatra::Base.set :run, false
 Sinatra::Base.set :logging, false
 
-require 'app/main'
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
 
-Spec::Runner.configure do |config|
+RSpec.configure do |config|
   config.before(:each) do
-    Neo4j.stop
     FileUtils.rm_rf Neo4j::Config[:storage_path] # Dumps database
-    FileUtils.rm_rf Lucene::Config[:storage_path] unless Lucene::Config[:storage_path].nil?
     Neo4j.start
-    Neo4j::Transaction.new
+    @tx = Neo4j::Transaction.new
   end
 
   config.after(:each) do
-    Neo4j::Transaction.finish
-    Neo4j.stop
+    Neo4j.shutdown
   end
 end

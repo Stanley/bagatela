@@ -3,8 +3,14 @@ require 'priority_queue'
 class AStar
   def initialize(start, stop, time, discriminant)
     # Find starting and ending hubs by name using lucene index. Raise 404 if either of them is not found.
-    @start_from = Hub.find(:name=>start.downcase)
-    @finish_at = Hub.find(:name=>stop.downcase)
+    @start_from = Nodes.search(:query => start)[:allocations].
+      inject([]){|ids, allocation| ids + allocation[4]}.
+      map{|id| Neo4j::Node.load id }
+           
+    @finish_at = Nodes.search(:query => stop)[:allocations].
+      inject([]){|ids, allocation| ids + allocation[4]}.
+      map{|id| Neo4j::Node.load id }
+
     @time = time
     @charge = 'by_' + discriminant
     raise NotFound, "resource_not_found" if @start_from.empty? or @finish_at.empty?
@@ -15,10 +21,13 @@ class AStar
     queue = PriorityQueue.new
     @start_from.each do |start|
       @finish_at.each do |finish|
+
+            p [[start.name, start.lat, start.lng], [finish.name, finish.lat, finish.lng]]
         queue.add start.send(@charge, finish), {:stops=>[start], :cost=>0, :time=>@time.hour*60+@time.min, :track=>[]}
       end
     end
 
+    Neo4j::Transaction.run do
     while not queue.empty?
 
       # Choose node which is the closest to the destination
@@ -64,5 +73,6 @@ class AStar
         end
       end
     end    
+    end
   end
 end

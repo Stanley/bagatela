@@ -26,12 +26,13 @@ Feature: List timetables
       | 12  | 13.10.2010  | Flisacka                | 2    | CMENTARZ RAKOWICKI - Rakowicka, Lubicz, Basztowa, Dunajewskiego, Straszewskiego, Zwierzyniecka, Kościuszki - SALWATOR | {}    | http://rozklady.mpk.krakow.pl/aktualne/0002/0002t023.htm |
     When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_line?startkey=[2,"SALWATOR"]&endkey=[2,"SALWATOR",{}]&reduce=false
     Then the response status should be 200
-      And the response should be:
+      And the response without rows' value._rev should be:
       """
       { "total_rows": 12, "offset": 0, "rows": [
           { "id": "1",
             "key": [ 2, "SALWATOR", 12 ],
             "value": {
+              "_id": "1",
               "valid_since": "13.10.2010",
               "stop": "Cmentarz Rakowicki",
               "line": "2",
@@ -44,6 +45,7 @@ Feature: List timetables
           { "id": "2",
             "key": [ 2, "SALWATOR", 13 ],
             "value": {
+              "_id": "2",
               "valid_since": "13.10.2010",
               "stop": "Cmentarz Rakowicki",
               "line": "2",
@@ -56,6 +58,7 @@ Feature: List timetables
           { "id": "3",
             "key": [ 2, "SALWATOR", 14 ],
             "value": {
+              "_id": "3",
               "valid_since": "13.10.2010",
               "stop": "Rakowiecka",
               "line": "2",
@@ -68,6 +71,7 @@ Feature: List timetables
           { "id": "4",
             "key": [ 2, "SALWATOR", 15 ],
             "value": {
+              "_id": "4",
               "valid_since": "13.10.2010",
               "stop": "Uniwersytet Ekonomiczny",
               "line": "2",
@@ -80,6 +84,7 @@ Feature: List timetables
           { "id": "5",
             "key": [ 2, "SALWATOR", 16 ],
             "value": {
+              "_id": "5",
               "valid_since": "13.10.2010",
               "stop": "Lubicz",
               "line": "2",
@@ -92,6 +97,7 @@ Feature: List timetables
           { "id": "6",
             "key": [ 2, "SALWATOR", 17 ],
             "value": {
+              "_id": "6",
               "valid_since": "13.10.2010",
               "stop": "Dworzec Główny",
               "line": "2",
@@ -104,6 +110,7 @@ Feature: List timetables
           { "id": "7",
             "key": [ 2, "SALWATOR", 18 ],
             "value": {
+              "_id": "7",
               "valid_since": "13.10.2010",
               "stop": "Basztowa LOT",
               "line": "2",
@@ -116,6 +123,7 @@ Feature: List timetables
           { "id": "8",
             "key": [ 2, "SALWATOR", 19 ],
             "value": {
+              "_id": "8",
               "valid_since": "13.10.2010",
               "stop": "Teatr Bagatela",
               "line": "2",
@@ -128,6 +136,7 @@ Feature: List timetables
           { "id": "9",
             "key": [ 2, "SALWATOR", 20 ],
             "value": {
+              "_id": "9",
               "valid_since": "13.10.2010",
               "stop": "Filharmonia",
               "line": "2",
@@ -140,6 +149,7 @@ Feature: List timetables
           { "id": "10",
             "key": [ 2, "SALWATOR", 21 ],
             "value": {
+              "_id": "10",
               "valid_since": "13.10.2010",
               "stop": "Jubilat",
               "line": "2",
@@ -152,6 +162,7 @@ Feature: List timetables
           { "id": "11",
             "key": [ 2, "SALWATOR", 22 ],
             "value": {
+              "_id": "11",
               "valid_since": "13.10.2010",
               "stop": "Komorowskiego",
               "line": "2",
@@ -164,6 +175,7 @@ Feature: List timetables
           { "id": "12",
             "key": [ 2, "SALWATOR", 23 ],
             "value": {
+              "_id": "12",
               "valid_since": "13.10.2010",
               "stop": "Flisacka",
               "line": "2",
@@ -218,38 +230,38 @@ Feature: List timetables
       | 4   | Bagatela | 1       | {}    |
     When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop_id?startkey=["1"]&endkey=["1",{}]
     Then the response status should be 200
-      And the response should be:
+      And the response without rows' value._rev should be:
       """
       { "total_rows": 4, "offset": 0, "rows":  [
         { "id": "1", 
           "key": ["1", 0],
-          "value": {"name": "Bagatela", "location": "Karmelicka", "type": "Stop"}},
+          "value": {"_id": "1", "name": "Bagatela", "location": "Karmelicka", "type": "Stop"}},
         { "id": "2",
           "key": ["1", 1],
-          "value":  {"stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
+          "value": {"_id": "2", "stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
         { "id": "3",
           "key": ["1", 1],
-          "value":  {"stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
+          "value": {"_id": "3", "stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
         { "id": "4",
           "key": ["1", 1],
-          "value":  {"stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}}
+          "value": {"_id": "4", "stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}}
       ]}
       """
 
     When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop_id?key=["1",1]
     Then the response status should be 200
-      And the response should be:
+      And the response without rows' value._rev should be:
       """
       { "total_rows": 4, "offset": 1, "rows":  [
         { "id": "2",
           "key": ["1", 1],
-          "value":  {"stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
+          "value":  {"_id": "2", "stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
         { "id": "3",
           "key": ["1", 1],
-          "value":  {"stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
+          "value":  {"_id": "3", "stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
         { "id": "4",
           "key": ["1", 1],
-          "value":  {"stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}}
+          "value":  {"_id": "4", "stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}}
       ]}
       """
 
@@ -269,12 +281,13 @@ Feature: List timetables
       | 7   | 15   | Bagatela | 1       | PLESZÓW - Igołomska, Ptaszyckiego, Al. Jana Pawła II, Mogilska, Lubicz, Basztowa, Dunajewskiego, Piłsudskiego, Al. 3 Maja - CICHY KĄCIK                                                                                                | {}    |
     When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop?startkey=["Bagatela"]&endkey=["Bagatela",{}]
     Then the response status should be 200
-      And the response should be:
+      And the response without rows' value._rev should be:
       """
       { "total_rows": 4, "offset": 0, "rows": [
           { "id": "4",
             "key": [ "Bagatela", 14, "BRONOWICE" ],
             "value": {
+              "_id": "4",
               "line": "14",
               "stop": "Bagatela",
               "stop_id": "1",
@@ -286,6 +299,7 @@ Feature: List timetables
           { "id": "5",
             "key": [ "Bagatela", 14, "MISTRZEJOWICE" ],
             "value": {
+              "_id": "5",
               "line": "14",
               "stop": "Bagatela",
               "stop_id": "2",
@@ -297,6 +311,7 @@ Feature: List timetables
           { "id": "7",
             "key": [ "Bagatela", 15, "CICHY KĄCIK" ],
             "value": {
+              "_id": "7",
               "line": "15",
               "stop": "Bagatela",
               "stop_id": "1",
@@ -308,6 +323,7 @@ Feature: List timetables
           { "id": "6",
             "key": [ "Bagatela", 15, "PLESZÓW" ],
             "value": {
+              "_id": "6",
               "line": "15",
               "stop": "Bagatela",
               "stop_id": "3",
@@ -323,15 +339,16 @@ Feature: List timetables
     # Find timetables by stop name and line number
     When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop?startkey=["Bagatela",14]&endkey=["Bagatela",14,{}]
     Then the response status should be 200
-      And the response should be:
+      And the response without rows' value._rev should be:
       """
       {"total_rows": 4,
        "offset": 0,
        "rows": 
         [{"id": "4",
           "key": ["Bagatela", 14, "BRONOWICE"],
-          "value": 
-           {"line": "14",
+          "value": {
+            "_id": "4",
+            "line": "14",
             "stop": "Bagatela",
             "stop_id": "1",
             "route": 
@@ -340,8 +357,9 @@ Feature: List timetables
             "type": "Timetable"}},
          {"id": "5",
           "key": ["Bagatela", 14, "MISTRZEJOWICE"],
-          "value": 
-           {"line": "14",
+          "value": {
+            "_id": "5",
+            "line": "14",
             "stop": "Bagatela",
             "stop_id": "2",
             "route": 
@@ -353,15 +371,16 @@ Feature: List timetables
     # Find one timetable by stop name, line number and it's destination
     When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop?key=["Bagatela",14,"BRONOWICE"]
     Then the response status should be 200
-      And the response should be:
+      And the response without rows' value._rev should be:
       """
       {"total_rows": 4,
        "offset": 0,
        "rows": 
         [{"id": "4",
           "key": ["Bagatela", 14, "BRONOWICE"],
-          "value": 
-           {"line": "14",
+          "value": {
+            "_id": "4",
+            "line": "14",
             "stop": "Bagatela",
             "stop_id": "1",
             "route": 
@@ -370,34 +389,34 @@ Feature: List timetables
             "type": "Timetable"}}]}
       """
 
-  @by_uri
+  @by_url
 
-  Scenario: Find timetables by source
+  Scenario: Find timetables by url
     Given the following timetables:
-      | _id | source                                                   |
+      | _id | url                                                   |
       | 1   | http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm |
       | 2   | http://rozklady.mpk.krakow.pl/aktualne/0099/0099t030.htm |
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_uri?startkey=["rozklady.mpk.krakow.pl","0099"]&endkey=["rozklady.mpk.krakow.pl","0099",{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_url?startkey=["rozklady.mpk.krakow.pl","0099"]&endkey=["rozklady.mpk.krakow.pl","0099",{}]
     Then the response status should be 200
-      And the response should be:
+      And the response without rows' value._rev should be:
       """
       {"total_rows": 2, "offset": 0, "rows":  [
         {"id": "1",
         "key": ["rozklady.mpk.krakow.pl", "0099", "0099t014.htm"],
-        "value":  {"source": "http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm", "type": "Timetable"}},
+        "value":  {"_id": "1", "url": "http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm", "type": "Timetable"}},
         {"id": "2",
         "key": ["rozklady.mpk.krakow.pl", "0099", "0099t030.htm"],
-        "value":  {"source": "http://rozklady.mpk.krakow.pl/aktualne/0099/0099t030.htm", "type": "Timetable"}}]}
+        "value":  {"_id": "2", "url": "http://rozklady.mpk.krakow.pl/aktualne/0099/0099t030.htm", "type": "Timetable"}}]}
       """
 
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_uri?key=["rozklady.mpk.krakow.pl","0099","0099t014.htm"]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_url?key=["rozklady.mpk.krakow.pl","0099","0099t014.htm"]
     Then the response status should be 200
-      And the response should be:
+      And the response without rows' value._rev should be:
       """
       {"total_rows": 2, "offset": 0, "rows":  [
         {"id": "1",
         "key": ["rozklady.mpk.krakow.pl", "0099", "0099t014.htm"],
-        "value":  {"source": "http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm", "type": "Timetable"}}]}
+        "value":  {"_id":"1", "url": "http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm", "type": "Timetable"}}]}
       """
 
   @polylines

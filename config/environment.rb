@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'json'
 require 'neo4j'
 require 'picky-client'
@@ -6,7 +7,8 @@ require File.join(File.dirname(__FILE__), 'exceptions')
 
 # Set up query instance
 Stops = Picky::Client::Full.new :host => 'localhost', :port => 8080, :path => '/stops/full'
-DB = RestClient::Resource.new 'http://localhost:5984/stops'
+Nodes = Picky::Client::Full.new :host => 'localhost', :port => 8080, :path => '/nodes/full'
+Couch = RestClient::Resource.new 'http://localhost:5984/stops'
 
 $: << File.join(File.dirname(__FILE__), '..', 'app', 'models')
 require 'connection'

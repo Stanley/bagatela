@@ -6,7 +6,7 @@ require File.join(File.dirname(__FILE__), '..', 'config', 'environment')
 
 class Bagatela < Sinatra::Base
 
-  disable :show_exceptions, :raise_errors
+#  disable :show_exceptions, :raise_errors
 
   before do
     content_type :json
@@ -18,7 +18,7 @@ class Bagatela < Sinatra::Base
     #
     from, to = params[:q].split(':')
     raise BadRequest, "two_different_stops_required" unless from and to and from != to
-    Neo4j::Transaction.run do
+    #Neo4j::Transaction.run do
       # Distance we've traveled so far
       distance = 0
       #
@@ -57,14 +57,14 @@ class Bagatela < Sinatra::Base
       @result[:distance] = nil #distance
       @result[:results]  = results << stop
       @result.to_json
-    end    
+    #end    
   end
 
   # search for stops
   get '/Stop' do
     Stops.search(:query => params[:q])[:allocations].     # Ask Picky, the search engine,
       inject([]){|ids, allocation| ids + allocation[4]}.  # get ids,
-      map{|id| JSON.parse DB[id].get}.               # get documents from database.
+      map{|id| JSON.parse Couch[id].get}.                 # get documents from database.
       to_json
   end
 

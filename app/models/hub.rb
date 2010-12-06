@@ -3,11 +3,9 @@
 class Hub
   include Neo4j::NodeMixin
 
-  property :name, :lat, :lon
+  property :name, :lat, :lng
 
   has_n(:connections).to(Hub).relationship(Connection)
-
-  index :name, :tokenized => true
 
   R = 6371 * 1000   # Earth radius in meters
   RAD = Math::PI / 180 # Converts degrees do radians
@@ -18,13 +16,13 @@ class Hub
 
   # Resturns distance in meters to given hub
   def by_dist(hub)
-    a, b = [self.lat, self.lon], [hub.lat, hub.lon]
+    a, b = [self.lat, self.lng], [hub.lat, hub.lng]
     dLat = (b[0] - a[0]) * RAD
-    dLon = (b[1] - a[1]) * RAD
+    dLng = (b[1] - a[1]) * RAD
 
     d = Math.sin(dLat / 2) ** 2 +
         Math.cos(a[0] * RAD) * Math.cos(b[0] * RAD) *
-        Math.sin(dLon / 2) ** 2
+        Math.sin(dLng / 2) ** 2
 
     R * 2 * Math.atan2(Math.sqrt(d), Math.sqrt(1-d))
   end

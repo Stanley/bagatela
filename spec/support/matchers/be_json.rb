@@ -1,4 +1,4 @@
-Spec::Matchers.define :be_json do
+RSpec::Matchers.define :be_json do
   match do |actual|
     begin
       JSON.parse(actual)
