@@ -1,3 +1,0 @@
-[submodule "utils/import/deps/sizzle"]
-	path = utils/import/deps/sizzle
-	url = https://github.com/jeresig/sizzle.git
