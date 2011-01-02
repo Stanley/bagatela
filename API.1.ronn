@@ -9,7 +9,15 @@ API jest zgodne ze wzorcem [REST](http://en.wikipedia.org/wiki/Representational_
 
 ### Url
 
-	http://api.bagate.la/
+Każde miasto posiada swój własny adres url według wzoru:
+
+    http://api.bagate.la/<kod_miasta>
+
+Oto kody miast, których rozkłady są aktualnie gromadzone (oczekuj nowych miast):
+
+    sk - Górnośląski Okręg Przemysłowy (od 1.04.2011)
+    kr - Kraków (od 1.04.2011)
+    dw - Wrocław (od 1.04.2011)
 
 ### Przykłady
 Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli `curl` i zostały wykonane w systemie GNU/Linux.
@@ -36,10 +44,10 @@ Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli 
     * Closing connection #0
 
 ### Debugging
-Flaga `--verbose` wyświetla bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu `curl` znajdziesz w [jego dokumentacji](http://curl.haxx.se/docs/manpage.html). Przy nauce protokołu, przydatne mogą okazać się również [inne narzędzia](http://postbin.org).
+Flaga `--verbose` wyświetla bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu `curl` znajdziesz w [jego dokumentacji](http://curl.haxx.se/docs/manpage.html). Przy nauce protokołu, przydatne mogą okazać się również [inne](http://justniffer.sourceforge.net/index.html) [narzędzia](http://postbin.org).
 
 ### Kontrybucja
-jest mile widziana! Weź <http://github.com/stanley/bagatela> na widły i poproś o akceptacje zmian.
+(również do dokumentacji) jest mile widziana! Weź <http://github.com/stanley/bagatela> na widły i poproś o akceptacje zmian.
 
 ZAPYTANIA O DANE
 ----------------
@@ -50,32 +58,39 @@ Dokument jest podstawową strukturą organizacji danych w bazie. Motywacją uży
 
 Każdy dokument posiada unikalny identyfikator `_id` oraz numer rewizji `_rev`. Atrybuty te są nadawane automatycznie przez bazę danych. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator `_id`. Np.:
 
-	curl http://api.bagate.la/d6e2a0dda625818966414846799bd9a9
+	http://api.bagate.la/kr/d6e2a0dda625818966414846799bd9a9
 
-Url: `http://api.bagate.la/<id>?rev=<rev>`  
+Ścieżka: `/<id>?rev=<rev>`  
 Metoda: `GET`  
-Paramtery: `id`, `rev` (opcjonalnie)  
+Parametry: `id`, `rev` (opcjonalnie)  
 Odpowiedź: dokument o identyfikatorze `id` i numerze rewizji `rev` (domyślnie najnowsza rewizja).
 
-Przeczytaj więcej o dokumentach w CouchDB na: <http://guide.couchdb.org/draft/api.html#documents>.
+Przykładowe użycie:
+
+	curl
+
+Przeczytaj więcej o dokumentach w CouchDB na: <http://guide.couchdb.org/editions/1/en/api.html#documents>.
 
 ### Widoki
-Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i, opcjonalnie, redukującą, które przetwarzają każdy dokument z osobna i zapisują ich wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze `key`, to w rezultacie otrzymamy wartość wygenerowaną przez jeden lub więcej dokumentów (wynik przetwarzania funkcą mapującą lub redukującą).
+Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze `key`, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą.
 
-Znacznie częstrzym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale. Aby ułatwić takie zapytania, klucze zawsze są wartościu typu lista, np. *[2010, 10, 6]*. Dzięki temu jesteśmy w stanie zapytać o wszyskie dokumenty, których klucz zawiera się w przedziale np. od *[2010, 9]* do *[2010, 10, {}]* (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października).
+Częstszym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale. Aby ułatwić takie zapytania, klucze często są wartością typu lista, np. *[2010, 10, 6]*. Dzięki temu jesteśmy w stanie zapytać o wszystkie dokumenty, których klucz zawiera się w danym przedziale np. od *[2010, 9]* do *[2010, 10, {}]* (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października).
 
-Przeczytaj więcej o widokach w CouchDB na: <http://guide.couchdb.org/draft/views.html>.
+Przeczytaj więcej o widokach w CouchDB na: <http://guide.couchdb.org/editions/1/en/views.html>.
+
+Ścieżka: `/_design/<zasób>/_view/<widok>`  
+Metoda: `GET`
 
 **Parametry**
 
-* `descending` - jeżeli *true*, odwórcona kolejność zwracanych dokumentów.
+* `descending` - jeżeli *true*, odwrócona kolejność zwracanych dokumentów. Uwaga: sortowanie odbywa się przed ograniczeniem przedziału. Może to oznaczać konieczność zamiany parametrów `startkey` z `endkey`.
 * `endkey`- koniec przedziału włącznie. Domyślnie największa możliwa wartość.
 * `group`
 * `group_level`
-* `include_docs` - jeżeli *true*, dołąłcza oryginalny dokument w polu `doc`. Domyślnie *false*.
+* `include_docs` - jeżeli *true*, dołącza oryginalny dokument w polu `doc`. Domyślnie *false*.
 * `key` - dokładna wartość klucza.
 * `limit` - maksymalna liczba zwróconych dokumentów. Np. *10*.
-* `reduce` - użyj funkcji redukującej. Domyślna wartość, gdy funkcja reduce jest zdefiniowana, to *true*.
+* `reduce` - użyj funkcji redukującej. Domyślna wartość, gdy funkcja redukująca jest zdefiniowana, to *true*.
 * `startkey` - początek przedziału włącznie. Domyślnie najmniejsza możliwa wartość.
 
 Wszystkie wyżej wymienione parametry są opcjonalne.
@@ -86,7 +101,7 @@ Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej
 
 ROZKŁAD JAZDY
 -------------
-Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z jednym przystankiem. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów). Jest wiernym odzwierciedleniem tego co jest publikowane przez MPK Kraków na stronach http://rozklady.mpk.krakow.pl i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów `stop_id` i `valid_through`).
+Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z jednym przystankiem. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów). Jest wiernym odzwierciedleniem tego co jest publikowane przez przewoźników na ich oficjalnych stronach i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów `stop_id` i `valid_through`).
 
 ### Atrybuty
 
@@ -97,24 +112,23 @@ Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z j
 * `destination` (tylko jeżeli parametr `route` nie istnieje) - przystanek docelowy. Np. *"Okęcie"*
 * `stop` - nazwa przystanku na którym znajduje się rozkład. Np. *"Batorego"*.
 * `stop_id` (opcjonalnie) - identyfikator przystanku `Stop` przy którym zatrzymuje się transport.
-* `table` - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. *"Dzień powszedni"*. Tablica odjazdów (wartość) to np. *{"4":["43"], "5":["02","17","38","48","58"]}*, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdza transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. *"24A"*.
+* `table` - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. *"Dzień powszedni"*. Tablica odjazdów (wartość) to np. *{"4":["43"], "5":["02","17","38","48","58"]}*, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdża transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. *"24A"*.
 * `type` - typ. Zawsze *"Timetable"*.
-* `source` - Źródło danych. Np. adres url: *"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"*
+* `source` - Źródło danych. Np. adres URL: *"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"*
 * `updated_at` - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).
-* `valid_since` - dzień od którego obowiązuje rozkład. Np. *"04.10.2010"*.
-* `valid_through` (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i `valid_since` wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana.
+* `valid_from` - dzień od którego obowiązuje rozkład. Np. *"04.10.2010"*.
+* `valid_through` (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i `valid_from` wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana.
 
 ### Załączniki
 
-* `headers.json` - nagłówki zwrócone przez serwer.
 * `source.html` - oryginalna strona HTML z rozkładem jazdy w kodowaniu UTF-8.
 
 ### Widoki
-Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze ["_design/Timetable"](http://api.bagate.la/_design/Timetable).
+Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze `"_design/Timetable"`.
 
 **[map] by\_line**
 
-Url: `http://api.bagate.la/_design/Timetable/_view/by_line?key=<klucz>`  
+Ścieżka: `/_design/Timetable/_view/by_line?key=<klucz>`  
 Metoda: `GET`  
 Parametry: `klucz`  
 Odpowiedź:  
@@ -123,7 +137,7 @@ Przykładowe użycie:
 
 	curl
 
-Url: `http://api.bagate.la/_design/Timetable/_view/by_line?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
+Ścieżka: `/_design/Timetable/_view/by_line?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
 Metoda: `GET`  
 Parametry: `klucz_początkowy` oraz `klucz_końcowy`  
 Kolejność sortowania: `foo`, `bar`  
@@ -139,7 +153,7 @@ Zobacz scenariusze testujące.
 
 Jeżeli interesuje nas tylko opis danej lini, musimy skorzystać z widoku wygenerowanego funkcją redukującą (z wielu rozkładów jazdy generowany jest dokument jednej linii).
 
-Url: `http://api.bagate.la/_design/Timetable/_view/by_stop`
+Ścieżka: `/_design/Timetable/_view/by_stop`
 Odpowiedź:
 
 Przykładowe użycia:
@@ -150,7 +164,7 @@ Przykładowe użycia:
 
 **[map] by\_stop**
 
-Url: `http://api.bagate.la/_design/Timetable/_view/by_stop?key=<klucz>`  
+Ścieżka: `/_design/Timetable/_view/by_stop?key=<klucz>`  
 Metoda: `GET`  
 Parametry: `klucz`  
 Odpowiedź:  
@@ -159,7 +173,7 @@ Przykładowe użycie:
 
 	curl
 
-Url: `http://api.bagate.la/_design/Timetable/_view/by_stop?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
+Ścieżka: `/_design/Timetable/_view/by_stop?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
 Metoda: `GET`  
 Parametry: `klucz_początkowy` oraz `klucz_końcowy`  
 Odpowiedź:  
@@ -170,9 +184,9 @@ Przykładowe użycie:
 
 Zobacz scenariusze testujące.
 
-**[map] by\_url**
+**[map] by\_source**
 
-Url: `http://api.bagate.la/_design/Timetable/_view/by_url?key=<klucz>`  
+Ścieżka: `/_design/Timetable/_view/by_source?key=<klucz>`  
 Metoda: `GET`  
 Parametry: `klucz`  
 Odpowiedź:  
@@ -185,11 +199,11 @@ Zobacz scenariusze testujące.
 
 **[list] polyline**
 
-Url: `http://api.bagate.la/_design/Timetable/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>`
+Ścieżka: `/_design/Timetable/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>`
 
 **[list] filter**
 
-Url: `http://`
+Ścieżka: `/_design/Timetable/`
 
 PRZYSTANEK
 ----------
@@ -213,7 +227,7 @@ Definicje funkcji mapujących, redukujących i listujących przystanki są dokum
 
 **[map] by\_name**
 
-Url: `http://?key=<klucz>`  
+Ścieżka: `?key=<klucz>`  
 Metoda: `GET`  
 Parametry: `klucz`  
 Odpowiedź:  
@@ -222,7 +236,7 @@ Przykładowe użycie:
 
 	curl
 
-Url: `http://?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
+Ścieżka: `?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>`  
 Metoda: `GET`  
 Parametry: `klucz_początkowy` oraz `klucz_końcowy`  
 Odpowiedź:  
@@ -237,25 +251,25 @@ Zobacz scenariusze testujące.
 
 **filter**
 
-Url: `http://api.bagate.la/kr/_design/Stop/_list/filter/<widok>`  
+Ścieżka: `/_design/Stop/_list/filter/<widok>`  
 Metoda: `GET`  
 Parametry: `widok`, `only` lub `exclude`
 
-### Small-text search
+### Semantic search
 Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji.
 
-Url: `http://api.bagate.la/kr/_search/Stop?q=<fraza>`
-Metoda: `GET`
-Paramerty: `q` - fraza, `limit`
+Ścieżka: `/_search/Stop?q=<fraza>`  
+Metoda: `GET`  
+Paramerty: `q` - fraza, `limit`  
 Odpowiedź: lista przystanków
 
 Frazę można doprecyzować, dopisując przed nią `name:` lub `location:`, co ograniczy wyszukiwanie do określonego pola.
 
 Przykładowe użycia:
  
-    curl http://api.bagate.la/kr/_search/Stop?q=baszt
+    curl /_search/Stop?q=baszt
 
-    curl http://api.bagate.la/kr/_search/Stop?q=dworzec location:basztowa
+    curl /_search/Stop?q=dworzec location:basztowa
 
 WYSZUKIWARKA POŁĄCZEŃ
 ---------------------
@@ -265,7 +279,7 @@ REPLIKACJE
 ----------
 Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych.
 
-Url: `http://api.bagate.la/kr/_replicate`  
+Ścieżka: `/_replicate`  
 Metoda: `POST`  
 Parametry: `taret`  
 Odpowiedź: `{}`  
