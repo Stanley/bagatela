@@ -4,9 +4,9 @@ Given /^an empty database "([^\"]{2})"$/ do |db|
   @db.put nil
 end
 
-Given /^a design document "([A-Z][a-z]+)"$/ do |document|
-  view = File.join(File.dirname(__FILE__), '..', '..', 'views', document.downcase+'.json')
-  @db['_design/'+document].put File.read(view), :content_type => 'application/json'
+Given /^design documents$/ do
+  view = File.join(File.dirname(__FILE__), '..', '..', 'views', 'designs.json')
+  @db['_bulk_docs'].post File.read(view), :content_type => 'application/json'
 end
 
 # Given /^design documents$/ do

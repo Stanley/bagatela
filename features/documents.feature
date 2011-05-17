@@ -1,7 +1,7 @@
-Feature: Documents retrieval
-  In order to 
+Feature: Documents
+  In order to create insightful apps
   As a developer
-  I want to
+  I want to interact with RESTful API
 
   Background:
     Given an empty database "kr"

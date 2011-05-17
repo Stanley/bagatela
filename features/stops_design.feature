@@ -5,7 +5,7 @@ Feature: List stops
 
   Background:
     Given an empty database "kr"
-      And a design document "Stop"
+      And design documents
 
   Scenario: Find stop by name
     Given the following stops:
