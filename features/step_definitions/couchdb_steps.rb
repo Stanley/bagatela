@@ -19,7 +19,9 @@ end
 Given /^the following ([a-z]+)s:$/ do |type, resources|
   resources.hashes.each do |resource|
     resource['type'] = type.capitalize
-    resource['table'] = JSON.parse resource['table'] if resource['table']
+    ['table', 'polylines'].each do |key|
+      resource[key] = JSON.parse resource[key] if resource[key]
+    end
     @db.post resource.to_json, :content_type => 'application/json'
   end
 end

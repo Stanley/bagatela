@@ -18,10 +18,10 @@ Then /^the response without ([\_a-z]+) should be:$/ do |ommit, json|
   JSON.parse(@response).reject{|key, value| ommit == key }.should eql(JSON.parse(json))
 end
 
-Then /^the response without rows' value.([\_a-z]+) should be:$/ do |ommit, json|
+Then /^the response without rows' ([\_a-z]+).([\_a-z]+) should be:$/ do |value, ommit, json|
   resp = JSON.parse(@response)
   resp['rows'] = resp['rows'].map do |doc|
-    doc['value'] = doc['value'].reject{|key, value| ommit == key }
+    doc[value] = doc[value].reject{|key, _| ommit == key }
     doc
   end
   resp.should eql(JSON.parse(json))
