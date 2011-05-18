@@ -23,24 +23,45 @@
     "by_line": {
       "map": "function(doc) {
         if(doc.type==\"Timetable\"){
-          var route = doc.route ? doc.route.split(\" - \") : [];
-          var pio;
-          if(doc.source){
-            var split = doc.source ? doc.source.split(\"/\") : [];
-            var id = split[split.length-1];
-            pio = parseInt(id.split(\".\")[0].split(\"t\")[1], 10);
+          var destination = doc.destination || doc.route.split(/-|,/).reverse()[0].replace(/^\s*/, \"\").replace(/\s*$/, \"\");
+          emit([doc.line, destination, doc.source], doc);
+        }
+      }",
+      "reduce": "function(key, values, rereduce) {
+
+        var lines = [], routes = [];
+        values.forEach(function(val){
+          var line, route;
+          if(!val.length){
+            line = val.line;
+            route = [val.route];
           } else {
-            pio = null
+            line = val[0];
+            route = val[1];
           }
-          emit([parseInt(doc.line), route[2], pio], doc);
+          if(typeof route === \"object\"){
+            if(lines.indexOf(line) == -1) lines.push(line)
+            route.forEach(function(r){
+              if(routes.indexOf(r) == -1) routes.push(r)
+            })
+          } else {
+            val.forEach(function(v){
+              if(lines.indexOf(v) == -1) lines.push(v)
+            })
+          }
+        });
+
+        if(lines.length == 1){
+          return [lines[0], routes]
+        } else {
+          return lines
         }
       }"
     },
     "by_source": {
       "map": "function(doc) {
         if(doc.type == \"Timetable\" && doc.source){
-          var split = doc.source.split(new RegExp(':\/\/|\/'));
-          emit([split[1], split[3], split[4]], doc);
+          emit([doc.source, doc.valid_from], doc);
         }
       }"
     },
@@ -107,6 +128,14 @@
           emit([doc.name, doc.location], doc);
         }
       }"
+    },
+    "by_line": {
+      "map": "function(doc) {
+        if(doc.type==\"Timetable\"){
+          var destination = doc.destination || doc.route.split(/-|,/).reverse()[0].replace(/^\s*/, \"\").replace(/\s*$/, \"\");
+          emit([doc.line, destination, doc.source], {_id: doc.stop_id});
+        }
+      }"
     }
   },
   "lists":{
@@ -144,6 +173,18 @@
 
       result['rows'] = rows;
       return(JSON.stringify(result));
+    }",
+    "polyline": "function(head, req){
+      var row, rows = [];
+      var previous = getRow();
+      while(row = getRow()){
+        var poly = {};
+        poly.id = previous.doc._id +\":\"+ row.value._id;
+        poly.value = {type: \"Polyline\", points: previous.doc.polylines[row.value._id]};
+        rows.push(poly);
+        previous = row;
+      }
+      return(JSON.stringify({total_rows: rows.length, rows: rows}))
     }"
   }
 }]}
