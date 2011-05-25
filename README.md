@@ -1,14 +1,14 @@
 Bagatela - wyszukiwarka połączeń komunikacji miejskiej.
 =======================================================
 
-Bagatela udostępnia interfejs programistyczny do wyszukiwania optymalnych połączeń w sieci komunikacji miejskiej.
+Bagatela udostępnia interfejs programistyczny do wyszukiwania przystanków i optymalnych połączeń w sieci komunikacji miejskiej.
 
 Wykorzystywane technologie
 --------------------------
 
 * Język programowania: [Ruby](http://www.ruby-lang.org/) (implementacja [JRuby](http://jruby.org/))
 * Web framework: [Sinatra.rb](http://www.sinatrarb.com/)
-* Testing framework: [RSpec](http://rspec.info/) + [Rack::Test](http://brynary.github.com/rack-test/)
+* Testing frameworks: [Cucumber](http://cukes.info) i [RSpec](http://rspec.info/) + [Rack::Test](http://brynary.github.com/rack-test/)
 * Bazy danych: połączeń [Neo4j](http://neo4j.org/) i rozkładów jazdy [CouchDB](http://couchdb.apache.org)
 * Small-text search: [Picky](http://github.com/floere/picky)
 
@@ -20,7 +20,7 @@ To nie jest skończony projekt. Uruchom testy aby zobaczyć aktualny stan pracy.
 Instalacja
 ----------
 
-Ustaw domyślny interpreter ruby na jruby (jeżeli nie korszystasz z [Ruby Version Manager](http://rvm.beginrescueend.com/) - [zainstaluj](http://rvm.beginrescueend.com/rvm/install/):)
+Ustaw domyślny interpreter ruby na jruby (jeżeli nie korszystasz z [Ruby Version Manager](http://rvm.beginrescueend.com/) - [zainstaluj](http://rvm.beginrescueend.com/rvm/install/)):
 
     $ rvm use jruby
     info: Using jruby 1.5.2
@@ -48,7 +48,7 @@ Populacja bazy danych
 
 * Opcja 3:
 
-  Przebiegnij po wszystkich przystankach w mieście, zapisując odjazdy w notesie.
+  Przebiegnij po wszystkich przystankach w mieście, zapisując odjazdy w notesie. Przepisz do komputera.
 
 Uruchomienie
 ------------
@@ -59,9 +59,11 @@ Uruchomienie
 
 * Testów:
 
+        $ bundle exec cucumber features/
+
         $ bundle exec spec spec/
 
-  Uwaga: jeżeli chcesz przywrócić wyświetlanie backtrace, które domyślnie jest wyłączone, zakomentuj `:raise\_errors` na początku deklaracji klasy `Bagatela` w `app/main.rb`. 
+  Uwaga: jeżeli chcesz przywrócić wyświetlanie backtrace, które domyślnie jest wyłączone, zakomentuj `:raise_errors` na początku deklaracji klasy `Bagatela` w `app/main.rb`. 
 
 * Konsoli:
 
