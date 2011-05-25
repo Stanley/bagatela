@@ -1,7 +1,7 @@
 Given /^an empty database "([^\"]{2})"$/ do |db|
-  @db = RestClient::Resource.new COUCH+db
+  @db = RestClient::Resource.new API+db
   @db.delete do; end
-  @db.put nil
+  @db.put '', {'Content-Length' => 0}
 end
 
 Given /^design documents$/ do

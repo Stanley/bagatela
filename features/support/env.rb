@@ -1,4 +1,5 @@
 require 'uri'
-require 'json'
+require 'yajl'
 require 'rest_client'
-COUCH = 'http://localhost:5984/'
+
+API = 'http://localhost:8000/'
