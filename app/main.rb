@@ -14,7 +14,7 @@ class Bagatela < Sinatra::Base
   end
 
   # Search for connections
-  get '/Connection' do
+  get '/*/Connection' do |db|
     #
     from, to = params[:q].split(':')
     raise BadRequest, "two_different_stops_required" unless from and to and from != to
@@ -61,11 +61,16 @@ class Bagatela < Sinatra::Base
   end
 
   # search for stops
-  get '/Stop' do
-    Stops.search(:query => params[:q])[:allocations].     # Ask Picky, the search engine,
-      inject([]){|ids, allocation| ids + allocation[4]}.  # get ids,
-      map{|id| JSON.parse Couch[id].get}.                 # get documents from database.
-      to_json
+  get '/*/Stop' do |db|
+
+    stops = Picky::Client.new :host => 'localhost', :port => 8001, :path => '/'+db
+    results = stops.search params[:q]
+    results.to_json
+
+    #Stops.search(:query => params[:q])[:allocations].     # Ask Picky,
+      #inject([]){|ids, allocation| ids + allocation[4]}.  # get ids,
+      #map{|id| JSON.parse Couch[id].get}.                 # get documents from database.
+      #to_json
   end
 
   error do
