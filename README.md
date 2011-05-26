@@ -3,6 +3,11 @@ Bagatela - wyszukiwarka połączeń komunikacji miejskiej.
 
 Bagatela udostępnia interfejs programistyczny do wyszukiwania przystanków i optymalnych połączeń w sieci komunikacji miejskiej.
 
+Zanim zaczniesz czytać dalej
+----------------------------
+
+**To nie jest skończony projekt. Uruchom testy aby zobaczyć aktualny stan pracy.**
+
 Wykorzystywane technologie
 --------------------------
 
@@ -11,11 +16,6 @@ Wykorzystywane technologie
 * Testing frameworks: [Cucumber](http://cukes.info) i [RSpec](http://rspec.info/) + [Rack::Test](http://brynary.github.com/rack-test/)
 * Bazy danych: połączeń [Neo4j](http://neo4j.org/) i rozkładów jazdy [CouchDB](http://couchdb.apache.org)
 * Small-text search: [Picky](http://github.com/floere/picky)
-
-Zanim zaczniesz czytać dalej
-----------------------------
-
-To nie jest skończony projekt. Uruchom testy aby zobaczyć aktualny stan pracy.
 
 Instalacja
 ----------
@@ -42,9 +42,7 @@ Populacja bazy danych
 
 * Opcja 2:
 
-  Importuj rozkłady bezpośrednio ze źródła (strony przewoźnika):
-
-        $ node import.js
+  Importuj rozkłady bezpośrednio ze źródła (strony przewoźnika). Zobacz projekt [pigeons](https://github.com/Stanley/pigeons) po więcej informacji.
 
 * Opcja 3:
 
@@ -61,6 +59,8 @@ Uruchomienie
 
         $ bundle exec cucumber features/
 
+  Uwaga: domyślnie test przeprowadzony jest na `http://localhost:8000`. Z powodu braku praw do zapisu, zmiana tego parametru na `http://api.bagate.la` w pliku `features/support/env.rb` nie ma sensu (choć teoretycznie jest możliwa). W przyszłości w systemie produkcyjnym zostanie udostępniony jeden użytkownik i baza danych do celów testowych.
+
         $ bundle exec spec spec/
 
   Uwaga: jeżeli chcesz przywrócić wyświetlanie backtrace, które domyślnie jest wyłączone, zakomentuj `:raise_errors` na początku deklaracji klasy `Bagatela` w `app/main.rb`. 
@@ -72,4 +72,4 @@ Uruchomienie
 Dokumentacja API
 ----------------
 
-<http://stanley.github.com/bagatela>
+Docelowo <http://stanley.github.com/bagatela>. Do czasu uruchomienia API nie jest publicznie dostępna.
