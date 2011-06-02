@@ -64,12 +64,6 @@
           emit([doc.source, doc.valid_from], doc);
         }
       }"
-    },
-    "active": {
-      "map": "function(doc) {
-        if(doc.type == \"Timetable\" && doc.valid_until == undefined)
-          emit(doc._id, doc);
-      }"
     }
   },
   "lists":{
