@@ -1,4 +1,4 @@
-When /^I send a ([A-Z]{3,6}) request to http:\/\/api\.bagate\.la\/(.+)$/ do |method, uri|
+When /^I send a ([A-Z]{3,6}) request to \"?http:\/\/api\.bagate\.la\/(.+[^\"])\"?$/ do |method, uri|
   @response = begin
     RestClient.send method.downcase, API+URI.escape(uri)
   rescue => e

@@ -1,6 +1,10 @@
-Given /^build index$/ do
+require 'active_support/core_ext'
+
+Given /^built index$/ do
+  PICKY_ENVIRONMENT = "test"
   FileUtils.cd File.dirname(__FILE__) +'/../../utils/picky' do
-    require 'active_support/core_ext'
-    Rake::Task[:'index:randomly'].invoke
+    require 'picky'
+    require './app/application'
+    Indexes.index true
   end
 end
