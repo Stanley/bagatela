@@ -15,9 +15,9 @@ Każde miasto posiada swój własny adres url według wzoru:
 
 Oto kody miast, których rozkłady są aktualnie gromadzone (oczekuj nowych miast):
 
-    sk - Górnośląski Okręg Przemysłowy (od 1.04.2011)
-    kr - Kraków (od 1.04.2011)
-    dw - Wrocław (od 1.04.2011)
+    sk - Górnośląski Okręg Przemysłowy (od 20.06.2011)
+    kr - Kraków (od 20.06.2011)
+    dw - Wrocław (od 20.06.2011)
 
 ### Przykłady
 Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli `curl` i zostały wykonane w systemie GNU/Linux.
@@ -47,14 +47,14 @@ Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli 
 Flaga `--verbose` wyświetla bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu `curl` znajdziesz w [jego dokumentacji](http://curl.haxx.se/docs/manpage.html). Przy nauce protokołu, przydatne mogą okazać się również [inne](http://justniffer.sourceforge.net/index.html) [narzędzia](http://postbin.org).
 
 ### Kontrybucja
-(również do dokumentacji) jest mile widziana! Weź <http://github.com/stanley/bagatela> na widły i poproś o akceptacje zmian.
+(również do dokumentacji) jest mile widziana! Weź <https://github.com/Stanley/bagatela> na widły i poproś o akceptacje zmian.
 
 ZAPYTANIA O DANE
 ----------------
 Ponieważ dane są przechowywane w bazie danych CouchDB, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny. Jego szczegóły opisano w [dokumentacji CouchDB API](http://wiki.apache.org/couchdb/).
 
 ### Dokumenty
-Dokument jest podstawową strukturą organizacji danych w bazie. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica z haszowaniem lub niezdefiniowany. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz.
+Dokument jest podstawową strukturą organizacji danych w bazie. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica asocjacyjna lub niezdefiniowany. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz.
 
 Każdy dokument posiada unikalny identyfikator `_id` oraz numer rewizji `_rev`. Atrybuty te są nadawane automatycznie przez bazę danych. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator `_id`. Np.:
 
@@ -72,7 +72,7 @@ Przykładowe użycie:
 Przeczytaj więcej o dokumentach w CouchDB na: <http://guide.couchdb.org/editions/1/en/api.html#documents>.
 
 ### Widoki
-Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze `key`, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą.
+Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze `key`, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej, gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą.
 
 Częstszym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale. Aby ułatwić takie zapytania, klucze często są wartością typu lista, np. *[2010, 10, 6]*. Dzięki temu jesteśmy w stanie zapytać o wszystkie dokumenty, których klucz zawiera się w danym przedziale np. od *[2010, 9]* do *[2010, 10, {}]* (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października).
 
@@ -85,8 +85,8 @@ Metoda: `GET`
 
 * `descending` - jeżeli *true*, odwrócona kolejność zwracanych dokumentów. Uwaga: sortowanie odbywa się przed ograniczeniem przedziału. Może to oznaczać konieczność zamiany parametrów `startkey` z `endkey`.
 * `endkey`- koniec przedziału włącznie. Domyślnie największa możliwa wartość.
-* `group`
-* `group_level`
+* `group` - jeżeli *false* to redukuje wszystkie dokumenty zgodnie z funkcją redukującą do jednej wartości. W przeciwnym wypadku wyniki przetwarzania każdego z dokumentów są grupowane. Domyślnie *false*.
+* `group_level` - grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych *grup_level* takich samych wartości klucza np.: klucze *["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]* z parametrem *group_level=2* utworzą dwie grupy *["a", "b"], ["a", "c"]* . Jeżeli parametr `group` będzie *true* a `group_level` niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna.
 * `include_docs` - jeżeli *true*, dołącza oryginalny dokument w polu `doc`. Domyślnie *false*.
 * `key` - dokładna wartość klucza.
 * `limit` - maksymalna liczba zwróconych dokumentów. Np. *10*.
@@ -101,7 +101,7 @@ Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej
 
 ROZKŁAD JAZDY
 -------------
-Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z jednym przystankiem. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów). Jest wiernym odzwierciedleniem tego co jest publikowane przez przewoźników na ich oficjalnych stronach i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów `stop_id` i `valid_through`).
+Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z jednym przystankiem. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dopóki nie zostanie opublikowana aktualizacja rozkładu). Jest wiernym odzwierciedleniem tego co jest publikowane przez przewoźników na ich oficjalnych stronach i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów `stop_id` i `valid_until`).
 
 ### Atrybuty
 
@@ -112,16 +112,16 @@ Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z j
 * `destination` (tylko jeżeli parametr `route` nie istnieje) - przystanek docelowy. Np. *"Okęcie"*
 * `stop` - nazwa przystanku na którym znajduje się rozkład. Np. *"Batorego"*.
 * `stop_id` (opcjonalnie) - identyfikator przystanku `Stop` przy którym zatrzymuje się transport.
-* `table` - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. *"Dzień powszedni"*. Tablica odjazdów (wartość) to np. *{"4":["43"], "5":["02","17","38","48","58"]}*, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdża transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. *"24A"*.
+* `table` - tablice odjazdów. Atrybut typu tablicy asocjacyjnej, przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. *"Dzień powszedni"*. Tablica odjazdów (wartość) to np. *{"4":["43"], "5":["02","17","38","48","58"]}*, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdża transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. *"24A"*.
 * `type` - typ. Zawsze *"Timetable"*.
-* `source` - Źródło danych. Np. adres URL: *"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"*
+* `source` - źródło danych. Np. adres URL: *"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"*
 * `updated_at` - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).
 * `valid_from` - dzień od którego obowiązuje rozkład. Np. *"04.10.2010"*.
-* `valid_through` (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i `valid_from` wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana.
+* `valid_until` (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i `valid_from` wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana lub aktualny zostanie anulowany.
 
 ### Załączniki
 
-* `source.html` - oryginalna strona HTML z rozkładem jazdy w kodowaniu UTF-8.
+* `source.html` - oryginalna strona HTML z rozkładem jazdy.
 
 ### Widoki
 Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze `"_design/Timetable"`.
@@ -189,19 +189,21 @@ Zobacz scenariusze testujące.
 Ścieżka: `/_design/Timetable/_view/by_source?key=<klucz>`  
 Metoda: `GET`  
 Parametry: `klucz`  
-Odpowiedź:  
+Odpowiedź: rozkład jazdy otrzymany ze źródła `klucz[0]`.  
 
-Przykładowe użycie:
+Przykładowe użycie. Aktualny rozkład:
 
-	curl
+	curl ?limit=1
 
 Zobacz scenariusze testujące.
 
-**[list] polyline**
+### Listy
+
+**polyline**
 
 Ścieżka: `/_design/Timetable/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>`
 
-**[list] filter**
+**filter**
 
 Ścieżka: `/_design/Timetable/`
 
@@ -217,7 +219,7 @@ Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się 
 * `lng` - długość geograficzna. Np. *19.9326992*.
 * `location` (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".
 * `name` - nazwa przystanku. Np. *"Teatr Bagatela"*.
-* `polylines` (opcjonalnie) - tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.
+* `polylines` (opcjonalnie) - tablica asocjacyjna, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.
 * `type` - typ. Zawsze *"Stop"*.
 * `update_at` - czas ostatniej modyfikacji.
 
@@ -260,8 +262,8 @@ Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji.
 
 Ścieżka: `/_search/Stop?q=<fraza>`  
 Metoda: `GET`  
-Paramerty: `q` - fraza, `limit`  
-Odpowiedź: lista przystanków
+Paramerty: `q` - fraza, `r` (opcjonalnie) - promień w obrębie którego poszukiwane będą przystanki (używany w parze z frazą zawierającą położenie, np.: *50.064708 19.944381*), `limit` (opcjonalnie)  
+Odpowiedź: lista przystanków spełniających kryteria tj. zawierają *frazę* w nazwie lub lokalizacji.
 
 Frazę można doprecyzować, dopisując przed nią `name:` lub `location:`, co ograniczy wyszukiwanie do określonego pola.
 
@@ -290,4 +292,4 @@ Przykładowe użycie:
 
 SCENARIUSZE TESTUJĄCE
 ---------------------
-Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji został napisany odrępny test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia [Cucumber](http://cukes.info/).
+Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji [został napisany](https://github.com/Stanley/bagatela/tree/master/features) odrępny test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia [Cucumber](http://cukes.info/).

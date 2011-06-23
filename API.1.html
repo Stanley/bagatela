@@ -96,9 +96,9 @@
 
 <p>Oto kody miast, których rozkłady są aktualnie gromadzone (oczekuj nowych miast):</p>
 
-<pre><code>sk - Górnośląski Okręg Przemysłowy (od 1.04.2011)
-kr - Kraków (od 1.04.2011)
-dw - Wrocław (od 1.04.2011)
+<pre><code>sk - Górnośląski Okręg Przemysłowy (od 20.06.2011)
+kr - Kraków (od 20.06.2011)
+dw - Wrocław (od 20.06.2011)
 </code></pre>
 
 <h3 id="Przyk-ady">Przykłady</h3>
@@ -133,7 +133,7 @@ dw - Wrocław (od 1.04.2011)
 
 <h3 id="Kontrybucja">Kontrybucja</h3>
 
-<p>(również do dokumentacji) jest mile widziana! Weź <a href="http://github.com/stanley/bagatela" data-bare-link="true">http://github.com/stanley/bagatela</a> na widły i poproś o akceptacje zmian.</p>
+<p>(również do dokumentacji) jest mile widziana! Weź <a href="https://github.com/Stanley/bagatela" data-bare-link="true">https://github.com/Stanley/bagatela</a> na widły i poproś o akceptacje zmian.</p>
 
 <h2 id="ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</h2>
 
@@ -141,7 +141,7 @@ dw - Wrocław (od 1.04.2011)
 
 <h3 id="Dokumenty">Dokumenty</h3>
 
-<p>Dokument jest podstawową strukturą organizacji danych w bazie. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica z haszowaniem lub niezdefiniowany. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz.</p>
+<p>Dokument jest podstawową strukturą organizacji danych w bazie. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica asocjacyjna lub niezdefiniowany. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz.</p>
 
 <p>Każdy dokument posiada unikalny identyfikator <code>_id</code> oraz numer rewizji <code>_rev</code>. Atrybuty te są nadawane automatycznie przez bazę danych. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator <code>_id</code>. Np.:</p>
 
@@ -162,7 +162,7 @@ Odpowiedź: dokument o identyfikatorze <code>id</code> i numerze rewizji <code>r
 
 <h3 id="Widoki">Widoki</h3>
 
-<p>Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze <code>key</code>, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą.</p>
+<p>Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze <code>key</code>, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej, gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą.</p>
 
 <p>Częstszym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale. Aby ułatwić takie zapytania, klucze często są wartością typu lista, np. <em>[2010, 10, 6]</em>. Dzięki temu jesteśmy w stanie zapytać o wszystkie dokumenty, których klucz zawiera się w danym przedziale np. od <em>[2010, 9]</em> do <em>[2010, 10, {}]</em> (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października).</p>
 
@@ -176,8 +176,8 @@ Metoda: <code>GET</code></p>
 <ul>
 <li><code>descending</code> - jeżeli <em>true</em>, odwrócona kolejność zwracanych dokumentów. Uwaga: sortowanie odbywa się przed ograniczeniem przedziału. Może to oznaczać konieczność zamiany parametrów <code>startkey</code> z <code>endkey</code>.</li>
 <li><code>endkey</code>- koniec przedziału włącznie. Domyślnie największa możliwa wartość.</li>
-<li><code>group</code></li>
-<li><code>group_level</code></li>
+<li><code>group</code> - jeżeli <em>false</em> to redukuje wszystkie dokumenty zgodnie z funkcją redukującą do jednej wartości. W przeciwnym wypadku wyniki przetwarzania każdego z dokumentów są grupowane. Domyślnie <em>false</em>.</li>
+<li><code>group_level</code> - grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych <em>grup_level</em> takich samych wartości klucza np.: klucze <em>["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]</em> z parametrem <em>group_level=2</em> utworzą dwie grupy <em>["a", "b"], ["a", "c"]</em> . Jeżeli parametr <code>group</code> będzie <em>true</em> a <code>group_level</code> niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna.</li>
 <li><code>include_docs</code> - jeżeli <em>true</em>, dołącza oryginalny dokument w polu <code>doc</code>. Domyślnie <em>false</em>.</li>
 <li><code>key</code> - dokładna wartość klucza.</li>
 <li><code>limit</code> - maksymalna liczba zwróconych dokumentów. Np. <em>10</em>.</li>
@@ -194,7 +194,7 @@ Metoda: <code>GET</code></p>
 
 <h2 id="ROZK-AD-JAZDY">ROZKŁAD JAZDY</h2>
 
-<p>Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z jednym przystankiem. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów). Jest wiernym odzwierciedleniem tego co jest publikowane przez przewoźników na ich oficjalnych stronach i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów <code>stop_id</code> i <code>valid_through</code>).</p>
+<p>Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z jednym przystankiem. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dopóki nie zostanie opublikowana aktualizacja rozkładu). Jest wiernym odzwierciedleniem tego co jest publikowane przez przewoźników na ich oficjalnych stronach i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów <code>stop_id</code> i <code>valid_until</code>).</p>
 
 <h3 id="Atrybuty">Atrybuty</h3>
 
@@ -206,19 +206,19 @@ Metoda: <code>GET</code></p>
 <li><code>destination</code> (tylko jeżeli parametr <code>route</code> nie istnieje) - przystanek docelowy. Np. <em>"Okęcie"</em></li>
 <li><code>stop</code> - nazwa przystanku na którym znajduje się rozkład. Np. <em>"Batorego"</em>.</li>
 <li><code>stop_id</code> (opcjonalnie) - identyfikator przystanku <code>Stop</code> przy którym zatrzymuje się transport.</li>
-<li><code>table</code> - tablice odjazdów. Atrybut typu tablicy haszującej. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. <em>"Dzień powszedni"</em>. Tablica odjazdów (wartość) to np. <em>{"4":["43"], "5":["02","17","38","48","58"]}</em>, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdża transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. <em>"24A"</em>.</li>
+<li><code>table</code> - tablice odjazdów. Atrybut typu tablicy asocjacyjnej, przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. <em>"Dzień powszedni"</em>. Tablica odjazdów (wartość) to np. <em>{"4":["43"], "5":["02","17","38","48","58"]}</em>, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdża transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. <em>"24A"</em>.</li>
 <li><code>type</code> - typ. Zawsze <em>"Timetable"</em>.</li>
-<li><code>source</code> - Źródło danych. Np. adres URL: <em>"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"</em></li>
+<li><code>source</code> - źródło danych. Np. adres URL: <em>"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"</em></li>
 <li><code>updated_at</code> - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).</li>
 <li><code>valid_from</code> - dzień od którego obowiązuje rozkład. Np. <em>"04.10.2010"</em>.</li>
-<li><code>valid_through</code> (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i <code>valid_from</code> wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana.</li>
+<li><code>valid_until</code> (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i <code>valid_from</code> wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana lub aktualny zostanie anulowany.</li>
 </ul>
 
 
 <h3 id="Za-czniki">Załączniki</h3>
 
 <ul>
-<li><code>source.html</code> - oryginalna strona HTML z rozkładem jazdy w kodowaniu UTF-8.</li>
+<li><code>source.html</code> - oryginalna strona HTML z rozkładem jazdy.</li>
 </ul>
 
 
@@ -293,20 +293,22 @@ Odpowiedź:</p>
 <p>Ścieżka: <code>/_design/Timetable/_view/by_source?key=&lt;klucz></code><br />
 Metoda: <code>GET</code><br />
 Parametry: <code>klucz</code><br />
-Odpowiedź:</p>
+Odpowiedź: rozkład jazdy otrzymany ze źródła <code>klucz[0]</code>.</p>
 
-<p>Przykładowe użycie:</p>
+<p>Przykładowe użycie. Aktualny rozkład:</p>
 
-<pre><code>curl
+<pre><code>curl ?limit=1
 </code></pre>
 
 <p>Zobacz scenariusze testujące.</p>
 
-<p><strong>[list] polyline</strong></p>
+<h3 id="Listy">Listy</h3>
+
+<p><strong>polyline</strong></p>
 
 <p>Ścieżka: <code>/_design/Timetable/_list/polyline/by_line?startkey=&lt;klucz_początkowy>&amp;endkey=&lt;klucz_końcowy></code></p>
 
-<p><strong>[list] filter</strong></p>
+<p><strong>filter</strong></p>
 
 <p>Ścieżka: <code>/_design/Timetable/</code></p>
 
@@ -323,7 +325,7 @@ Odpowiedź:</p>
 <li><code>lng</code> - długość geograficzna. Np. <em>19.9326992</em>.</li>
 <li><code>location</code> (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".</li>
 <li><code>name</code> - nazwa przystanku. Np. <em>"Teatr Bagatela"</em>.</li>
-<li><code>polylines</code> (opcjonalnie) - tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.</li>
+<li><code>polylines</code> (opcjonalnie) - tablica asocjacyjna, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.</li>
 <li><code>type</code> - typ. Zawsze <em>"Stop"</em>.</li>
 <li><code>update_at</code> - czas ostatniej modyfikacji.</li>
 </ul>
@@ -371,8 +373,8 @@ Parametry: <code>widok</code>, <code>only</code> lub <code>exclude</code></p>
 
 <p>Ścieżka: <code>/_search/Stop?q=&lt;fraza></code><br />
 Metoda: <code>GET</code><br />
-Paramerty: <code>q</code> - fraza, <code>limit</code><br />
-Odpowiedź: lista przystanków</p>
+Paramerty: <code>q</code> - fraza, <code>r</code> (opcjonalnie) - promień w obrębie którego poszukiwane będą przystanki (używany w parze z frazą zawierającą położenie, np.: <em>50.064708 19.944381</em>), <code>limit</code> (opcjonalnie)<br />
+Odpowiedź: lista przystanków spełniających kryteria tj. zawierają <em>frazę</em> w nazwie lub lokalizacji.</p>
 
 <p>Frazę można doprecyzować, dopisując przed nią <code>name:</code> lub <code>location:</code>, co ograniczy wyszukiwanie do określonego pola.</p>
 
@@ -403,12 +405,12 @@ Odpowiedź: <code>{}</code></p>
 
 <h2 id="SCENARIUSZE-TESTUJ-CE">SCENARIUSZE TESTUJĄCE</h2>
 
-<p>Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji został napisany odrępny test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia <a href="http://cukes.info/">Cucumber</a>.</p>
+<p>Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji <a href="https://github.com/Stanley/bagatela/tree/master/features">został napisany</a> odrępny test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia <a href="http://cukes.info/">Cucumber</a>.</p>
 
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Stanisław Wasiutyński</li>
-    <li class='tc'>April 2011</li>
+    <li class='tc'>June 2011</li>
     <li class='tr'>bagatela(1)</li>
   </ol>
 

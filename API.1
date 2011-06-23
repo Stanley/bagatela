@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BAGATELA" "1" "April 2011" "Stanisław Wasiutyński" ""
+.TH "BAGATELA" "1" "June 2011" "Stanisław Wasiutyński" ""
 .
 .SH "NAME"
 \fBbagatela\fR \- wyszukiwarka, bagatela, połączeń w komunikacji miejskiej
@@ -32,9 +32,9 @@ Oto kody miast, których rozkłady są aktualnie gromadzone (oczekuj nowych mias
 .
 .nf
 
-sk \- Górnośląski Okręg Przemysłowy (od 1\.04\.2011)
-kr \- Kraków (od 1\.04\.2011)
-dw \- Wrocław (od 1\.04\.2011)
+sk \- Górnośląski Okręg Przemysłowy (od 20\.06\.2011)
+kr \- Kraków (od 20\.06\.2011)
+dw \- Wrocław (od 20\.06\.2011)
 .
 .fi
 .
@@ -76,13 +76,13 @@ $ curl api\.bagate\.la \-\-verbose
 Flaga \fB\-\-verbose\fR wyświetla bardziej szczegółowe informacje o połączeniu\. Więcej informacji o narzędziu \fBcurl\fR znajdziesz w jego dokumentacji \fIhttp://curl\.haxx\.se/docs/manpage\.html\fR\. Przy nauce protokołu, przydatne mogą okazać się również inne \fIhttp://justniffer\.sourceforge\.net/index\.html\fR narzędzia \fIhttp://postbin\.org\fR\.
 .
 .SS "Kontrybucja"
-(również do dokumentacji) jest mile widziana! Weź \fIhttp://github\.com/stanley/bagatela\fR na widły i poproś o akceptacje zmian\.
+(również do dokumentacji) jest mile widziana! Weź \fIhttps://github\.com/Stanley/bagatela\fR na widły i poproś o akceptacje zmian\.
 .
 .SH "ZAPYTANIA O DANE"
 Ponieważ dane są przechowywane w bazie danych CouchDB, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny\. Jego szczegóły opisano w dokumentacji CouchDB API \fIhttp://wiki\.apache\.org/couchdb/\fR\.
 .
 .SS "Dokumenty"
-Dokument jest podstawową strukturą organizacji danych w bazie\. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera\. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica z haszowaniem lub niezdefiniowany\. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz\.
+Dokument jest podstawową strukturą organizacji danych w bazie\. Motywacją użycia takiej jednostki jest łatwość przenoszenia rzeczywistych obiektów (takich jak rozkłady jazdy) do postaci zrozumiałej dla komputera\. Dokumenty są ograniczone, nie sztywną strukturą, a jedynie tym, że składają się z tablicy dowolnej ilości par, w których kluczem jest napis, a wartością dana o jedym z typów: binarny, napis, liczba, tablica, tablica asocjacyjna lub niezdefiniowany\. W bazie danych dokumenty są przechowywane w formacie JSON i w tej samej formie są zwracane na zewnątrz\.
 .
 .P
 Każdy dokument posiada unikalny identyfikator \fB_id\fR oraz numer rewizji \fB_rev\fR\. Atrybuty te są nadawane automatycznie przez bazę danych\. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator \fB_id\fR\. Np\.:
@@ -126,7 +126,7 @@ curl
 Przeczytaj więcej o dokumentach w CouchDB na: \fIhttp://guide\.couchdb\.org/editions/1/en/api\.html#documents\fR\.
 .
 .SS "Widoki"
-Widok to predefiniowany indeks danych\. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą\. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku)\. Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie\. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze \fBkey\fR, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą\.
+Widok to predefiniowany indeks danych\. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą\. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku)\. Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie\. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze \fBkey\fR, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej, gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą\.
 .
 .P
 Częstszym użyciem widoków jest pytanie o zbiór dokumentów, których klucze są zawarte w pewnym przedziale\. Aby ułatwić takie zapytania, klucze często są wartością typu lista, np\. \fI[2010, 10, 6]\fR\. Dzięki temu jesteśmy w stanie zapytać o wszystkie dokumenty, których klucz zawiera się w danym przedziale np\. od \fI[2010, 9]\fR do \fI[2010, 10, {}]\fR (w tym przypadku, gdzie kluczem jest data, zapytanie zwróci wszystkie dokumenty z kluczem od 1 września do 30 października)\.
@@ -150,10 +150,10 @@ Metoda: \fBGET\fR
 \fBendkey\fR\- koniec przedziału włącznie\. Domyślnie największa możliwa wartość\.
 .
 .IP "\(bu" 4
-\fBgroup\fR
+\fBgroup\fR \- jeżeli \fIfalse\fR to redukuje wszystkie dokumenty zgodnie z funkcją redukującą do jednej wartości\. W przeciwnym wypadku wyniki przetwarzania każdego z dokumentów są grupowane\. Domyślnie \fIfalse\fR\.
 .
 .IP "\(bu" 4
-\fBgroup_level\fR
+\fBgroup_level\fR \- grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych \fIgrup_level\fR takich samych wartości klucza np\.: klucze \fI["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]\fR z parametrem \fIgroup_level=2\fR utworzą dwie grupy \fI["a", "b"], ["a", "c"]\fR \. Jeżeli parametr \fBgroup\fR będzie \fItrue\fR a \fBgroup_level\fR niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna\.
 .
 .IP "\(bu" 4
 \fBinclude_docs\fR \- jeżeli \fItrue\fR, dołącza oryginalny dokument w polu \fBdoc\fR\. Domyślnie \fIfalse\fR\.
@@ -179,7 +179,7 @@ Wszystkie wyżej wymienione parametry są opcjonalne\.
 Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej, którą reprezentuje\. Typ zasobu do którego należy dokument jest określony w polu \fBtype\fR\.
 .
 .SH "ROZKŁAD JAZDY"
-Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z jednym przystankiem\. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dla aktualnych rozkładów)\. Jest wiernym odzwierciedleniem tego co jest publikowane przez przewoźników na ich oficjalnych stronach i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów \fBstop_id\fR i \fBvalid_through\fR)\.
+Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z jednym przystankiem\. Obowiązuje w ograniczonej ramie czasowej (choć data upływu ważności nie jest znana dopóki nie zostanie opublikowana aktualizacja rozkładu)\. Jest wiernym odzwierciedleniem tego co jest publikowane przez przewoźników na ich oficjalnych stronach i nie zawiera żadnych dodatkowych inforamcji (oprócz opcjonalnych atrybutów \fBstop_id\fR i \fBvalid_until\fR)\.
 .
 .SS "Atrybuty"
 .
@@ -205,13 +205,13 @@ Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z 
 \fBstop_id\fR (opcjonalnie) \- identyfikator przystanku \fBStop\fR przy którym zatrzymuje się transport\.
 .
 .IP "\(bu" 4
-\fBtable\fR \- tablice odjazdów\. Atrybut typu tablicy haszującej\. Przechowującej pary, w których opisowi dni odpowiada tablica odjazdów\. Opis dania (klucz) to np\. \fI"Dzień powszedni"\fR\. Tablica odjazdów (wartość) to np\. \fI{"4":["43"], "5":["02","17","38","48","58"]}\fR, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd\. odjeżdża transport\. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu\. Np\. \fI"24A"\fR\.
+\fBtable\fR \- tablice odjazdów\. Atrybut typu tablicy asocjacyjnej, przechowującej pary, w których opisowi dni odpowiada tablica odjazdów\. Opis dania (klucz) to np\. \fI"Dzień powszedni"\fR\. Tablica odjazdów (wartość) to np\. \fI{"4":["43"], "5":["02","17","38","48","58"]}\fR, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd\. odjeżdża transport\. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu\. Np\. \fI"24A"\fR\.
 .
 .IP "\(bu" 4
 \fBtype\fR \- typ\. Zawsze \fI"Timetable"\fR\.
 .
 .IP "\(bu" 4
-\fBsource\fR \- Źródło danych\. Np\. adres URL: \fI"http://rozklady\.mpk\.krakow\.pl/aktualne/0004/0004t023\.htm"\fR
+\fBsource\fR \- źródło danych\. Np\. adres URL: \fI"http://rozklady\.mpk\.krakow\.pl/aktualne/0004/0004t023\.htm"\fR
 .
 .IP "\(bu" 4
 \fBupdated_at\fR \- czas ostatniej modyfikacji w bazie danych (tj\. czas połączenia ze źródłem)\.
@@ -220,14 +220,14 @@ Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z 
 \fBvalid_from\fR \- dzień od którego obowiązuje rozkład\. Np\. \fI"04\.10\.2010"\fR\.
 .
 .IP "\(bu" 4
-\fBvalid_through\fR (opcjonalnie) \- dzień do którego obowiązuje rozkład\. Jeżeli atrybut nie jest zdefiniowany i \fBvalid_from\fR wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym\. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana\.
+\fBvalid_until\fR (opcjonalnie) \- dzień do którego obowiązuje rozkład\. Jeżeli atrybut nie jest zdefiniowany i \fBvalid_from\fR wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym\. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana lub aktualny zostanie anulowany\.
 .
 .IP "" 0
 .
 .SS "Załączniki"
 .
 .IP "\(bu" 4
-\fBsource\.html\fR \- oryginalna strona HTML z rozkładem jazdy w kodowaniu UTF\-8\.
+\fBsource\.html\fR \- oryginalna strona HTML z rozkładem jazdy\.
 .
 .IP "" 0
 .
@@ -380,16 +380,16 @@ Metoda: \fBGET\fR
 Parametry: \fBklucz\fR
 .
 .br
-Odpowiedź:
+Odpowiedź: rozkład jazdy otrzymany ze źródła \fBklucz[0]\fR\.
 .
 .P
-Przykładowe użycie:
+Przykładowe użycie\. Aktualny rozkład:
 .
 .IP "" 4
 .
 .nf
 
-curl
+curl ?limit=1
 .
 .fi
 .
@@ -398,14 +398,14 @@ curl
 .P
 Zobacz scenariusze testujące\.
 .
-.P
-\fB[list] polyline\fR
+.SS "Listy"
+\fBpolyline\fR
 .
 .P
 Ścieżka: \fB/_design/Timetable/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>\fR
 .
 .P
-\fB[list] filter\fR
+\fBfilter\fR
 .
 .P
 Ścieżka: \fB/_design/Timetable/\fR
@@ -434,7 +434,7 @@ Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się 
 \fBname\fR \- nazwa przystanku\. Np\. \fI"Teatr Bagatela"\fR\.
 .
 .IP "\(bu" 4
-\fBpolylines\fR (opcjonalnie) \- tablica z haszowaniem, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków\.
+\fBpolylines\fR (opcjonalnie) \- tablica asocjacyjna, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków\.
 .
 .IP "\(bu" 4
 \fBtype\fR \- typ\. Zawsze \fI"Stop"\fR\.
@@ -525,10 +525,10 @@ Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji\.
 Metoda: \fBGET\fR
 .
 .br
-Paramerty: \fBq\fR \- fraza, \fBlimit\fR
+Paramerty: \fBq\fR \- fraza, \fBr\fR (opcjonalnie) \- promień w obrębie którego poszukiwane będą przystanki (używany w parze z frazą zawierającą położenie, np\.: \fI50\.064708 19\.944381\fR), \fBlimit\fR (opcjonalnie)
 .
 .br
-Odpowiedź: lista przystanków
+Odpowiedź: lista przystanków spełniających kryteria tj\. zawierają \fIfrazę\fR w nazwie lub lokalizacji\.
 .
 .P
 Frazę można doprecyzować, dopisując przed nią \fBname:\fR lub \fBlocation:\fR, co ograniczy wyszukiwanie do określonego pola\.
@@ -580,4 +580,4 @@ curl
 .IP "" 0
 .
 .SH "SCENARIUSZE TESTUJĄCE"
-Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych\. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji został napisany odrępny test\. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia Cucumber \fIhttp://cukes\.info/\fR\.
+Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych\. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji został napisany \fIhttps://github\.com/Stanley/bagatela/tree/master/features\fR odrępny test\. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia Cucumber \fIhttp://cukes\.info/\fR\.
