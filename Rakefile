@@ -18,11 +18,18 @@ namespace :db do
 
   desc "Populate graph"
   task :import do
-
   end
 
-  desc "Remove all data in your database"
-  task :dump do
-    
+end
+
+namespace :couchdb do 
+
+  desc "Push Couchdb views"
+  task :views, [:db] do |t, args|
+    require 'restclient'
+    designs = File.read './views/designs.json'
+
+    RestClient.post args[:db] +'/_bulk_docs', designs, :content_type => :json, :accept => :json
   end
+
 end
