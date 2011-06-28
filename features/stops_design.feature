@@ -9,7 +9,7 @@ Feature: List stops
 
   Scenario: Find stop by name
     Given the following stops:
-      | _id | name     | location      |
+      | _id | name     | address      |
       | 1   | Bagatela | Dunajewskiego |
       | 2   | Bagatela | Karmelicka    |
       | 3   | Bagatela | Podwale       |
@@ -18,7 +18,7 @@ Feature: List stops
       And the response without rows' value._rev should be:
       """
       {"total_rows":3,"offset":1,"rows":[
-        {"id":"2","key":["Bagatela","Karmelicka"],"value": {"_id": "2", "name": "Bagatela", "location": "Karmelicka", "type": "Stop"}}
+        {"id":"2","key":["Bagatela","Karmelicka"],"value": {"_id": "2", "name": "Bagatela", "address": "Karmelicka", "type": "Stop"}}
       ]}
       """
 
@@ -26,7 +26,7 @@ Feature: List stops
 
   Scenario: Find stops by name
     Given the following stops:
-      | _id | name     | location      |
+      | _id | name     | address      |
       | 1   | Bagatela | Dunajewskiego |
       | 2   | Bagatela | Karmelicka    |
       | 3   | Bagatela | Podwale       |
@@ -35,9 +35,9 @@ Feature: List stops
       And the response without rows' value._rev should be:
       """
       {"total_rows":3, "offset":0, "rows":[
-        {"id":"1", "key":["Bagatela", "Dunajewskiego"], "value": {"_id": "1", "name": "Bagatela", "location": "Dunajewskiego", "type": "Stop"}},
-        {"id":"2", "key":["Bagatela", "Karmelicka"], "value": {"_id": "2", "name": "Bagatela", "location": "Karmelicka", "type": "Stop"}},
-        {"id":"3", "key":["Bagatela", "Podwale"], "value": {"_id": "3", "name": "Bagatela", "location": "Podwale", "type": "Stop"}}
+        {"id":"1", "key":["Bagatela", "Dunajewskiego"], "value": {"_id": "1", "name": "Bagatela", "address": "Dunajewskiego", "type": "Stop"}},
+        {"id":"2", "key":["Bagatela", "Karmelicka"], "value": {"_id": "2", "name": "Bagatela", "address": "Karmelicka", "type": "Stop"}},
+        {"id":"3", "key":["Bagatela", "Podwale"], "value": {"_id": "3", "name": "Bagatela", "address": "Podwale", "type": "Stop"}}
       ]}
       """
 
@@ -127,7 +127,7 @@ Feature: List stops
 
   Scenario: Attributes filtering
     Given the following stops:
-      | _id | name     | lat         | lng         | location      |
+      | _id | name     | lat         | lng         | address      |
       | 1   | Bagatela | 50.06380081 | 19.93320084 | Dunajewskiego |
       | 2   | Bagatela | 50.0637207  | 19.93255997 | Karmelicka    |
       | 3   | Bagatela | 50.06309891 | 19.9326992  | Podwale       |
@@ -146,8 +146,8 @@ Feature: List stops
       And the response should be:
       """
       {"total_rows":3,"offset":0,"rows":[
-        {"id":"1","key":["Bagatela","Dunajewskiego"],"value":{"_id":"1","name":"Bagatela","location":"Dunajewskiego","type":"Stop"}},
-        {"id":"2","key":["Bagatela","Karmelicka"],"value":{"_id":"2","name":"Bagatela","location":"Karmelicka","type":"Stop"}},
-        {"id":"3","key":["Bagatela","Podwale"],"value":{"_id":"3","name":"Bagatela","location":"Podwale","type":"Stop"}}
+        {"id":"1","key":["Bagatela","Dunajewskiego"],"value":{"_id":"1","name":"Bagatela","address":"Dunajewskiego","type":"Stop"}},
+        {"id":"2","key":["Bagatela","Karmelicka"],"value":{"_id":"2","name":"Bagatela","address":"Karmelicka","type":"Stop"}},
+        {"id":"3","key":["Bagatela","Podwale"],"value":{"_id":"3","name":"Bagatela","address":"Podwale","type":"Stop"}}
       ]}
       """

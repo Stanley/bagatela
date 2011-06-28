@@ -60,19 +60,6 @@ class Bagatela < Sinatra::Base
     #end    
   end
 
-  # search for stops
-  get '/*/Stop' do |db|
-
-    stops = Picky::Client.new :host => 'localhost', :port => 8001, :path => '/'+db
-    results = stops.search params[:q]
-    results.to_json
-
-    #Stops.search(:query => params[:q])[:allocations].     # Ask Picky,
-      #inject([]){|ids, allocation| ids + allocation[4]}.  # get ids,
-      #map{|id| JSON.parse Couch[id].get}.                 # get documents from database.
-      #to_json
-  end
-
   error do
     e = env['sinatra.error']
     error e.respond_to?(:status) ? e.status : 500, @result.merge({"error" => e.underscore, "reason" => e.message}).to_json

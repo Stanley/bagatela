@@ -1,6 +1,14 @@
-When /^I send a ([A-Z]{3,6}) request to \"?http:\/\/api\.bagate\.la\/(.+[^\"])\"?$/ do |method, uri|
+When /^I send a ([A-Z]{3,6}) request to http:\/\/api\.bagate\.la\/(.+[^\:])$/ do |method, uri|
   @response = begin
     RestClient.send method.downcase, API+URI.escape(uri)
+  rescue => e
+    e.response
+  end
+end
+
+When /^I send a ([A-Z]{3,6}) request to http:\/\/api\.bagate\.la\/(.+[^\s]):$/ do |method, uri, body|
+  @response = begin
+    RestClient::Request.execute method: method.to_sym, url: API+URI.escape(uri), payload: body
   rescue => e
     e.response
   end
@@ -25,4 +33,8 @@ Then /^the response without rows' ([\_a-z]+).([\_a-z]+) should be:$/ do |value, 
     doc
   end
   resp.should eql(JSON.parse(json))
+end
+
+Then /^the result should be stops?: (.+)$/ do |ids|
+  JSON.parse(@response)['hits']['hits'].map{|hit| hit['_id'] }.should eql(ids.split(', '))
 end

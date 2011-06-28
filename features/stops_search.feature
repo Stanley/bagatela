@@ -6,69 +6,85 @@ Feature: Search stops
   Background:
     Given an empty database "kr"
       And design documents
+      And elasticsearch index
 
   Scenario: Find stop by name
     Given the following stops:
-      | _id | name             | location |
+      | _id | name             | address  |
       | 1   | Dworzec Główny   | Basztowa |
       | 2   | Dworzec Towarowy |          |
       | 3   | Basztowa LOT     | Długa    |
-      And built index
+      And an indexed database
     When I send a GET request to http://api.bagate.la/kr/_search/Stop?q=Basztowa
     Then the response status should be 200
-      And the response without rows' value._rev should be:
-      """
-      {"total_rows":2, "offset":0, "rows":[
-        {"id":"3","value": {"_id": "3", "name": "Basztowa LOT", "location": "Długa", "type": "Stop"}},
-        {"id":"1","value": {"_id": "1", "name": "Dworzec Główny", "location": "Basztowa", "type": "Stop"}}
-      ]}
-      """
-
-    When I send a GET request to "http://api.bagate.la/kr/_search/Stop?q=Basztowa Długa"
-    Then the response status should be 200
-      And the response without rows' value._rev should be:
-      """
-      {"total_rows":1, "offset":0, "rows":[
-        {"id":"3","value": {"_id": "3", "name": "Basztowa LOT", "location": "Długa", "type": "Stop"}}
-      ]}
-      """
+      And the result should be stops: 3, 1
 
     When I send a GET request to http://api.bagate.la/kr/_search/Stop?q=name:Dworzec
     Then the response status should be 200
-      And the response without rows' value._rev should be:
-      """
-      {"total_rows":2, "offset":0, "rows":[
-        {"id":"1","value": {"_id": "1", "name": "Dworzec Główny", "location": "Basztowa", "type": "Stop"}},
-        {"id":"2","value": {"_id": "2", "name": "Dworzec Towarowy", "location": "", "type": "Stop"}}
-      ]}
-      """
+      And the result should be stops: 1, 2
+
+    When I send a GET request to http://api.bagate.la/kr/_search/Stop?q=dł*
+    Then the response status should be 200
+      And the result should be stop: 3
+
+    # Won't work until #1009 issue is resolved
+    When I send a GET request to http://api.bagate.la/kr/_search/Stop?q=Basztowa,Długa
+    Then the response status should be 200
+      And the result should be stop: 3
 
   Scenario: Find stops within a given radius
     Given the following stops:
-      | _id | name           | location     | lat       | lng       |
-      | 1   | Dworzec Główny | Basztowa     | 50.064708 | 19.944381 |
-      | 2   | Dworzec Główny | Lubicz       | 50.064662 | 19.945671 |
-      | 3   | Dworzec Główny | Westerplatte | 50.064123 | 19.945086 |
-      | 4   | Basztowa LOT   | Długa        | 50.066495 | 19.938925 |
-      | 5   | Basztowa LOT   | Basztowa     | 50.066163 | 19.938675 |
-      And built index
-    When I send a GET request to "http://api.bagate.la/kr/_search/Stop?q=50.064622 19.944917&r=0.5"
+      | _id | name           | address      | location                               |
+      | 1   | Dworzec Główny | Basztowa     | { "lat": 50.064708, "lon": 19.944381 } |
+      | 2   | Dworzec Główny | Lubicz       | { "lat": 50.064662, "lon": 19.945671 } |
+      | 3   | Dworzec Główny | Westerplatte | { "lat": 50.064123, "lon": 19.945086 } |
+      | 4   | Basztowa LOT   | Długa        | { "lat": 50.066495, "lon": 19.938925 } |
+      | 5   | Basztowa LOT   | Basztowa     | { "lat": 50.066163, "lon": 19.938675 } |
+      And an indexed database
+    When I send a GET request to http://api.bagate.la/kr/_search/Stop:
+      """
+      {
+        "query": {
+          "filtered": {
+            "query" : {
+              "match_all": {}
+            },
+            "filter" : {
+              "geo_distance" : {
+                "distance" : "0.1km",
+                "location" : {
+                  "lat" : 50.0646,
+                  "lon" : 19.9451
+                }
+              }
+            }
+          }
+        }
+      }
+      """
     Then the response status should be 200
-      And the response without rows' value._rev should be:
-      """
-      {"total_rows":3, "offset":0, "rows":[
-        {"id":"1","value": {"_id": "1", "name": "Dworzec Główny", "location": "Basztowa", "lat": "50.064708", "lng": "19.944381", "type": "Stop"}},
-        {"id":"2","value": {"_id": "2", "name": "Dworzec Główny", "location": "Lubicz", "lat": "50.064662", "lng": "19.945671", "type": "Stop"}},
-        {"id":"3","value": {"_id": "3", "name": "Dworzec Główny", "location": "Westerplatte", "lat": "50.064123", "lng": "19.945086", "type": "Stop"}}
-      ]}
-      """
+      And the result should be stops: 1, 2, 3
 
-    When I send a GET request to "http://api.bagate.la/kr/_search/Stop?q=50.064622 19.944917 location:Basztowa&r=5"
+    When I send a GET request to http://api.bagate.la/kr/_search/Stop:
+    """
+    {
+      "query": {
+        "filtered" : {
+          "query" : {
+            "field" : { "address" : "Basztowa" }
+          },
+          "filter" : {
+            "geo_distance" : {
+              "distance" : "1km",
+              "location" : {
+                "lat" : 50.0646,
+                "lon" : 19.9451
+              }
+            }
+          }
+        }
+      }
+    }
+    """
     Then the response status should be 200
-      And the response without rows' value._rev should be:
-      """
-      {"total_rows":2, "offset":0, "rows":[
-        {"id":"1","value": {"_id": "1", "name": "Dworzec Główny", "location": "Basztowa", "lat": "50.064708", "lng": "19.944381", "type": "Stop"}},
-        {"id":"5","value": {"_id": "5", "name": "Basztowa LOT", "location": "Basztowa", "lat": "50.066163", "lng": "19.938675", "type": "Stop"}}
-      ]}
-      """
+      And the result should be stops: 1, 5
