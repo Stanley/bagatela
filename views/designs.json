@@ -184,4 +184,12 @@
   "filters":{
     "all": "function(doc){ if(doc.type && doc.type == \"Stop\") return true }"
   }
+},
+{
+  "_id": "_design/Permissions",
+  "language": "javascript",
+  "validate_doc_update": "function(newDoc, oldDoc, userCtx){
+    if(userCtx.roles.indexOf(\"_admin\") == -1)
+      throw({\"forbidden\": \"You are not an admin\"})
+  }"
 }]}
