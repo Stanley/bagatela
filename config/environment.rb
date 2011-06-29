@@ -1,7 +1,7 @@
 require 'rubygems'
 #require 'neo4j'
 require 'yaml'
-require 'yajl/json_gem'
+require 'json'
 require File.join(File.dirname(__FILE__), 'exceptions')
 
 #$: << File.join(File.dirname(__FILE__), '..', 'app', 'models')

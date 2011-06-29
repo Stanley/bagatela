@@ -26,8 +26,19 @@ namespace :couchdb do
 
   desc "Push Couchdb views"
   task :views, [:db] do |t, args|
+    couch = CONFIG['couch'] +'/'+ args[:db]
     designs = File.read './views/designs.json'
-    RestClient.post CONFIG['couch'] +'/'+ args[:db] +'/_bulk_docs', designs, :content_type => :json, :accept => :json do |resp|; end
+    RestClient.post couch +'/_bulk_docs', designs, :content_type => :json, :accept => :json do |resp| 
+      JSON.parse(resp).each do |status|
+        if(status['error'] == 'conflict')
+          old = JSON.parse(RestClient.get(couch +'/'+ status['id']).gsub(/\n/,''))
+          new = JSON.parse(designs.gsub(/\n/,''))['docs'].find{ |doc| doc['_id'] == status['id'] }
+          RestClient.post couch, old.merge(new).to_json, :content_type => :json, :accept => :json do |resp|
+            p resp
+          end
+        end
+      end
+    end
   end
 
   desc "Create ES couchdb river"
