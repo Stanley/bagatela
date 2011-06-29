@@ -1,12 +1,9 @@
 source :rubygems
 
 group :app do
-  gem 'mongrel'
+  gem 'thin'
   gem 'sinatra'
-  gem 'json'
-  gem 'neo4j', '1.0.0.beta.19'
-  gem 'picky-client', :path=>"/github/picky/client"
-  gem 'rest-client'
+  gem 'yajl-ruby'
 end
 
 group :test do
@@ -14,9 +11,5 @@ group :test do
   gem 'rspec'
   gem 'fuubar'
   gem 'cucumber'
-end
-
-group :setup do
-  gem 'jruby-openssl' 
-  gem 'couchrest'
+  gem 'rest-client'
 end
