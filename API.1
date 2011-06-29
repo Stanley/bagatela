@@ -140,20 +140,20 @@ Przeczytaj więcej o widokach w CouchDB na: \fIhttp://guide\.couchdb\.org/editio
 .br
 Metoda: \fBGET\fR
 .
-.P
-\fBParametry\fR
+.br
+Parametry:
 .
 .IP "\(bu" 4
 \fBdescending\fR \- jeżeli \fItrue\fR, odwrócona kolejność zwracanych dokumentów\. Uwaga: sortowanie odbywa się przed ograniczeniem przedziału\. Może to oznaczać konieczność zamiany parametrów \fBstartkey\fR z \fBendkey\fR\.
 .
 .IP "\(bu" 4
-\fBendkey\fR\- koniec przedziału włącznie\. Domyślnie największa możliwa wartość\.
+\fBendkey\fR \- koniec przedziału włącznie\. Domyślnie największa możliwa wartość\.
 .
 .IP "\(bu" 4
 \fBgroup\fR \- jeżeli \fIfalse\fR to redukuje wszystkie dokumenty zgodnie z funkcją redukującą do jednej wartości\. W przeciwnym wypadku wyniki przetwarzania każdego z dokumentów są grupowane\. Domyślnie \fIfalse\fR\.
 .
 .IP "\(bu" 4
-\fBgroup_level\fR \- grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych \fIgrup_level\fR takich samych wartości klucza np\.: klucze \fI["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]\fR z parametrem \fIgroup_level=2\fR utworzą dwie grupy \fI["a", "b"], ["a", "c"]\fR \. Jeżeli parametr \fBgroup\fR będzie \fItrue\fR a \fBgroup_level\fR niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna\.
+\fBgroup_level\fR \- grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych \fIgrup_level\fR takich samych wartości klucza\. Np\.: klucze \fI["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]\fR z parametrem \fIgroup_level=2\fR utworzą dwie grupy \fI["a", "b"], ["a", "c"]\fR \. Jeżeli parametr \fBgroup\fR będzie \fItrue\fR a \fBgroup_level\fR niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna\.
 .
 .IP "\(bu" 4
 \fBinclude_docs\fR \- jeżeli \fItrue\fR, dołącza oryginalny dokument w polu \fBdoc\fR\. Domyślnie \fIfalse\fR\.
@@ -196,7 +196,7 @@ Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z 
 \fBroute\fR \- trasa linii\. Lista głównych ulic, którymi biegnie linia\. Np\. \fI"Al\. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"\fR\.
 .
 .IP "\(bu" 4
-\fBdestination\fR (tylko jeżeli parametr \fBroute\fR nie istnieje) \- przystanek docelowy\. Np\. \fI"Okęcie"\fR
+\fBdestination\fR (tylko jeżeli parametr \fBroute\fR nie istnieje) \- przystanek docelowy\. Np\. \fI"Okęcie"\fR\.
 .
 .IP "\(bu" 4
 \fBstop\fR \- nazwa przystanku na którym znajduje się rozkład\. Np\. \fI"Batorego"\fR\.
@@ -211,7 +211,7 @@ Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z 
 \fBtype\fR \- typ\. Zawsze \fI"Timetable"\fR\.
 .
 .IP "\(bu" 4
-\fBsource\fR \- źródło danych\. Np\. adres URL: \fI"http://rozklady\.mpk\.krakow\.pl/aktualne/0004/0004t023\.htm"\fR
+\fBsource\fR \- źródło danych\. Np\. adres URL: \fI"http://rozklady\.mpk\.krakow\.pl/aktualne/0004/0004t023\.htm"\fR\.
 .
 .IP "\(bu" 4
 \fBupdated_at\fR \- czas ostatniej modyfikacji w bazie danych (tj\. czas połączenia ze źródłem)\.
@@ -368,6 +368,21 @@ curl
 Zobacz scenariusze testujące\.
 .
 .P
+\fB[map] by_stop_id\fR
+.
+.P
+Ścieżka: \fB/_design/Timetable/_view/by_stop_id?key=<klucz>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBklucz\fR
+.
+.br
+Odpowiedź:
+.
+.P
 \fB[map] by_source\fR
 .
 .P
@@ -399,12 +414,6 @@ curl ?limit=1
 Zobacz scenariusze testujące\.
 .
 .SS "Listy"
-\fBpolyline\fR
-.
-.P
-Ścieżka: \fB/_design/Timetable/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>\fR
-.
-.P
 \fBfilter\fR
 .
 .P
@@ -422,13 +431,13 @@ Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się 
 \fB_rev\fR \- numer rewizji\.
 .
 .IP "\(bu" 4
-\fBlat\fR \- szerokość geograficzna\. Np\. \fI50\.06309891\fR\.
+\fBaddress\fR (opcjonalnie) \- ulica przy której znajduje się przystanej\. Np\. "Karmelicka"\.
 .
 .IP "\(bu" 4
-\fBlng\fR \- długość geograficzna\. Np\. \fI19\.9326992\fR\.
+\fBlocation\.lat\fR \- szerokość geograficzna\. Np\. \fI50\.06309891\fR\.
 .
 .IP "\(bu" 4
-\fBlocation\fR (opcjonalnie) \- ulica przy której znajduje się przystanej\. Np\. "Karmelicka"\.
+\fBlocation\.lon\fR \- długość geograficzna\. Np\. \fI19\.9326992\fR\.
 .
 .IP "\(bu" 4
 \fBname\fR \- nazwa przystanku\. Np\. \fI"Teatr Bagatela"\fR\.
@@ -440,7 +449,7 @@ Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się 
 \fBtype\fR \- typ\. Zawsze \fI"Stop"\fR\.
 .
 .IP "\(bu" 4
-\fBupdate_at\fR \- czas ostatniej modyfikacji\.
+\fBupdated_at\fR \- czas ostatniej modyfikacji\.
 .
 .IP "" 0
 .
@@ -503,6 +512,9 @@ curl
 .P
 Zobacz scenariusze testujące\.
 .
+.P
+\fB[map] by_line\fR
+.
 .SS "Listy"
 \fBfilter\fR
 .
@@ -515,8 +527,14 @@ Metoda: \fBGET\fR
 .br
 Parametry: \fBwidok\fR, \fBonly\fR lub \fBexclude\fR
 .
-.SS "Semantic search"
-Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji\.
+.P
+\fBpolyline\fR
+.
+.P
+Ścieżka: \fB/_design/Stop/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>\fR
+.
+.SS "Wyszukiwarka"
+Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji\. Ponieważ silnikiem wyszukiwarki jest elasticsearch, pełna dokumentacja API znajduje się na stronie: \fIhttp://www\.elasticsearch\.org/guide/reference/api/search/\fR\.
 .
 .P
 Ścieżka: \fB/_search/Stop?q=<fraza>\fR
@@ -525,13 +543,27 @@ Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji\.
 Metoda: \fBGET\fR
 .
 .br
-Paramerty: \fBq\fR \- fraza, \fBr\fR (opcjonalnie) \- promień w obrębie którego poszukiwane będą przystanki (używany w parze z frazą zawierającą położenie, np\.: \fI50\.064708 19\.944381\fR), \fBlimit\fR (opcjonalnie)
+Paramerty:
 .
-.br
+.IP "\(bu" 4
+\fBq\fR \- fraza\. Akceptuje mi\. wieloznaczniki \fI*\fR i \fI?\fR oraz wyrażenia logiczne \fIOR\fR i \fIAND\fR\.
+.
+.IP "\(bu" 4
+\fBsort\fR (opcjonalnie) \- sortowanie, np\.: \fI"name:asc"\fR (po nazwie, rosnąco)\. Domyślnie po trafności\.
+.
+.IP "\(bu" 4
+\fBsize\fR (opcjonalnie) \- maksymalna liczba dokumentów spełniających kryteria zapytania\.
+.
+.IP "\(bu" 4
+W zapytaniu możliwe są również inne opcje, wszystkie zostały opisane na: \fIhttp://www\.elasticsearch\.org/guide/reference/api/search/uri\-request\.html\fR\.
+.
+.IP "" 0
+.
+.P
 Odpowiedź: lista przystanków spełniających kryteria tj\. zawierają \fIfrazę\fR w nazwie lub lokalizacji\.
 .
 .P
-Frazę można doprecyzować, dopisując przed nią \fBname:\fR lub \fBlocation:\fR, co ograniczy wyszukiwanie do określonego pola\.
+Frazę można doprecyzować, dopisując przed nią \fIname:\fR lub \fIaddress:\fR, co ograniczy wyszukiwanie do określonego pola\.
 .
 .P
 Przykładowe użycia:
@@ -548,6 +580,38 @@ curl /_search/Stop?q=dworzec location:basztowa
 .
 .IP "" 0
 .
+.P
+\fBAlternatywne użycie:\fR
+.
+.P
+Ścieżka: \fB/_search/Stop\fR
+.
+.br
+Metoda: \fBPOST\fR
+.
+.br
+Ładunek: Zapytanie DSL w formacie JSON
+.
+.P
+DSL (język zapytania) jest udokumentowany na stronie: \fIhttp://www\.elasticsearch\.org/guide/reference/query\-dsl/\fR\. Ta forma pozwala formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka\.
+.
+.P
+Przykładowe użycia:
+.
+.IP "" 4
+.
+.nf
+
+curl /_search/Stop \-d \'{
+}\'
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zobacz scenariusze testujące\.
+.
 .SH "WYSZUKIWARKA POŁĄCZEŃ"
 Comming soon\.
 .
@@ -555,16 +619,27 @@ Comming soon\.
 Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych\.
 .
 .P
-Ścieżka: \fB/_replicate\fR
+Ścieżka: \fBhttp://api\.bagate\.la/_replicate\fR
 .
 .br
 Metoda: \fBPOST\fR
 .
 .br
-Parametry: \fBtaret\fR
+Parametry:
 .
-.br
-Odpowiedź: \fB{}\fR
+.IP "\(bu" 4
+\fBsource\fR \- \fIkod_miasta\fR czyli identyfikator bazy danych będącej źródłem danych np\.: \fI"kr"\fR\.
+.
+.IP "\(bu" 4
+\fBtarget\fR \- baza danych do której eksportujemy dane np\.: \fI"http://user:password@rozklady\.cloudant\.com/kr"\fR\.
+.
+.IP "\(bu" 4
+\fBcontinuous\fR (opcjonalnie) \- jeżeli \fItrue\fR replikacja będzie trwała do momentu w którym sami przerwiemy proces (wysyłając podobne zapytanie z parametrem \fBcancel\fR\fI=true\fR)
+.
+.IP "" 0
+.
+.P
+Odpowiedź: Raport z wykonanej (lub przerwanej) replikacji\.
 .
 .P
 Przykładowe użycie:
@@ -573,7 +648,7 @@ Przykładowe użycie:
 .
 .nf
 
-curl
+curl \-XPOST http://api\.bagate\.la/_replicate \-d \'{}\'
 .
 .fi
 .

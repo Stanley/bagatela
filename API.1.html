@@ -169,15 +169,14 @@ Odpowiedź: dokument o identyfikatorze <code>id</code> i numerze rewizji <code>r
 <p>Przeczytaj więcej o widokach w CouchDB na: <a href="http://guide.couchdb.org/editions/1/en/views.html" data-bare-link="true">http://guide.couchdb.org/editions/1/en/views.html</a>.</p>
 
 <p>Ścieżka: <code>/_design/&lt;zasób>/_view/&lt;widok></code><br />
-Metoda: <code>GET</code></p>
-
-<p><strong>Parametry</strong></p>
+Metoda: <code>GET</code><br />
+Parametry:</p>
 
 <ul>
 <li><code>descending</code> - jeżeli <em>true</em>, odwrócona kolejność zwracanych dokumentów. Uwaga: sortowanie odbywa się przed ograniczeniem przedziału. Może to oznaczać konieczność zamiany parametrów <code>startkey</code> z <code>endkey</code>.</li>
-<li><code>endkey</code>- koniec przedziału włącznie. Domyślnie największa możliwa wartość.</li>
+<li><code>endkey</code> - koniec przedziału włącznie. Domyślnie największa możliwa wartość.</li>
 <li><code>group</code> - jeżeli <em>false</em> to redukuje wszystkie dokumenty zgodnie z funkcją redukującą do jednej wartości. W przeciwnym wypadku wyniki przetwarzania każdego z dokumentów są grupowane. Domyślnie <em>false</em>.</li>
-<li><code>group_level</code> - grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych <em>grup_level</em> takich samych wartości klucza np.: klucze <em>["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]</em> z parametrem <em>group_level=2</em> utworzą dwie grupy <em>["a", "b"], ["a", "c"]</em> . Jeżeli parametr <code>group</code> będzie <em>true</em> a <code>group_level</code> niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna.</li>
+<li><code>group_level</code> - grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych <em>grup_level</em> takich samych wartości klucza. Np.: klucze <em>["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]</em> z parametrem <em>group_level=2</em> utworzą dwie grupy <em>["a", "b"], ["a", "c"]</em> . Jeżeli parametr <code>group</code> będzie <em>true</em> a <code>group_level</code> niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna.</li>
 <li><code>include_docs</code> - jeżeli <em>true</em>, dołącza oryginalny dokument w polu <code>doc</code>. Domyślnie <em>false</em>.</li>
 <li><code>key</code> - dokładna wartość klucza.</li>
 <li><code>limit</code> - maksymalna liczba zwróconych dokumentów. Np. <em>10</em>.</li>
@@ -203,12 +202,12 @@ Metoda: <code>GET</code></p>
 <li><code>_rev</code> - numer rewizji.</li>
 <li><code>line</code> - numer linii, którą opisuje rozkład. Np. <em>"4"</em>.</li>
 <li><code>route</code> - trasa linii. Lista głównych ulic, którymi biegnie linia. Np. <em>"Al. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"</em>.</li>
-<li><code>destination</code> (tylko jeżeli parametr <code>route</code> nie istnieje) - przystanek docelowy. Np. <em>"Okęcie"</em></li>
+<li><code>destination</code> (tylko jeżeli parametr <code>route</code> nie istnieje) - przystanek docelowy. Np. <em>"Okęcie"</em>.</li>
 <li><code>stop</code> - nazwa przystanku na którym znajduje się rozkład. Np. <em>"Batorego"</em>.</li>
 <li><code>stop_id</code> (opcjonalnie) - identyfikator przystanku <code>Stop</code> przy którym zatrzymuje się transport.</li>
 <li><code>table</code> - tablice odjazdów. Atrybut typu tablicy asocjacyjnej, przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. <em>"Dzień powszedni"</em>. Tablica odjazdów (wartość) to np. <em>{"4":["43"], "5":["02","17","38","48","58"]}</em>, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdża transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. <em>"24A"</em>.</li>
 <li><code>type</code> - typ. Zawsze <em>"Timetable"</em>.</li>
-<li><code>source</code> - źródło danych. Np. adres URL: <em>"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"</em></li>
+<li><code>source</code> - źródło danych. Np. adres URL: <em>"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"</em>.</li>
 <li><code>updated_at</code> - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).</li>
 <li><code>valid_from</code> - dzień od którego obowiązuje rozkład. Np. <em>"04.10.2010"</em>.</li>
 <li><code>valid_until</code> (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i <code>valid_from</code> wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana lub aktualny zostanie anulowany.</li>
@@ -288,6 +287,13 @@ Odpowiedź:</p>
 
 <p>Zobacz scenariusze testujące.</p>
 
+<p><strong>[map] by_stop_id</strong></p>
+
+<p>Ścieżka: <code>/_design/Timetable/_view/by_stop_id?key=&lt;klucz></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>klucz</code><br />
+Odpowiedź:</p>
+
 <p><strong>[map] by_source</strong></p>
 
 <p>Ścieżka: <code>/_design/Timetable/_view/by_source?key=&lt;klucz></code><br />
@@ -304,10 +310,6 @@ Odpowiedź: rozkład jazdy otrzymany ze źródła <code>klucz[0]</code>.</p>
 
 <h3 id="Listy">Listy</h3>
 
-<p><strong>polyline</strong></p>
-
-<p>Ścieżka: <code>/_design/Timetable/_list/polyline/by_line?startkey=&lt;klucz_początkowy>&amp;endkey=&lt;klucz_końcowy></code></p>
-
 <p><strong>filter</strong></p>
 
 <p>Ścieżka: <code>/_design/Timetable/</code></p>
@@ -321,13 +323,13 @@ Odpowiedź: rozkład jazdy otrzymany ze źródła <code>klucz[0]</code>.</p>
 <ul>
 <li><code>_id</code> - identyfikator.</li>
 <li><code>_rev</code> - numer rewizji.</li>
-<li><code>lat</code> - szerokość geograficzna. Np. <em>50.06309891</em>.</li>
-<li><code>lng</code> - długość geograficzna. Np. <em>19.9326992</em>.</li>
-<li><code>location</code> (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".</li>
+<li><code>address</code> (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".</li>
+<li><code>location.lat</code> - szerokość geograficzna. Np. <em>50.06309891</em>.</li>
+<li><code>location.lon</code> - długość geograficzna. Np. <em>19.9326992</em>.</li>
 <li><code>name</code> - nazwa przystanku. Np. <em>"Teatr Bagatela"</em>.</li>
 <li><code>polylines</code> (opcjonalnie) - tablica asocjacyjna, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.</li>
 <li><code>type</code> - typ. Zawsze <em>"Stop"</em>.</li>
-<li><code>update_at</code> - czas ostatniej modyfikacji.</li>
+<li><code>updated_at</code> - czas ostatniej modyfikacji.</li>
 </ul>
 
 
@@ -359,6 +361,8 @@ Odpowiedź:</p>
 
 <p>Zobacz scenariusze testujące.</p>
 
+<p><strong>[map] by_line</strong></p>
+
 <h3 id="Listy">Listy</h3>
 
 <p><strong>filter</strong></p>
@@ -367,16 +371,29 @@ Odpowiedź:</p>
 Metoda: <code>GET</code><br />
 Parametry: <code>widok</code>, <code>only</code> lub <code>exclude</code></p>
 
-<h3 id="Semantic-search">Semantic search</h3>
+<p><strong>polyline</strong></p>
 
-<p>Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji.</p>
+<p>Ścieżka: <code>/_design/Stop/_list/polyline/by_line?startkey=&lt;klucz_początkowy>&amp;endkey=&lt;klucz_końcowy></code></p>
+
+<h3 id="Wyszukiwarka">Wyszukiwarka</h3>
+
+<p>Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji. Ponieważ silnikiem wyszukiwarki jest elasticsearch, pełna dokumentacja API znajduje się na stronie: <a href="http://www.elasticsearch.org/guide/reference/api/search/" data-bare-link="true">http://www.elasticsearch.org/guide/reference/api/search/</a>.</p>
 
 <p>Ścieżka: <code>/_search/Stop?q=&lt;fraza></code><br />
 Metoda: <code>GET</code><br />
-Paramerty: <code>q</code> - fraza, <code>r</code> (opcjonalnie) - promień w obrębie którego poszukiwane będą przystanki (używany w parze z frazą zawierającą położenie, np.: <em>50.064708 19.944381</em>), <code>limit</code> (opcjonalnie)<br />
-Odpowiedź: lista przystanków spełniających kryteria tj. zawierają <em>frazę</em> w nazwie lub lokalizacji.</p>
+Paramerty:</p>
 
-<p>Frazę można doprecyzować, dopisując przed nią <code>name:</code> lub <code>location:</code>, co ograniczy wyszukiwanie do określonego pola.</p>
+<ul>
+<li><code>q</code> - fraza. Akceptuje mi. wieloznaczniki <em>*</em> i <em>?</em> oraz wyrażenia logiczne <em>OR</em> i <em>AND</em>.</li>
+<li><code>sort</code> (opcjonalnie) - sortowanie, np.: <em>"name:asc"</em> (po nazwie, rosnąco). Domyślnie po trafności.</li>
+<li><code>size</code> (opcjonalnie) - maksymalna liczba dokumentów spełniających kryteria zapytania.</li>
+<li>W zapytaniu możliwe są również inne opcje, wszystkie zostały opisane na: <a href="http://www.elasticsearch.org/guide/reference/api/search/uri-request.html" data-bare-link="true">http://www.elasticsearch.org/guide/reference/api/search/uri-request.html</a>.</li>
+</ul>
+
+
+<p>Odpowiedź: lista przystanków spełniających kryteria tj. zawierają <em>frazę</em> w nazwie lub lokalizacji.</p>
+
+<p>Frazę można doprecyzować, dopisując przed nią <em>name:</em> lub <em>address:</em>, co ograniczy wyszukiwanie do określonego pola.</p>
 
 <p>Przykładowe użycia:</p>
 
@@ -384,6 +401,22 @@ Odpowiedź: lista przystanków spełniających kryteria tj. zawierają <em>fraz�
 
 curl /_search/Stop?q=dworzec location:basztowa
 </code></pre>
+
+<p><strong>Alternatywne użycie:</strong></p>
+
+<p>Ścieżka: <code>/_search/Stop</code><br />
+Metoda: <code>POST</code><br />
+Ładunek: Zapytanie DSL w formacie JSON</p>
+
+<p>DSL (język zapytania) jest udokumentowany na stronie: <a href="http://www.elasticsearch.org/guide/reference/query-dsl/" data-bare-link="true">http://www.elasticsearch.org/guide/reference/query-dsl/</a>. Ta forma pozwala formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka.</p>
+
+<p>Przykładowe użycia:</p>
+
+<pre><code>curl /_search/Stop -d '{
+}'
+</code></pre>
+
+<p>Zobacz scenariusze testujące.</p>
 
 <h2 id="WYSZUKIWARKA-PO-CZE-">WYSZUKIWARKA POŁĄCZEŃ</h2>
 
@@ -393,14 +426,22 @@ curl /_search/Stop?q=dworzec location:basztowa
 
 <p>Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych.</p>
 
-<p>Ścieżka: <code>/_replicate</code><br />
+<p>Ścieżka: <code>http://api.bagate.la/_replicate</code><br />
 Metoda: <code>POST</code><br />
-Parametry: <code>taret</code><br />
-Odpowiedź: <code>{}</code></p>
+Parametry:</p>
+
+<ul>
+<li><code>source</code> - <em>kod_miasta</em> czyli identyfikator bazy danych będącej źródłem danych np.: <em>"kr"</em>.</li>
+<li><code>target</code> - baza danych do której eksportujemy dane np.: <em>"http://user:password@rozklady.cloudant.com/kr"</em>.</li>
+<li><code>continuous</code> (opcjonalnie) - jeżeli <em>true</em> replikacja będzie trwała do momentu w którym sami przerwiemy proces (wysyłając podobne zapytanie z parametrem <code>cancel</code><em>=true</em>)</li>
+</ul>
+
+
+<p>Odpowiedź: Raport z wykonanej (lub przerwanej) replikacji.</p>
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>curl
+<pre><code>curl -XPOST http://api.bagate.la/_replicate -d '{}'
 </code></pre>
 
 <h2 id="SCENARIUSZE-TESTUJ-CE">SCENARIUSZE TESTUJĄCE</h2>

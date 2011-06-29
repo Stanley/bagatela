@@ -79,14 +79,13 @@ Częstszym użyciem widoków jest pytanie o zbiór dokumentów, których klucze 
 Przeczytaj więcej o widokach w CouchDB na: <http://guide.couchdb.org/editions/1/en/views.html>.
 
 Ścieżka: `/_design/<zasób>/_view/<widok>`  
-Metoda: `GET`
-
-**Parametry**
+Metoda: `GET`  
+Parametry:
 
 * `descending` - jeżeli *true*, odwrócona kolejność zwracanych dokumentów. Uwaga: sortowanie odbywa się przed ograniczeniem przedziału. Może to oznaczać konieczność zamiany parametrów `startkey` z `endkey`.
-* `endkey`- koniec przedziału włącznie. Domyślnie największa możliwa wartość.
+* `endkey` - koniec przedziału włącznie. Domyślnie największa możliwa wartość.
 * `group` - jeżeli *false* to redukuje wszystkie dokumenty zgodnie z funkcją redukującą do jednej wartości. W przeciwnym wypadku wyniki przetwarzania każdego z dokumentów są grupowane. Domyślnie *false*.
-* `group_level` - grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych *grup_level* takich samych wartości klucza np.: klucze *["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]* z parametrem *group_level=2* utworzą dwie grupy *["a", "b"], ["a", "c"]* . Jeżeli parametr `group` będzie *true* a `group_level` niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna.
+* `group_level` - grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych *grup_level* takich samych wartości klucza. Np.: klucze *["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]* z parametrem *group_level=2* utworzą dwie grupy *["a", "b"], ["a", "c"]* . Jeżeli parametr `group` będzie *true* a `group_level` niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna.
 * `include_docs` - jeżeli *true*, dołącza oryginalny dokument w polu `doc`. Domyślnie *false*.
 * `key` - dokładna wartość klucza.
 * `limit` - maksymalna liczba zwróconych dokumentów. Np. *10*.
@@ -109,12 +108,12 @@ Fizycznie reprezentuje wydruk z przystanku. Jest związany z jedną linią i z j
 * `_rev` - numer rewizji.
 * `line` - numer linii, którą opisuje rozkład. Np. *"4"*.
 * `route` - trasa linii. Lista głównych ulic, którymi biegnie linia. Np. *"Al. 3 Maja, Podwale, Basztowa, Lubicz, Rakowicka"*.
-* `destination` (tylko jeżeli parametr `route` nie istnieje) - przystanek docelowy. Np. *"Okęcie"*
+* `destination` (tylko jeżeli parametr `route` nie istnieje) - przystanek docelowy. Np. *"Okęcie"*.
 * `stop` - nazwa przystanku na którym znajduje się rozkład. Np. *"Batorego"*.
 * `stop_id` (opcjonalnie) - identyfikator przystanku `Stop` przy którym zatrzymuje się transport.
 * `table` - tablice odjazdów. Atrybut typu tablicy asocjacyjnej, przechowującej pary, w których opisowi dni odpowiada tablica odjazdów. Opis dania (klucz) to np. *"Dzień powszedni"*. Tablica odjazdów (wartość) to np. *{"4":["43"], "5":["02","17","38","48","58"]}*, co oznacza, że w dni powszednie, o godzinie 4:43, 5:02, 5:17 itd. odjeżdża transport. Minuty są ciągiem znaków, gdyż mogą zawierać opis kursu. Np. *"24A"*.
 * `type` - typ. Zawsze *"Timetable"*.
-* `source` - źródło danych. Np. adres URL: *"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"*
+* `source` - źródło danych. Np. adres URL: *"http://rozklady.mpk.krakow.pl/aktualne/0004/0004t023.htm"*.
 * `updated_at` - czas ostatniej modyfikacji w bazie danych (tj. czas połączenia ze źródłem).
 * `valid_from` - dzień od którego obowiązuje rozkład. Np. *"04.10.2010"*.
 * `valid_until` (opcjonalnie) - dzień do którego obowiązuje rozkład. Jeżeli atrybut nie jest zdefiniowany i `valid_from` wskazuje na przeszły dzień to rozkład jazdy jest aktualnie obowiązującym. Atrybut zostanie zdefiniowany nie wcześniej, niż nowa wersja tego rozkładu zostanie publikowana lub aktualny zostanie anulowany.
@@ -184,6 +183,13 @@ Przykładowe użycie:
 
 Zobacz scenariusze testujące.
 
+**[map] by\_stop\_id**
+
+Ścieżka: `/_design/Timetable/_view/by_stop_id?key=<klucz>`  
+Metoda: `GET`  
+Parametry: `klucz`  
+Odpowiedź:  
+
 **[map] by\_source**
 
 Ścieżka: `/_design/Timetable/_view/by_source?key=<klucz>`  
@@ -199,10 +205,6 @@ Zobacz scenariusze testujące.
 
 ### Listy
 
-**polyline**
-
-Ścieżka: `/_design/Timetable/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>`
-
 **filter**
 
 Ścieżka: `/_design/Timetable/`
@@ -215,13 +217,13 @@ Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się 
 
 * `_id` - identyfikator.
 * `_rev` - numer rewizji.
-* `lat` - szerokość geograficzna. Np. *50.06309891*.
-* `lng` - długość geograficzna. Np. *19.9326992*.
-* `location` (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".
+* `address` (opcjonalnie) - ulica przy której znajduje się przystanej. Np. "Karmelicka".
+* `location.lat` - szerokość geograficzna. Np. *50.06309891*.
+* `location.lon` - długość geograficzna. Np. *19.9326992*.
 * `name` - nazwa przystanku. Np. *"Teatr Bagatela"*.
 * `polylines` (opcjonalnie) - tablica asocjacyjna, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.
 * `type` - typ. Zawsze *"Stop"*.
-* `update_at` - czas ostatniej modyfikacji.
+* `updated_at` - czas ostatniej modyfikacji.
 
 Definicje funkcji mapujących, redukujących i listujących przystanki są dokumentem o idenyfikatorze ["_design/Stop"](http://api.bagate.la/_design/Stop).
 
@@ -249,6 +251,8 @@ Przykładowe użycie:
 
 Zobacz scenariusze testujące.
 
+**[map] by\_line**
+
 ### Listy
 
 **filter**
@@ -257,21 +261,47 @@ Zobacz scenariusze testujące.
 Metoda: `GET`  
 Parametry: `widok`, `only` lub `exclude`
 
-### Semantic search
-Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji.
+**polyline**
+
+Ścieżka: `/_design/Stop/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>`
+
+### Wyszukiwarka
+Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji. Ponieważ silnikiem wyszukiwarki jest elasticsearch, pełna dokumentacja API znajduje się na stronie: <http://www.elasticsearch.org/guide/reference/api/search/>.
 
 Ścieżka: `/_search/Stop?q=<fraza>`  
 Metoda: `GET`  
-Paramerty: `q` - fraza, `r` (opcjonalnie) - promień w obrębie którego poszukiwane będą przystanki (używany w parze z frazą zawierającą położenie, np.: *50.064708 19.944381*), `limit` (opcjonalnie)  
+Paramerty:
+
+* `q` - fraza. Akceptuje mi. wieloznaczniki *\** i *?* oraz wyrażenia logiczne *OR* i *AND*.
+* `sort` (opcjonalnie) - sortowanie, np.: *"name:asc"* (po nazwie, rosnąco). Domyślnie po trafności.
+* `size` (opcjonalnie) - maksymalna liczba dokumentów spełniających kryteria zapytania.
+* W zapytaniu możliwe są również inne opcje, wszystkie zostały opisane na: <http://www.elasticsearch.org/guide/reference/api/search/uri-request.html>.
+
 Odpowiedź: lista przystanków spełniających kryteria tj. zawierają *frazę* w nazwie lub lokalizacji.
 
-Frazę można doprecyzować, dopisując przed nią `name:` lub `location:`, co ograniczy wyszukiwanie do określonego pola.
+Frazę można doprecyzować, dopisując przed nią *name:* lub *address:*, co ograniczy wyszukiwanie do określonego pola.
 
 Przykładowe użycia:
  
     curl /_search/Stop?q=baszt
 
     curl /_search/Stop?q=dworzec location:basztowa
+
+**Alternatywne użycie:**
+
+Ścieżka: `/_search/Stop`  
+Metoda: `POST`  
+Ładunek: Zapytanie DSL w formacie JSON
+
+DSL (język zapytania) jest udokumentowany na stronie: <http://www.elasticsearch.org/guide/reference/query-dsl/>. Ta forma pozwala formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka.
+
+Przykładowe użycia:
+ 
+    curl /_search/Stop -d '{
+    }'
+
+Zobacz scenariusze testujące.
+
 
 WYSZUKIWARKA POŁĄCZEŃ
 ---------------------
@@ -281,14 +311,19 @@ REPLIKACJE
 ----------
 Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych.
 
-Ścieżka: `/_replicate`  
+Ścieżka: `http://api.bagate.la/_replicate`  
 Metoda: `POST`  
-Parametry: `taret`  
-Odpowiedź: `{}`  
+Parametry:
+
+* `source` - *kod_miasta* czyli identyfikator bazy danych będącej źródłem danych np.: *"kr"*.
+* `target` - baza danych do której eksportujemy dane np.: *"http://user:password@rozklady.cloudant.com/kr"*.
+* `continuous` (opcjonalnie) - jeżeli *true* replikacja będzie trwała do momentu w którym sami przerwiemy proces (wysyłając podobne zapytanie z parametrem `cancel`*=true*)   
+
+Odpowiedź: Raport z wykonanej (lub przerwanej) replikacji. 
 
 Przykładowe użycie:
 
-	curl
+	curl -XPOST http://api.bagate.la/_replicate -d '{}'
 
 SCENARIUSZE TESTUJĄCE
 ---------------------
