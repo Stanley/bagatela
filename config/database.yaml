@@ -1,0 +1,3 @@
+development:
+  couch: 'localhost:5984'
+  es: 'localhost:9200'

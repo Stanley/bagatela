@@ -1,0 +1,10 @@
+{ "type" : "couchdb",
+  "couchdb" : {
+    "filter" : "Stop/all"
+  },
+  "index" : {
+    "index" : "stops",
+    "bulk_size" : "100",
+    "bulk_timeout" : "100ms"
+  }
+}

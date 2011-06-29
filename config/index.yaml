@@ -1,0 +1,9 @@
+--- 
+mappings:
+  _default_:
+    properties:
+      location:
+        type: geo_point
+      name:
+        type: string
+        boost: 10
