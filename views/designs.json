@@ -119,7 +119,7 @@
     "by_name": {
       "map": "function(doc){
         if (doc.type == 'Stop'){
-          emit([doc.name, doc.location], doc);
+          emit([doc.name, doc.address], doc);
         }
       }"
     },
@@ -180,5 +180,8 @@
       }
       return(JSON.stringify({total_rows: rows.length, rows: rows}))
     }"
+  },
+  "filters":{
+    "all": "function(doc){ if(doc.type && doc.type == \"Stop\") return true }"
   }
 }]}

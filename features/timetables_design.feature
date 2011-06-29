@@ -219,7 +219,7 @@ Feature: List timetables
 
   Scenario: Find timetables by stop id
     Given the following stops:
-      | _id | name     | location   |
+      | _id | name     | address    |
       | 1   | Bagatela | Karmelicka |
     And the following timetables:
       | _id | stop     | stop_id | table |
@@ -233,7 +233,7 @@ Feature: List timetables
       { "total_rows": 4, "offset": 0, "rows":  [
         { "id": "1", 
           "key": ["1", 0],
-          "value": {"_id": "1", "name": "Bagatela", "location": "Karmelicka", "type": "Stop"}},
+          "value": {"_id": "1", "name": "Bagatela", "address": "Karmelicka", "type": "Stop"}},
         { "id": "2",
           "key": ["1", 1],
           "value": {"_id": "2", "stop": "Bagatela", "stop_id": "1", "table": {}, "type": "Timetable"}},
@@ -267,7 +267,7 @@ Feature: List timetables
 
   Scenario: Find timetables by stop name
     Given the following stops:
-      | _id | name     | location      |
+      | _id | name     | address       |
       | 1   | Bagatela | Dunajewskiego |
       | 2   | Bagatela | Karmelicka    |
       | 3   | Bagatela | Podwale       |

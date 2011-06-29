@@ -6,6 +6,7 @@ Given /^an empty database "([^\"]+)"$/ do |db|
 end
 
 Given /^design documents$/ do
+  Rake.application["couchdb:views"].reenable
   Rake.application["couchdb:views"].invoke(@db_name)
 end
 
