@@ -12,9 +12,14 @@ class Bagatela < Sinatra::Base
     content_type :json
     @result = {}
   end
+  
+  # Welcome message
+  get '/' do 
+    {message: 'Welcome aboard!', version: VERSION}.to_json
+  end
 
   # Search for connections
-  get '/*/Connection' do |db|
+  get /^([a-z]+)/ do |db|
     #
     from, to = params[:q].split(':')
     raise BadRequest, "two_different_stops_required" unless from and to and from != to
