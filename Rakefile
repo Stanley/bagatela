@@ -32,7 +32,9 @@ namespace :couchdb do
       JSON.parse(resp).each do |status|
         if(status['error'] == 'conflict')
           old = JSON.parse(RestClient.get(couch +'/'+ status['id']).gsub(/\n/,''))
-          new = JSON.parse(designs.gsub(/\n/,''))['docs'].find{ |doc| doc['_id'] == status['id'] }
+          # Replace new lines with \n within strings then parse as JSON
+          new = JSON.parse(designs.gsub(/(\"[^\"]+\")/){|str| str.gsub(/\n/, '\n') })['docs'].
+                find{ |doc| doc['_id'] == status['id'] } # find conflicted document
           RestClient.post couch, old.merge(new).to_json, :content_type => :json, :accept => :json do |resp|
             p resp
           end
