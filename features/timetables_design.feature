@@ -25,7 +25,7 @@ Feature: List timetables
       | 11  | 13.10.2010  | Komorowskiego           | 2    | CMENTARZ RAKOWICKI - SALWATOR | /0002/0002t022.htm |
       | 12  | 13.10.2010  | Flisacka                | 2    | CMENTARZ RAKOWICKI - SALWATOR | /0002/0002t023.htm |
 
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_line?startkey=["2","SALWATOR"]&endkey=["2","SALWATOR",{}]&reduce=false
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_line?startkey=["2","SALWATOR"]&endkey=["2","SALWATOR",{}]&reduce=false
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -182,36 +182,31 @@ Feature: List timetables
 
   Scenario: Lines' route(s)
     Given the following timetables:
-      | stop                 | line | route                                                                                                                                      | source             |
-      | Prądnik Czerwony     | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t001.htm |
-      | Powstańców Garaże    | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t002.htm |
-      | Powstańców           | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t003.htm |
-      | Majora               | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t004.htm |
-      | Al. 29 Listopada     | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t005.htm |
-      | Opolska Estrada      | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t006.htm |
-      | Uniwersytet Rolniczy | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t007.htm |
-      | Biskupa Prandoty     | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t008.htm |
-      | Cmentarz             | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t009.htm |
-      | Politechnika         | 105  | PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)              | /0105/0105t010.htm |
-      | Cmentarz Batowice    | 105  | CMENTARZ BATOWICE - Powstańców, Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA) | /0105/0105t022.htm |
-      | Cmentarz Batowice    | 105  | CMENTARZ BATOWICE - Powstańców, Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA) | /0105/0105t023.htm |
-      | Koniec Świata        | 101  |                                                                                                                                            |                    |
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_line?startkey=["105"]&group=true&group_level=2
+      | stop                 | line | route                          | source             |
+      | Aleja Przyjaźni      | 110  | ALEJA PRZYJAŹNI - WADÓW TUNEL  | /0110/0110t001.htm |
+      | Aleja Róż            | 110  | ALEJA PRZYJAŹNI - WADÓW TUNEL  | /0110/0110t001.htm |
+      | Żeromskiego          | 110  | ALEJA PRZYJAŹNI - WADÓW TUNEL  | /0110/0110t001.htm |
+      | Teatr Ludowy         | 110  | ALEJA PRZYJAŹNI - WADÓW TUNEL  | /0110/0110t001.htm |
+      | Kocmyrzowska         | 110  | ALEJA PRZYJAŹNI - WADÓW TUNEL  | /0110/0110t001.htm |
+      | Bieńczyce Mleczarnia | 110  | ALEJA PRZYJAŹNI - WADÓW TUNEL  | /0110/0110t001.htm |
+      | Wadów Działki (NŻ)   | 110  | ALEJA PRZYJAŹNI - WĘGRZYNOWICE | /0110/0110t033.htm |
+      | Parowozownia (NŻ)    | 110  | ALEJA PRZYJAŹNI - WĘGRZYNOWICE | /0110/0110t034.htm |
+      | Węgrzynowice I (NŻ)  | 110  | ALEJA PRZYJAŹNI - WĘGRZYNOWICE | /0110/0110t035.htm |
+      | Węgrzynowice II (NŻ) | 110  | ALEJA PRZYJAŹNI - WĘGRZYNOWICE | /0110/0110t036.htm |
+
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_line?group_level=1&startkey=["110"]
     Then the response status should be 200
       And the response should be:
       """
       {"rows":  [
-        {"key": ["105", "DWORZEC GŁÓWNY ZACHÓD (GALERIA)"], "value":  ["105", [
-          "PRĄDNIK CZERWONY - Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)",
-          "CMENTARZ BATOWICE - Powstańców, Strzelców, Powstańców, Majora, Dobrego Pasterza, Al. 29 Listopada, Pawia - DWORZEC GŁÓWNY ZACHÓD (GALERIA)"
-      ]]}]}
+        {"key": ["110"], "value": 10}]}
       """
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_line?group=false
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_line?group_level=2&startkey=["110","WĘGRZYNOWICE"]&endkey=["110","WĘGRZYNOWICE",{}]
     Then the response status should be 200
       And the response should be:
       """
       {"rows":  [
-        {"key": null, "value": ["105", "101"]}
+        {"key": ["110","WĘGRZYNOWICE"], "value": 4}
       ]}
       """
 
@@ -226,7 +221,7 @@ Feature: List timetables
       | 2   | Bagatela | 1       | {}    |
       | 3   | Bagatela | 1       | {}    |
       | 4   | Bagatela | 1       | {}    |
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop_id?startkey=["1"]&endkey=["1",{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop_id?startkey=["1"]&endkey=["1",{}]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -246,7 +241,7 @@ Feature: List timetables
       ]}
       """
 
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop_id?key=["1",1]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop_id?key=["1",1]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -277,7 +272,7 @@ Feature: List timetables
       | 5   | 14   | Bagatela | 2       | BRONOWICE - Bronowicka, Podchorążych, Królewska, Karmelicka, Basztowa, Lubicz, Al. Powstania Warszawskiego, Al. Pokoju, Bieńczycka, Andersa, Broniewskiego, Mikołajczyka, Srebrnych Orłów, ks. Jancarza - MISTRZEJOWICE                | {}    |
       | 6   | 15   | Bagatela | 3       | CICHY KĄCIK - Al. 3 Maja, Podwale, Basztowa, Lubicz, Mogilska, Al. Jana Pawła II, Ptaszyckiego, Igołomska - PLESZÓW                                                                                                                    | {}    |
       | 7   | 15   | Bagatela | 1       | PLESZÓW - Igołomska, Ptaszyckiego, Al. Jana Pawła II, Mogilska, Lubicz, Basztowa, Dunajewskiego, Piłsudskiego, Al. 3 Maja - CICHY KĄCIK                                                                                                | {}    |
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop?startkey=["Bagatela"]&endkey=["Bagatela",{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop?startkey=["Bagatela"]&endkey=["Bagatela",{}]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -334,7 +329,7 @@ Feature: List timetables
       }
       """
     # Find timetables by stop name and line number
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop?startkey=["Bagatela",14]&endkey=["Bagatela",14,{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop?startkey=["Bagatela",14]&endkey=["Bagatela",14,{}]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -365,7 +360,7 @@ Feature: List timetables
             "type": "Timetable"}}]}
       """
     # Find one timetable by stop name, line number and it's destination
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_stop?key=["Bagatela",14,"BRONOWICE"]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop?key=["Bagatela",14,"BRONOWICE"]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -393,7 +388,7 @@ Feature: List timetables
       | 1   | http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm | 17.04.2011 |
       | 2   | http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm | 17.05.2011 |
       | 3   | http://rozklady.mpk.krakow.pl/aktualne/0099/0099t030.htm | 17.05.2011 |
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_source?key=["http://rozklady.mpk.krakow.pl/aktualne/0099/0099t030.htm", "17.05.2011"]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_source?key=["http://rozklady.mpk.krakow.pl/aktualne/0099/0099t030.htm", "17.05.2011"]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -403,7 +398,7 @@ Feature: List timetables
         "value":  {"_id":"3", "source": "http://rozklady.mpk.krakow.pl/aktualne/0099/0099t030.htm", "valid_from": "17.05.2011", "type": "Timetable"}}]}
       """
     # Znajdź wszystkie (również nieaktualne) rozkłady jazdy uzyskane z danego źródła.
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_view/by_source?startkey=["http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm"]&endkey=["http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm", {}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_source?startkey=["http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm"]&endkey=["http://rozklady.mpk.krakow.pl/aktualne/0099/0099t014.htm", {}]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -422,7 +417,7 @@ Feature: List timetables
     Given the following timetables:
       | _id | line | route                                                                                                           | stop    | table                          | valid_since |
       | 1   | 1    | WZGÓRZA KRZESŁAWICKIE - Kocmyrzowska, Bieńczycka, Al. Pokoju, Grzegórzecka, Dietla, Starowiślna - POCZTA GŁÓWNA | Darwina | {"Soboty": {"5": ["15","35"]}} | 14.10.2010  |
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_list/filter/by_stop?only=line,stop
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_list/filter/by_stop?only=line,stop
     Then the response status should be 200
       And the response should be:
       """
@@ -430,7 +425,7 @@ Feature: List timetables
         {"id": "1", "key": ["Darwina", 1, "POCZTA GŁÓWNA"], "value": {"stop": "Darwina", "line": "1"}}
       ]}
       """
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetable/_list/filter/by_stop?except=_id,_rev,route,table
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_list/filter/by_stop?except=_id,_rev,route,table
     Then the response status should be 200
       And the response should be:
       """

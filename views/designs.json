@@ -1,12 +1,12 @@
 { "docs": [{
-  "_id": "_design/Timetable",
+  "_id": "_design/Timetables",
   "language": "javascript",
   "views": {
     "by_stop": {
       "map": "function(doc) {
         if(doc.type==\"Timetable\"){
-          var route = doc.route ? doc.route.split(\" - \") : [];
-          emit([doc.stop, parseInt(doc.line), route[2]], doc);
+          var destination = doc.destination || doc.route.split(/-|,/).reverse()[0].replace(/^\\s*/, \"\").replace(/\\s*$/, \"\");
+          emit([doc.stop, parseInt(doc.line), destination], doc);
         }
       }"
     },
@@ -23,39 +23,15 @@
     "by_line": {
       "map": "function(doc) {
         if(doc.type==\"Timetable\"){
-          var destination = doc.destination || doc.route.split(/-|,/).reverse()[0].replace(/^\s*/, \"\").replace(/\s*$/, \"\");
+          var destination = doc.destination || doc.route.split(/-|,/).reverse()[0].replace(/^\\s*/, \"\").replace(/\\s*$/, \"\");
           emit([doc.line, destination, doc.source], doc);
         }
       }",
-      "reduce": "function(key, values, rereduce) {
-
-        var lines = [], routes = [];
-        values.forEach(function(val){
-          var line, route;
-          if(!val.length){
-            line = val.line;
-            route = [val.route];
-          } else {
-            line = val[0];
-            route = val[1];
-          }
-          if(typeof route === \"object\"){
-            if(lines.indexOf(line) == -1) lines.push(line)
-            route.forEach(function(r){
-              if(routes.indexOf(r) == -1) routes.push(r)
-            })
-          } else {
-            val.forEach(function(v){
-              if(lines.indexOf(v) == -1) lines.push(v)
-            })
-          }
-        });
-
-        if(lines.length == 1){
-          return [lines[0], routes]
-        } else {
-          return lines
-        }
+      "reduce": "function(keys, values, rereduce) {
+        if(rereduce)
+          return sum(values);
+        else
+          return values.length;
       }"
     },
     "by_source": {
@@ -113,7 +89,7 @@
   }
 },
 {
-  "_id": "_design/Stop",
+  "_id": "_design/Stops",
   "language": "javascript",
   "views": {
     "by_name": {
@@ -126,7 +102,7 @@
     "by_line": {
       "map": "function(doc) {
         if(doc.type==\"Timetable\"){
-          var destination = doc.destination || doc.route.split(/-|,/).reverse()[0].replace(/^\s*/, \"\").replace(/\s*$/, \"\");
+          var destination = doc.destination || doc.route.split(/-|,/).reverse()[0].replace(/^\\s*/, \"\").replace(/\\s*$/, \"\");
           emit([doc.line, destination, doc.source], {_id: doc.stop_id});
         }
       }"

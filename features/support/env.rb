@@ -1,5 +1,5 @@
 require 'uri'
-require 'yajl'
+require 'json'
 require 'rest_client'
 require 'rake'
 

@@ -13,7 +13,7 @@ Feature: List stops
       | 1   | Bagatela | Dunajewskiego |
       | 2   | Bagatela | Karmelicka    |
       | 3   | Bagatela | Podwale       |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stop/_view/by_name?key=["Bagatela","Karmelicka"]
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?key=["Bagatela","Karmelicka"]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -30,7 +30,7 @@ Feature: List stops
       | 1   | Bagatela | Dunajewskiego |
       | 2   | Bagatela | Karmelicka    |
       | 3   | Bagatela | Podwale       |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stop/_view/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -42,7 +42,7 @@ Feature: List stops
       """
 
   Scenario: Attempt to find stops which do not exist
-    When I send a GET request to http://api.bagate.la/kr/_design/Stop/_view/by_name?startkey=["Utopia"]&endkey=["Utopia",{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?startkey=["Utopia"]&endkey=["Utopia",{}]
     Then the response status should be 200
       And the response should be:
       """
@@ -68,20 +68,20 @@ Feature: List stops
       | 12  | Flisacka                |
       | 13  | Salvator                |
     And the following timetables:
-      | _id | stop                    | stop_id | line | destination | source |
-      | 14  | Cmentarz Rakowicki      | 1       | 2    | SALWATOR    | a      |
-      | 15  | Cmentarz Rakowicki      | 2       | 2    | SALWATOR    | b      |
-      | 16  | Rakowiecka              | 3       | 2    | SALWATOR    | c      |
-      | 17  | Uniwersytet Ekonomiczny | 4       | 2    | SALWATOR    | d      |
-      | 18  | Lubicz                  | 5       | 2    | SALWATOR    | e      |
-      | 19  | Dworzec Główny          | 6       | 2    | SALWATOR    | f      |
-      | 20  | Basztowa LOT            | 7       | 2    | SALWATOR    | g      |
-      | 21  | Teatr Bagatela          | 8       | 2    | SALWATOR    | h      |
-      | 22  | Filharmonia             | 9       | 2    | SALWATOR    | i      |
-      | 23  | Jubilat                 | 10      | 2    | SALWATOR    | j      |
-      | 24  | Komorowskiego           | 11      | 2    | SALWATOR    | k      |
-      | 25  | Flisacka                | 12      | 2    | SALWATOR    | l      |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stop/_view/by_line?startkey=["2", "SALWATOR"]&endkey=["2", "SALWATOR", {}]&include_docs=true
+      | _id | stop                    | stop_id | line | route                                   | source |
+      | 14  | Cmentarz Rakowicki      | 1       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | a      |
+      | 15  | Cmentarz Rakowicki      | 2       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | b      |
+      | 16  | Rakowiecka              | 3       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | c      |
+      | 17  | Uniwersytet Ekonomiczny | 4       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | d      |
+      | 18  | Lubicz                  | 5       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | e      |
+      | 19  | Dworzec Główny          | 6       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | f      |
+      | 20  | Basztowa LOT            | 7       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | g      |
+      | 21  | Teatr Bagatela          | 8       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | h      |
+      | 22  | Filharmonia             | 9       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | i      |
+      | 23  | Jubilat                 | 10      | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | j      |
+      | 24  | Komorowskiego           | 11      | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | k      |
+      | 25  | Flisacka                | 12      | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | l      |
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_line?startkey=["2", "SALWATOR"]&endkey=["2", "SALWATOR", {}]&include_docs=true
     Then the response status should be 200
       And the response without rows' doc._rev should be:
       """
@@ -113,7 +113,7 @@ Feature: List stops
       | L    | 1       | OSTATNI     |
       | L    | 2       | OSTATNI     |
       | L    | 3       | OSTATNI     |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stop/_list/polyline/by_line?startkey=["L", "OSTATNI"]&endkey=["L", "OSTATNI", {}]&include_docs=true
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_list/polyline/by_line?startkey=["L", "OSTATNI"]&endkey=["L", "OSTATNI", {}]&include_docs=true
     Then the response status should be 200
       And the response should be:
       """
@@ -127,11 +127,11 @@ Feature: List stops
 
   Scenario: Attributes filtering
     Given the following stops:
-      | _id | name     | lat         | lng         | address      |
+      | _id | name     | lat         | lng         | address       |
       | 1   | Bagatela | 50.06380081 | 19.93320084 | Dunajewskiego |
       | 2   | Bagatela | 50.0637207  | 19.93255997 | Karmelicka    |
       | 3   | Bagatela | 50.06309891 | 19.9326992  | Podwale       |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stop/_list/filter/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&only=lat,lng
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_list/filter/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&only=lat,lng
     Then the response status should be 200
       And the response should be:
       """
@@ -141,7 +141,7 @@ Feature: List stops
         {"id":"3","key":["Bagatela","Podwale"],"value":{"lat":"50.06309891","lng":"19.9326992"}}
       ]}
       """
-    When I send a GET request to http://api.bagate.la/kr/_design/Stop/_list/filter/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&except=_rev,lat,lng
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_list/filter/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&except=_rev,lat,lng
     Then the response status should be 200
       And the response should be:
       """
