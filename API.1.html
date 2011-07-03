@@ -107,23 +107,22 @@ dw - Wrocław (od 20.06.2011)
 
 <pre><code>$ curl api.bagate.la --verbose
 * About to connect() to api.bagate.la port 80 (#0)
-* Trying 77.79.226.169... connected
-* Connected to db.wasiutynski.net (77.79.226.169) port 80 (#0)
+*   Trying 178.32.166.216... connected
+* Connected to api.bagate.la (178.32.166.216) port 80 (#0)
 &gt; GET / HTTP/1.1
-&gt; User-Agent: curl/7.21.0 (x86\_64-pc-linux-gnu) libcurl/7.21.0 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18
+&gt; User-Agent: curl/7.21.3 (x86_64-pc-linux-gnu) libcurl/7.21.3 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18
 &gt; Host: api.bagate.la
 &gt; Accept: */*
 &gt; 
 &lt; HTTP/1.1 200 OK
 &lt; Server: nginx/0.5.36
-&lt; Date: Fri, 29 Oct 2010 10:49:50 GMT
+&lt; Date: Thu, 30 Jun 2011 10:01:43 GMT
 &lt; Content-Type: text/plain;charset=utf-8
+&lt; Transfer-Encoding: chunked
 &lt; Connection: keep-alive
-&lt; Content-Length: 41
-&lt; Cache-Control: must-revalidate
 &lt; 
-{"version": 29102010, "message": "Welcome aboard!"}
-* Connection #0 to host db.wasiutynski.net left intact
+{"message":"Welcome aboard!","revision":"0348acb71ec"}
+* Connection #0 to host api.bagate.la left intact
 * Closing connection #0
 </code></pre>
 
@@ -145,7 +144,7 @@ dw - Wrocław (od 20.06.2011)
 
 <p>Każdy dokument posiada unikalny identyfikator <code>_id</code> oraz numer rewizji <code>_rev</code>. Atrybuty te są nadawane automatycznie przez bazę danych. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator <code>_id</code>. Np.:</p>
 
-<pre><code>http://api.bagate.la/kr/d6e2a0dda625818966414846799bd9a9
+<pre><code>http://api.bagate.la/kr/d778919c8c13d6dfc59d8a4fbcffa40
 </code></pre>
 
 <p>Ścieżka: <code>/&lt;id>?rev=&lt;rev></code><br />
@@ -155,7 +154,18 @@ Odpowiedź: dokument o identyfikatorze <code>id</code> i numerze rewizji <code>r
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>curl
+<pre><code>&gt; curl -XGET http://api.bagate.la/kr/d778919c8c13d6dfc59d8a4fbcffa409
+{
+  "_id":"d778919c8c13d6dfc59d8a4fbcffa409",
+  "_rev":"3-c7ea32524b4fb94e66d7214a2eb62427",
+  "type":"Stop",
+  "updated_at":"2011-06-24T08:47:04Z",
+  "name":"Agatowa",
+  "location":{
+    "lat":50.02198398,
+    "lon":20.04249077
+  }
+}
 </code></pre>
 
 <p>Przeczytaj więcej o dokumentach w CouchDB na: <a href="http://guide.couchdb.org/editions/1/en/api.html#documents" data-bare-link="true">http://guide.couchdb.org/editions/1/en/api.html#documents</a>.</p>
@@ -175,13 +185,18 @@ Parametry:</p>
 <ul>
 <li><code>descending</code> - jeżeli <em>true</em>, odwrócona kolejność zwracanych dokumentów. Uwaga: sortowanie odbywa się przed ograniczeniem przedziału. Może to oznaczać konieczność zamiany parametrów <code>startkey</code> z <code>endkey</code>.</li>
 <li><code>endkey</code> - koniec przedziału włącznie. Domyślnie największa możliwa wartość.</li>
+<li><code>endkey_docid</code> - identyfikator ostatniego dokumentu w odpowiedzi (używane do paginacji).</li>
 <li><code>group</code> - jeżeli <em>false</em> to redukuje wszystkie dokumenty zgodnie z funkcją redukującą do jednej wartości. W przeciwnym wypadku wyniki przetwarzania każdego z dokumentów są grupowane. Domyślnie <em>false</em>.</li>
 <li><code>group_level</code> - grupuje wyniki przetwarzania funkcją redukującą, mające pierwszych <em>grup_level</em> takich samych wartości klucza. Np.: klucze <em>["a", "b", "c"], ["a", "b", "d"], ["a", "c", "d"]</em> z parametrem <em>group_level=2</em> utworzą dwie grupy <em>["a", "b"], ["a", "c"]</em> . Jeżeli parametr <code>group</code> będzie <em>true</em> a <code>group_level</code> niezdefiniowany, to zwrócony zostanie wynik przetwarzania każdego dokumentu z osobna.</li>
 <li><code>include_docs</code> - jeżeli <em>true</em>, dołącza oryginalny dokument w polu <code>doc</code>. Domyślnie <em>false</em>.</li>
+<li><code>inclusive_end</code> - definiuje czy dokument o kluczu <code>endkey</code> jest dołączany do odpowiedzi. Domyślnie <em>true</em>.</li>
 <li><code>key</code> - dokładna wartość klucza.</li>
 <li><code>limit</code> - maksymalna liczba zwróconych dokumentów. Np. <em>10</em>.</li>
 <li><code>reduce</code> - użyj funkcji redukującej. Domyślna wartość, gdy funkcja redukująca jest zdefiniowana, to <em>true</em>.</li>
+<li><code>skip</code> - liczba pomijanych dokumentów. Domyślnie <em>0</em>.</li>
+<li><code>stale</code> - definiuje czy akceptować przedawniony widok, w celu otrzymania natychmiastowej odpowiedzi (w przypadku gdy nowy widok jeszcze nie skończył się generować). Możliwa wartość: <em>ok</em>.</li>
 <li><code>startkey</code> - początek przedziału włącznie. Domyślnie najmniejsza możliwa wartość.</li>
+<li><code>startkey_docid</code> - identyfikator pierwszego dokumentu w odpowiedzi (używane do paginacji).</li>
 </ul>
 
 
@@ -223,96 +238,100 @@ Parametry:</p>
 
 <h3 id="Widoki">Widoki</h3>
 
-<p>Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze <code>"_design/Timetable"</code>.</p>
+<p>Definicje funkcji mapujących, redukujących i listujących rozkłady jazdy, są dokumentem o idenyfikatorze <em>"_design/Timetables"</em>.</p>
 
 <p><strong>[map] by_line</strong></p>
 
-<p>Ścieżka: <code>/_design/Timetable/_view/by_line?key=&lt;klucz></code><br />
+<p>Ścieżka: <code>/_design/Timetables/_view/by_line?reduce=false</code><br />
 Metoda: <code>GET</code><br />
-Parametry: <code>klucz</code><br />
-Odpowiedź:</p>
+Odpowiedź: lista rozkładów jazdy<br />
+Kolejność sortowania: <code>line</code>, <code>destination</code>, <code>source</code></p>
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>curl
+<pre><code>curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_line?startkey=["6","SALWATOR"]&amp;endkey=["6","SALWATOR",{}]&amp;reduce=false
 </code></pre>
 
-<p>Ścieżka: <code>/_design/Timetable/_view/by_line?startkey=&lt;klucz_początkowy>&amp;end_key=&lt;klucz_końcowy></code><br />
-Metoda: <code>GET</code><br />
-Parametry: <code>klucz_początkowy</code> oraz <code>klucz_końcowy</code><br />
-Kolejność sortowania: <code>foo</code>, <code>bar</code><br />
-Odpowiedź:</p>
-
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl
-</code></pre>
-
-<p>Zobacz scenariusze testujące.</p>
+<p>Zwraca listę rozkładów na linii numer <em>"6"</em>, jadącej w kierunku przystanku <em>"Salwator"</em>, posortowanych od pierwszego do ostatniego.</p>
 
 <p><strong>[reduce] by_line</strong></p>
 
-<p>Jeżeli interesuje nas tylko opis danej lini, musimy skorzystać z widoku wygenerowanego funkcją redukującą (z wielu rozkładów jazdy generowany jest dokument jednej linii).</p>
+<p>Jeżeli interesuje nas opis danej lini (będący skrótem informacji z wielu rozkładów jazdy), musimy skorzystać z widoku wygenerowanego funkcją redukującą.</p>
 
-<p>Ścieżka: <code>/_design/Timetable/_view/by_stop</code>
-Odpowiedź:</p>
+<p>Ścieżka: <code>/_design/Timetables/_view/by_line</code><br />
+Metoda: <code>GET</code><br />
+Odpowiedź: liczba dokumentów w danej grupie</p>
 
 <p>Przykładowe użycia:</p>
 
-<p>  curl</p>
-
-<p>  curl</p>
-
-<p><strong>[map] by_stop</strong></p>
-
-<p>Ścieżka: <code>/_design/Timetable/_view/by_stop?key=&lt;klucz></code><br />
-Metoda: <code>GET</code><br />
-Parametry: <code>klucz</code><br />
-Odpowiedź:</p>
-
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl
+<pre><code>curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_line?key=["X","Y"]&amp;group_level=2
 </code></pre>
 
-<p>Ścieżka: <code>/_design/Timetable/_view/by_stop?startkey=&lt;klucz_początkowy>&amp;end_key=&lt;klucz_końcowy></code><br />
-Metoda: <code>GET</code><br />
-Parametry: <code>klucz_początkowy</code> oraz <code>klucz_końcowy</code><br />
-Odpowiedź:</p>
+<p>Zwraca liczbę przystanków na linii <em>X</em> w kierunku <em>Y</em>.</p>
 
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl
+<pre><code>curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_line?group_level=1
 </code></pre>
 
-<p>Zobacz scenariusze testujące.</p>
-
-<p><strong>[map] by_stop_id</strong></p>
-
-<p>Ścieżka: <code>/_design/Timetable/_view/by_stop_id?key=&lt;klucz></code><br />
-Metoda: <code>GET</code><br />
-Parametry: <code>klucz</code><br />
-Odpowiedź:</p>
+<p>Zwraca liczbę przystanków na wszystkich liniach o tym samym numerze (tam i z powrotem). Zapytanie jest również przydatne, gdy chcemy uzyskać listę numerów linii (które w zwróconym rezultacie są kluczem; parametr <code>key</code>). Należy pamiętać, że numery linii są ciągami znaków, a nie liczb, dlatego linia <em>"10"</em> pojawi się przed <em>"2"</em>.</p>
 
 <p><strong>[map] by_source</strong></p>
 
-<p>Ścieżka: <code>/_design/Timetable/_view/by_source?key=&lt;klucz></code><br />
+<p>Ścieżka: <code>/_design/Timetables/_view/by_source</code><br />
 Metoda: <code>GET</code><br />
-Parametry: <code>klucz</code><br />
-Odpowiedź: rozkład jazdy otrzymany ze źródła <code>klucz[0]</code>.</p>
+Odpowiedź: lista rozkładów jazdy<br />
+Kolejność sortowania: <code>source</code>, <code>valid_from</code></p>
 
-<p>Przykładowe użycie. Aktualny rozkład:</p>
+<p>Przykładowe użycie.</p>
 
-<pre><code>curl ?limit=1
+<pre><code>curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_source?startkey=["http://rozklady.mpk.krakow.pl/aktualne/0000/0000t001.htm"]&amp;limit=1
 </code></pre>
 
-<p>Zobacz scenariusze testujące.</p>
+<p>Zwraca najnowszy rozkład jazdy pozyskany z danego źródła.</p>
 
-<h3 id="Listy">Listy</h3>
+<p><strong>[map] by_stop</strong></p>
 
-<p><strong>filter</strong></p>
+<p>Ścieżka: <code>/_design/Timetables/_view/by_stop</code><br />
+Metoda: <code>GET</code><br />
+Odpowiedź: lista przystanków i rozkładów jazdy<br />
+Kolejność sortowania: <code>stop</code>, <code>line</code>, <code>destination</code></p>
 
-<p>Ścieżka: <code>/_design/Timetable/</code></p>
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl /_design/Timetables/_view/by_stop?key=["125","XYZ"]
+</code></pre>
+
+<p>Zwraca rozkłady jazdy linii <em>"125"</em> na przystanku <em>"XYZ"</em> (w obie strony).</p>
+
+<p><strong>[map] by_stop_id</strong></p>
+
+<p>Ścieżka: <code>/_design/Timetables/_view/by_stop_id</code><br />
+Metoda: <code>GET</code><br />
+Odpowiedź: lista przystanków i rozkładów jazdy<br />
+Kolejność sortowania przystanków: <code>id</code><br />
+Kolejność sortowania rozkładów: <code>line</code></p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl /_design/Timetables/_view/by_stop_id?startkey=["1234567890"]&amp;endkey=["1234567890",{}]
+</code></pre>
+
+<p>Zwraca przystanek oraz wszystkie rozkłady jazdy na danym przystanku. Aby pominąć przystanek, należy dodać parametr <code>skip=1</code>.</p>
+
+<p><strong>[list] filter</strong></p>
+
+<p>Ścieżka: <code>/_design/Timetables/_list/filter/&lt;widok></code><br />
+Metoda: <code>GET</code><br />
+Parametr: <code>widok</code>, <code>only</code> lub <code>except</code> - lista parametrów, połączonych przecinkiem, które mają (lub których nie mają) zawierać wartości zwrócone przez funckję mapującą<br />
+Odpowiedź: to samo co zwróci widok, z filtrowanymi wartościami</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl /_design/Timetables/_list/filter/by_line?only=stop,table&amp;limit=1
+</code></pre>
+
+<p>Zwraca jeden rozkład jazdy z polami: <code>stop</code> i <code>table</code>.</p>
+
+<p><a href="https://github.com/Stanley/bagatela/blob/master/features/timetables_design.feature">Zobacz scenariusze testujące <em>"_design/Timetables"</em>.</a></p>
 
 <h2 id="PRZYSTANEK">PRZYSTANEK</h2>
 
@@ -327,59 +346,80 @@ Odpowiedź: rozkład jazdy otrzymany ze źródła <code>klucz[0]</code>.</p>
 <li><code>location.lat</code> - szerokość geograficzna. Np. <em>50.06309891</em>.</li>
 <li><code>location.lon</code> - długość geograficzna. Np. <em>19.9326992</em>.</li>
 <li><code>name</code> - nazwa przystanku. Np. <em>"Teatr Bagatela"</em>.</li>
+<li><code>operates</code> (opcjonalnie) - lista typów pojazdów, które obsługuje przystanek. Np. <em>["Trams", "Buses"]</em>.</li>
 <li><code>polylines</code> (opcjonalnie) - tablica asocjacyjna, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków.</li>
 <li><code>type</code> - typ. Zawsze <em>"Stop"</em>.</li>
 <li><code>updated_at</code> - czas ostatniej modyfikacji.</li>
 </ul>
 
 
-<p>Definicje funkcji mapujących, redukujących i listujących przystanki są dokumentem o idenyfikatorze <a href="http://api.bagate.la/_design/Stop">"_design/Stop"</a>.</p>
+<p>Definicje funkcji mapujących, redukujących i listujących przystanki są dokumentem o idenyfikatorze <em>"_design/Stops"</em>.</p>
 
 <h3 id="Widoki">Widoki</h3>
 
-<p><strong>[map] by_name</strong></p>
-
-<p>Ścieżka: <code>?key=&lt;klucz></code><br />
-Metoda: <code>GET</code><br />
-Parametry: <code>klucz</code><br />
-Odpowiedź:</p>
-
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl
-</code></pre>
-
-<p>Ścieżka: <code>?startkey=&lt;klucz_początkowy>&amp;end_key=&lt;klucz_końcowy></code><br />
-Metoda: <code>GET</code><br />
-Parametry: <code>klucz_początkowy</code> oraz <code>klucz_końcowy</code><br />
-Odpowiedź:</p>
-
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl
-</code></pre>
-
-<p>Zobacz scenariusze testujące.</p>
-
 <p><strong>[map] by_line</strong></p>
 
-<h3 id="Listy">Listy</h3>
+<p><strong>UWAGA</strong>: <em>ten widok wymaga, aby rozkłady jazdy deklarowały konkretny przystanek na którym się znajdują w polu <code>stop_id</code>, które może być nie zdefiniowane.</em></p>
 
-<p><strong>filter</strong></p>
-
-<p>Ścieżka: <code>/_design/Stop/_list/filter/&lt;widok></code><br />
+<p>Ścieżka: <code>/_design/Stops/_view/by_line</code><br />
 Metoda: <code>GET</code><br />
-Parametry: <code>widok</code>, <code>only</code> lub <code>exclude</code></p>
+Odpowiedź: lista przystanków
+Kolejność sortowania: <code>line</code>, <code>destination</code>, <code>source</code></p>
 
-<p><strong>polyline</strong></p>
+<p>Przykładowe użycie:</p>
 
-<p>Ścieżka: <code>/_design/Stop/_list/polyline/by_line?startkey=&lt;klucz_początkowy>&amp;endkey=&lt;klucz_końcowy></code></p>
+<pre><code>curl -XGET /_view/by_line?startkey=["9","MISTRZEJOWICE"]&amp;endkey=["9","MISTRZEJOWICE",{}]
+</code></pre>
+
+<p>Zwraca wszystkie przystanki na linii <em>"9"</em>, jadącej w kierunku przystanku <em>"Mistrzejowice"</em>.</p>
+
+<p><strong>[map] by_name</strong></p>
+
+<p>Ścieżka: <code>/_design/Stops/_view/by_name</code><br />
+Metoda: <code>GET</code><br />
+Odpowiedź: lista przystanków<br />
+Kolejność sortowania: <code>name</code>, <code>address</code></p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl -XGET /_view/by_name?key=["Reymana","Aleja 3 maja"]
+</code></pre>
+
+<p>Zwraca przystanki o nazwie <em>"Reymana"</em> i adresie <em>"Aleja 3 maja"</em>. Uwaga: możemy otrzymać więcej niż jeden dokument, mimo że nie zdefiniowaliśmy zakresu klucza, a konkretną wartość, która w tym przypadku nie jest unikalna.</p>
+
+<!-- TODO: reduce by_name -->
+
+
+<p><strong>[list] filter</strong></p>
+
+<p>Ścieżka: <code>/_design/Stops/_list/filter/&lt;widok></code><br />
+Metoda: <code>GET</code><br />
+Parametr: <code>widok</code>, <code>only</code> lub <code>except</code> - lista parametrów, połączonych przecinkiem, które mają (lub których nie mają) zawierać wartości zwrócone przez funckję mapującą<br />
+Odpowiedź: to samo co zwróci widok, z filtrowanymi wartościami</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl -XGET http://api.bagate.la/kr/_design/Stops/_list/filter/by_name?except=polylines,type,updated_at&amp;limit=1
+</code></pre>
+
+<p>Zwraca jeden przystanek bez pól: <code>polylines</code>, <code>type</code> i <code>updated_at</code>.</p>
+
+<!--
+**[list] polyline**
+
+Ścieżka: `/_design/Stops/_list/polyline/<var>widok</var>`
+Metoda: `GET`  
+Parametr: `widok`
+-->
+
+
+<p><a href="https://github.com/Stanley/bagatela/blob/master/features/stops_design.feature">Zobacz scenariusze testujące <em>"_design/Stops"</em>.</a></p>
 
 <h3 id="Wyszukiwarka">Wyszukiwarka</h3>
 
 <p>Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji. Ponieważ silnikiem wyszukiwarki jest elasticsearch, pełna dokumentacja API znajduje się na stronie: <a href="http://www.elasticsearch.org/guide/reference/api/search/" data-bare-link="true">http://www.elasticsearch.org/guide/reference/api/search/</a>.</p>
 
-<p>Ścieżka: <code>/_search/Stop?q=&lt;fraza></code><br />
+<p>Ścieżka: <code>/_search/Stops?q=&lt;fraza></code><br />
 Metoda: <code>GET</code><br />
 Paramerty:</p>
 
@@ -397,14 +437,14 @@ Paramerty:</p>
 
 <p>Przykładowe użycia:</p>
 
-<pre><code>curl /_search/Stop?q=baszt
+<pre><code>curl /_search/Stops?q=baszt
 
-curl /_search/Stop?q=dworzec location:basztowa
+curl /_search/Stops?q=dworzec location:basztowa
 </code></pre>
 
 <p><strong>Alternatywne użycie:</strong></p>
 
-<p>Ścieżka: <code>/_search/Stop</code><br />
+<p>Ścieżka: <code>/_search/Stops</code><br />
 Metoda: <code>POST</code><br />
 Ładunek: Zapytanie DSL w formacie JSON</p>
 
@@ -412,11 +452,11 @@ Metoda: <code>POST</code><br />
 
 <p>Przykładowe użycia:</p>
 
-<pre><code>curl /_search/Stop -d '{
+<pre><code>&gt; curl -XPOST /_search/Stops -d '{
 }'
 </code></pre>
 
-<p>Zobacz scenariusze testujące.</p>
+<p><a href="https://github.com/Stanley/bagatela/blob/master/features/stops_search.feature">Zobacz scenariusze testujące.</a></p>
 
 <h2 id="WYSZUKIWARKA-PO-CZE-">WYSZUKIWARKA POŁĄCZEŃ</h2>
 
@@ -424,16 +464,16 @@ Metoda: <code>POST</code><br />
 
 <h2 id="REPLIKACJE">REPLIKACJE</h2>
 
-<p>Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych.</p>
+<p>Replikacje są wykorzystywane do synchronizacji dwóch kopii tej samej bazy danych.</p>
 
 <p>Ścieżka: <code>http://api.bagate.la/_replicate</code><br />
 Metoda: <code>POST</code><br />
-Parametry:</p>
+Parametry ładunku:</p>
 
 <ul>
 <li><code>source</code> - <em>kod_miasta</em> czyli identyfikator bazy danych będącej źródłem danych np.: <em>"kr"</em>.</li>
 <li><code>target</code> - baza danych do której eksportujemy dane np.: <em>"http://user:password@rozklady.cloudant.com/kr"</em>.</li>
-<li><code>continuous</code> (opcjonalnie) - jeżeli <em>true</em> replikacja będzie trwała do momentu w którym sami przerwiemy proces (wysyłając podobne zapytanie z parametrem <code>cancel</code><em>=true</em>)</li>
+<li><code>continuous</code> (opcjonalnie) - jeżeli <em>true</em> replikacja będzie trwała do momentu w którym sami przerwiemy proces (wysyłając podobne zapytanie z parametrem "<code>cancel</code>"<em>:true</em>)</li>
 </ul>
 
 
@@ -441,7 +481,31 @@ Parametry:</p>
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>curl -XPOST http://api.bagate.la/_replicate -d '{}'
+<pre><code>&gt; curl -XPOST http://api.bagate.la/_replicate -H 'Content-Type: application/json' -d '{
+  "source":"dw",
+  "target":"https://stanley:&lt;password>@stanley.cloudant.com/dw/"
+}'
+{
+  "ok":true,
+  "session_id":"c4f91d44ce906e0c05057d02c0e38935",
+  "source_last_seq":4,
+  "replication_id_version":2,
+  "history":[
+    {
+      "session_id":"c4f91d44ce906e0c05057d02c0e38935",
+      "start_time":"Thu, 30 Jun 2011 10:30:45 GMT",
+      "end_time":"Thu, 30 Jun 2011 10:30:47 GMT",
+      "start_last_seq":0,
+      "end_last_seq":4,
+      "recorded_seq":4,
+      "missing_checked":0,
+      "missing_found":2,
+      "docs_read":2,
+      "docs_written":2,
+      "doc_write_failures":0
+    }
+  ]
+}
 </code></pre>
 
 <h2 id="SCENARIUSZE-TESTUJ-CE">SCENARIUSZE TESTUJĄCE</h2>
@@ -451,7 +515,7 @@ Parametry:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Stanisław Wasiutyński</li>
-    <li class='tc'>June 2011</li>
+    <li class='tc'>July 2011</li>
     <li class='tr'>bagatela(1)</li>
   </ol>
 

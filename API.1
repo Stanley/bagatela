@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BAGATELA" "1" "June 2011" "Stanisław Wasiutyński" ""
+.TH "BAGATELA" "1" "July 2011" "Stanisław Wasiutyński" ""
 .
 .SH "NAME"
 \fBbagatela\fR \- wyszukiwarka, bagatela, połączeń w komunikacji miejskiej
@@ -49,23 +49,22 @@ Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli 
 
 $ curl api\.bagate\.la \-\-verbose
 * About to connect() to api\.bagate\.la port 80 (#0)
-* Trying 77\.79\.226\.169\.\.\. connected
-* Connected to db\.wasiutynski\.net (77\.79\.226\.169) port 80 (#0)
+*   Trying 178\.32\.166\.216\.\.\. connected
+* Connected to api\.bagate\.la (178\.32\.166\.216) port 80 (#0)
 > GET / HTTP/1\.1
-> User\-Agent: curl/7\.21\.0 (x86\e_64\-pc\-linux\-gnu) libcurl/7\.21\.0 OpenSSL/0\.9\.8o zlib/1\.2\.3\.4 libidn/1\.18
+> User\-Agent: curl/7\.21\.3 (x86_64\-pc\-linux\-gnu) libcurl/7\.21\.3 OpenSSL/0\.9\.8o zlib/1\.2\.3\.4 libidn/1\.18
 > Host: api\.bagate\.la
 > Accept: */*
 >
 < HTTP/1\.1 200 OK
 < Server: nginx/0\.5\.36
-< Date: Fri, 29 Oct 2010 10:49:50 GMT
+< Date: Thu, 30 Jun 2011 10:01:43 GMT
 < Content\-Type: text/plain;charset=utf\-8
+< Transfer\-Encoding: chunked
 < Connection: keep\-alive
-< Content\-Length: 41
-< Cache\-Control: must\-revalidate
 <
-{"version": 29102010, "message": "Welcome aboard!"}
-* Connection #0 to host db\.wasiutynski\.net left intact
+{"message":"Welcome aboard!","revision":"0348acb71ec"}
+* Connection #0 to host api\.bagate\.la left intact
 * Closing connection #0
 .
 .fi
@@ -91,7 +90,7 @@ Każdy dokument posiada unikalny identyfikator \fB_id\fR oraz numer rewizji \fB_
 .
 .nf
 
-http://api\.bagate\.la/kr/d6e2a0dda625818966414846799bd9a9
+http://api\.bagate\.la/kr/d778919c8c13d6dfc59d8a4fbcffa40
 .
 .fi
 .
@@ -116,7 +115,18 @@ Przykładowe użycie:
 .
 .nf
 
-curl
+> curl \-XGET http://api\.bagate\.la/kr/d778919c8c13d6dfc59d8a4fbcffa409
+{
+  "_id":"d778919c8c13d6dfc59d8a4fbcffa409",
+  "_rev":"3\-c7ea32524b4fb94e66d7214a2eb62427",
+  "type":"Stop",
+  "updated_at":"2011\-06\-24T08:47:04Z",
+  "name":"Agatowa",
+  "location":{
+    "lat":50\.02198398,
+    "lon":20\.04249077
+  }
+}
 .
 .fi
 .
@@ -150,6 +160,9 @@ Parametry:
 \fBendkey\fR \- koniec przedziału włącznie\. Domyślnie największa możliwa wartość\.
 .
 .IP "\(bu" 4
+\fBendkey_docid\fR \- identyfikator ostatniego dokumentu w odpowiedzi (używane do paginacji)\.
+.
+.IP "\(bu" 4
 \fBgroup\fR \- jeżeli \fIfalse\fR to redukuje wszystkie dokumenty zgodnie z funkcją redukującą do jednej wartości\. W przeciwnym wypadku wyniki przetwarzania każdego z dokumentów są grupowane\. Domyślnie \fIfalse\fR\.
 .
 .IP "\(bu" 4
@@ -157,6 +170,9 @@ Parametry:
 .
 .IP "\(bu" 4
 \fBinclude_docs\fR \- jeżeli \fItrue\fR, dołącza oryginalny dokument w polu \fBdoc\fR\. Domyślnie \fIfalse\fR\.
+.
+.IP "\(bu" 4
+\fBinclusive_end\fR \- definiuje czy dokument o kluczu \fBendkey\fR jest dołączany do odpowiedzi\. Domyślnie \fItrue\fR\.
 .
 .IP "\(bu" 4
 \fBkey\fR \- dokładna wartość klucza\.
@@ -168,7 +184,16 @@ Parametry:
 \fBreduce\fR \- użyj funkcji redukującej\. Domyślna wartość, gdy funkcja redukująca jest zdefiniowana, to \fItrue\fR\.
 .
 .IP "\(bu" 4
+\fBskip\fR \- liczba pomijanych dokumentów\. Domyślnie \fI0\fR\.
+.
+.IP "\(bu" 4
+\fBstale\fR \- definiuje czy akceptować przedawniony widok, w celu otrzymania natychmiastowej odpowiedzi (w przypadku gdy nowy widok jeszcze nie skończył się generować)\. Możliwa wartość: \fIok\fR\.
+.
+.IP "\(bu" 4
 \fBstartkey\fR \- początek przedziału włącznie\. Domyślnie najmniejsza możliwa wartość\.
+.
+.IP "\(bu" 4
+\fBstartkey_docid\fR \- identyfikator pierwszego dokumentu w odpowiedzi (używane do paginacji)\.
 .
 .IP "" 0
 .
@@ -232,22 +257,22 @@ Fizycznie reprezentuje wydruk z przystanku\. Jest związany z jedną linią i z 
 .IP "" 0
 .
 .SS "Widoki"
-Definicje funkcji mapujących i redukujących rozkłady jazdy, są dokumentem o idenyfikatorze \fB"_design/Timetable"\fR\.
+Definicje funkcji mapujących, redukujących i listujących rozkłady jazdy, są dokumentem o idenyfikatorze \fI"_design/Timetables"\fR\.
 .
 .P
 \fB[map] by_line\fR
 .
 .P
-Ścieżka: \fB/_design/Timetable/_view/by_line?key=<klucz>\fR
+Ścieżka: \fB/_design/Timetables/_view/by_line?reduce=false\fR
 .
 .br
 Metoda: \fBGET\fR
 .
 .br
-Parametry: \fBklucz\fR
+Odpowiedź: lista rozkładów jazdy
 .
 .br
-Odpowiedź:
+Kolejność sortowania: \fBline\fR, \fBdestination\fR, \fBsource\fR
 .
 .P
 Przykładowe użycie:
@@ -256,168 +281,188 @@ Przykładowe użycie:
 .
 .nf
 
-curl
+curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_view/by_line?startkey=["6","SALWATOR"]&endkey=["6","SALWATOR",{}]&reduce=false
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Ścieżka: \fB/_design/Timetable/_view/by_line?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>\fR
-.
-.br
-Metoda: \fBGET\fR
-.
-.br
-Parametry: \fBklucz_początkowy\fR oraz \fBklucz_końcowy\fR
-.
-.br
-Kolejność sortowania: \fBfoo\fR, \fBbar\fR
-.
-.br
-Odpowiedź:
-.
-.P
-Przykładowe użycie:
-.
-.IP "" 4
-.
-.nf
-
-curl
-.
-.fi
-.
-.IP "" 0
-.
-.P
-Zobacz scenariusze testujące\.
+Zwraca listę rozkładów na linii numer \fI"6"\fR, jadącej w kierunku przystanku \fI"Salwator"\fR, posortowanych od pierwszego do ostatniego\.
 .
 .P
 \fB[reduce] by_line\fR
 .
 .P
-Jeżeli interesuje nas tylko opis danej lini, musimy skorzystać z widoku wygenerowanego funkcją redukującą (z wielu rozkładów jazdy generowany jest dokument jednej linii)\.
+Jeżeli interesuje nas opis danej lini (będący skrótem informacji z wielu rozkładów jazdy), musimy skorzystać z widoku wygenerowanego funkcją redukującą\.
 .
 .P
-Ścieżka: \fB/_design/Timetable/_view/by_stop\fR Odpowiedź:
+Ścieżka: \fB/_design/Timetables/_view/by_line\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Odpowiedź: liczba dokumentów w danej grupie
 .
 .P
 Przykładowe użycia:
 .
-.P
-curl
-.
-.P
-curl
-.
-.P
-\fB[map] by_stop\fR
-.
-.P
-Ścieżka: \fB/_design/Timetable/_view/by_stop?key=<klucz>\fR
-.
-.br
-Metoda: \fBGET\fR
-.
-.br
-Parametry: \fBklucz\fR
-.
-.br
-Odpowiedź:
-.
-.P
-Przykładowe użycie:
-.
 .IP "" 4
 .
 .nf
 
-curl
+curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_view/by_line?key=["X","Y"]&group_level=2
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Ścieżka: \fB/_design/Timetable/_view/by_stop?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>\fR
-.
-.br
-Metoda: \fBGET\fR
-.
-.br
-Parametry: \fBklucz_początkowy\fR oraz \fBklucz_końcowy\fR
-.
-.br
-Odpowiedź:
-.
-.P
-Przykładowe użycie:
+Zwraca liczbę przystanków na linii \fIX\fR w kierunku \fIY\fR\.
 .
 .IP "" 4
 .
 .nf
 
-curl
+curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_view/by_line?group_level=1
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Zobacz scenariusze testujące\.
-.
-.P
-\fB[map] by_stop_id\fR
-.
-.P
-Ścieżka: \fB/_design/Timetable/_view/by_stop_id?key=<klucz>\fR
-.
-.br
-Metoda: \fBGET\fR
-.
-.br
-Parametry: \fBklucz\fR
-.
-.br
-Odpowiedź:
+Zwraca liczbę przystanków na wszystkich liniach o tym samym numerze (tam i z powrotem)\. Zapytanie jest również przydatne, gdy chcemy uzyskać listę numerów linii (które w zwróconym rezultacie są kluczem; parametr \fBkey\fR)\. Należy pamiętać, że numery linii są ciągami znaków, a nie liczb, dlatego linia \fI"10"\fR pojawi się przed \fI"2"\fR\.
 .
 .P
 \fB[map] by_source\fR
 .
 .P
-Ścieżka: \fB/_design/Timetable/_view/by_source?key=<klucz>\fR
+Ścieżka: \fB/_design/Timetables/_view/by_source\fR
 .
 .br
 Metoda: \fBGET\fR
 .
 .br
-Parametry: \fBklucz\fR
+Odpowiedź: lista rozkładów jazdy
 .
 .br
-Odpowiedź: rozkład jazdy otrzymany ze źródła \fBklucz[0]\fR\.
+Kolejność sortowania: \fBsource\fR, \fBvalid_from\fR
 .
 .P
-Przykładowe użycie\. Aktualny rozkład:
+Przykładowe użycie\.
 .
 .IP "" 4
 .
 .nf
 
-curl ?limit=1
+curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_view/by_source?startkey=["http://rozklady\.mpk\.krakow\.pl/aktualne/0000/0000t001\.htm"]&limit=1
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Zobacz scenariusze testujące\.
-.
-.SS "Listy"
-\fBfilter\fR
+Zwraca najnowszy rozkład jazdy pozyskany z danego źródła\.
 .
 .P
-Ścieżka: \fB/_design/Timetable/\fR
+\fB[map] by_stop\fR
+.
+.P
+Ścieżka: \fB/_design/Timetables/_view/by_stop\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Odpowiedź: lista przystanków i rozkładów jazdy
+.
+.br
+Kolejność sortowania: \fBstop\fR, \fBline\fR, \fBdestination\fR
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl /_design/Timetables/_view/by_stop?key=["125","XYZ"]
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zwraca rozkłady jazdy linii \fI"125"\fR na przystanku \fI"XYZ"\fR (w obie strony)\.
+.
+.P
+\fB[map] by_stop_id\fR
+.
+.P
+Ścieżka: \fB/_design/Timetables/_view/by_stop_id\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Odpowiedź: lista przystanków i rozkładów jazdy
+.
+.br
+Kolejność sortowania przystanków: \fBid\fR
+.
+.br
+Kolejność sortowania rozkładów: \fBline\fR
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl /_design/Timetables/_view/by_stop_id?startkey=["1234567890"]&endkey=["1234567890",{}]
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zwraca przystanek oraz wszystkie rozkłady jazdy na danym przystanku\. Aby pominąć przystanek, należy dodać parametr \fBskip=1\fR\.
+.
+.P
+\fB[list] filter\fR
+.
+.P
+Ścieżka: \fB/_design/Timetables/_list/filter/<widok>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametr: \fBwidok\fR, \fBonly\fR lub \fBexcept\fR \- lista parametrów, połączonych przecinkiem, które mają (lub których nie mają) zawierać wartości zwrócone przez funckję mapującą
+.
+.br
+Odpowiedź: to samo co zwróci widok, z filtrowanymi wartościami
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl /_design/Timetables/_list/filter/by_line?only=stop,table&limit=1
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zwraca jeden rozkład jazdy z polami: \fBstop\fR i \fBtable\fR\.
+.
+.P
+Zobacz scenariusze testujące \fI"_design/Timetables"\fR\. \fIhttps://github\.com/Stanley/bagatela/blob/master/features/timetables_design\.feature\fR
 .
 .SH "PRZYSTANEK"
 Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się pojazdy komunikacji\.
@@ -443,6 +488,9 @@ Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się 
 \fBname\fR \- nazwa przystanku\. Np\. \fI"Teatr Bagatela"\fR\.
 .
 .IP "\(bu" 4
+\fBoperates\fR (opcjonalnie) \- lista typów pojazdów, które obsługuje przystanek\. Np\. \fI["Trams", "Buses"]\fR\.
+.
+.IP "\(bu" 4
 \fBpolylines\fR (opcjonalnie) \- tablica asocjacyjna, gdzie kluczem jest identyfikator dowolnego przystanku, a wartością tablica współrzędnych, tworzących linię łamaną, połączenie tych dwóch przystanków\.
 .
 .IP "\(bu" 4
@@ -454,22 +502,53 @@ Fizyczna wiata lub słup przy którym wiszą rozkłady jazdy i zatrzymują się 
 .IP "" 0
 .
 .P
-Definicje funkcji mapujących, redukujących i listujących przystanki są dokumentem o idenyfikatorze "_design/Stop" \fIhttp://api\.bagate\.la/_design/Stop\fR\.
+Definicje funkcji mapujących, redukujących i listujących przystanki są dokumentem o idenyfikatorze \fI"_design/Stops"\fR\.
 .
 .SS "Widoki"
+\fB[map] by_line\fR
+.
+.P
+\fBUWAGA\fR: \fIten widok wymaga, aby rozkłady jazdy deklarowały konkretny przystanek na którym się znajdują w polu \fBstop_id\fR, które może być nie zdefiniowane\.\fR
+.
+.P
+Ścieżka: \fB/_design/Stops/_view/by_line\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Odpowiedź: lista przystanków Kolejność sortowania: \fBline\fR, \fBdestination\fR, \fBsource\fR
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl \-XGET /_view/by_line?startkey=["9","MISTRZEJOWICE"]&endkey=["9","MISTRZEJOWICE",{}]
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zwraca wszystkie przystanki na linii \fI"9"\fR, jadącej w kierunku przystanku \fI"Mistrzejowice"\fR\.
+.
+.P
 \fB[map] by_name\fR
 .
 .P
-Ścieżka: \fB?key=<klucz>\fR
+Ścieżka: \fB/_design/Stops/_view/by_name\fR
 .
 .br
 Metoda: \fBGET\fR
 .
 .br
-Parametry: \fBklucz\fR
+Odpowiedź: lista przystanków
 .
 .br
-Odpowiedź:
+Kolejność sortowania: \fBname\fR, \fBaddress\fR
 .
 .P
 Przykładowe użycie:
@@ -478,23 +557,29 @@ Przykładowe użycie:
 .
 .nf
 
-curl
+curl \-XGET /_view/by_name?key=["Reymana","Aleja 3 maja"]
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Ścieżka: \fB?startkey=<klucz_początkowy>&end_key=<klucz_końcowy>\fR
+Zwraca przystanki o nazwie \fI"Reymana"\fR i adresie \fI"Aleja 3 maja"\fR\. Uwaga: możemy otrzymać więcej niż jeden dokument, mimo że nie zdefiniowaliśmy zakresu klucza, a konkretną wartość, która w tym przypadku nie jest unikalna\.
+.
+.P
+\fB[list] filter\fR
+.
+.P
+Ścieżka: \fB/_design/Stops/_list/filter/<widok>\fR
 .
 .br
 Metoda: \fBGET\fR
 .
 .br
-Parametry: \fBklucz_początkowy\fR oraz \fBklucz_końcowy\fR
+Parametr: \fBwidok\fR, \fBonly\fR lub \fBexcept\fR \- lista parametrów, połączonych przecinkiem, które mają (lub których nie mają) zawierać wartości zwrócone przez funckję mapującą
 .
 .br
-Odpowiedź:
+Odpowiedź: to samo co zwróci widok, z filtrowanymi wartościami
 .
 .P
 Przykładowe użycie:
@@ -503,41 +588,23 @@ Przykładowe użycie:
 .
 .nf
 
-curl
+curl \-XGET http://api\.bagate\.la/kr/_design/Stops/_list/filter/by_name?except=polylines,type,updated_at&limit=1
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Zobacz scenariusze testujące\.
+Zwraca jeden przystanek bez pól: \fBpolylines\fR, \fBtype\fR i \fBupdated_at\fR\.
 .
 .P
-\fB[map] by_line\fR
-.
-.SS "Listy"
-\fBfilter\fR
-.
-.P
-Ścieżka: \fB/_design/Stop/_list/filter/<widok>\fR
-.
-.br
-Metoda: \fBGET\fR
-.
-.br
-Parametry: \fBwidok\fR, \fBonly\fR lub \fBexclude\fR
-.
-.P
-\fBpolyline\fR
-.
-.P
-Ścieżka: \fB/_design/Stop/_list/polyline/by_line?startkey=<klucz_początkowy>&endkey=<klucz_końcowy>\fR
+Zobacz scenariusze testujące \fI"_design/Stops"\fR\. \fIhttps://github\.com/Stanley/bagatela/blob/master/features/stops_design\.feature\fR
 .
 .SS "Wyszukiwarka"
 Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji\. Ponieważ silnikiem wyszukiwarki jest elasticsearch, pełna dokumentacja API znajduje się na stronie: \fIhttp://www\.elasticsearch\.org/guide/reference/api/search/\fR\.
 .
 .P
-Ścieżka: \fB/_search/Stop?q=<fraza>\fR
+Ścieżka: \fB/_search/Stops?q=<fraza>\fR
 .
 .br
 Metoda: \fBGET\fR
@@ -572,9 +639,9 @@ Przykładowe użycia:
 .
 .nf
 
-curl /_search/Stop?q=baszt
+curl /_search/Stops?q=baszt
 
-curl /_search/Stop?q=dworzec location:basztowa
+curl /_search/Stops?q=dworzec location:basztowa
 .
 .fi
 .
@@ -584,7 +651,7 @@ curl /_search/Stop?q=dworzec location:basztowa
 \fBAlternatywne użycie:\fR
 .
 .P
-Ścieżka: \fB/_search/Stop\fR
+Ścieżka: \fB/_search/Stops\fR
 .
 .br
 Metoda: \fBPOST\fR
@@ -602,7 +669,7 @@ Przykładowe użycia:
 .
 .nf
 
-curl /_search/Stop \-d \'{
+> curl \-XPOST /_search/Stops \-d \'{
 }\'
 .
 .fi
@@ -610,13 +677,13 @@ curl /_search/Stop \-d \'{
 .IP "" 0
 .
 .P
-Zobacz scenariusze testujące\.
+Zobacz scenariusze testujące\. \fIhttps://github\.com/Stanley/bagatela/blob/master/features/stops_search\.feature\fR
 .
 .SH "WYSZUKIWARKA POŁĄCZEŃ"
 Comming soon\.
 .
 .SH "REPLIKACJE"
-Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy danych\.
+Replikacje są wykorzystywane do synchronizacji dwóch kopii tej samej bazy danych\.
 .
 .P
 Ścieżka: \fBhttp://api\.bagate\.la/_replicate\fR
@@ -625,7 +692,7 @@ Replikacje są wykorzystywane do synchronizacji dwóch instancji tej samej bazy 
 Metoda: \fBPOST\fR
 .
 .br
-Parametry:
+Parametry ładunku:
 .
 .IP "\(bu" 4
 \fBsource\fR \- \fIkod_miasta\fR czyli identyfikator bazy danych będącej źródłem danych np\.: \fI"kr"\fR\.
@@ -634,7 +701,7 @@ Parametry:
 \fBtarget\fR \- baza danych do której eksportujemy dane np\.: \fI"http://user:password@rozklady\.cloudant\.com/kr"\fR\.
 .
 .IP "\(bu" 4
-\fBcontinuous\fR (opcjonalnie) \- jeżeli \fItrue\fR replikacja będzie trwała do momentu w którym sami przerwiemy proces (wysyłając podobne zapytanie z parametrem \fBcancel\fR\fI=true\fR)
+\fBcontinuous\fR (opcjonalnie) \- jeżeli \fItrue\fR replikacja będzie trwała do momentu w którym sami przerwiemy proces (wysyłając podobne zapytanie z parametrem "\fBcancel\fR"\fI:true\fR)
 .
 .IP "" 0
 .
@@ -648,7 +715,31 @@ Przykładowe użycie:
 .
 .nf
 
-curl \-XPOST http://api\.bagate\.la/_replicate \-d \'{}\'
+> curl \-XPOST http://api\.bagate\.la/_replicate \-H \'Content\-Type: application/json\' \-d \'{
+  "source":"dw",
+  "target":"https://stanley:<password>@stanley\.cloudant\.com/dw/"
+}\'
+{
+  "ok":true,
+  "session_id":"c4f91d44ce906e0c05057d02c0e38935",
+  "source_last_seq":4,
+  "replication_id_version":2,
+  "history":[
+    {
+      "session_id":"c4f91d44ce906e0c05057d02c0e38935",
+      "start_time":"Thu, 30 Jun 2011 10:30:45 GMT",
+      "end_time":"Thu, 30 Jun 2011 10:30:47 GMT",
+      "start_last_seq":0,
+      "end_last_seq":4,
+      "recorded_seq":4,
+      "missing_checked":0,
+      "missing_found":2,
+      "docs_read":2,
+      "docs_written":2,
+      "doc_write_failures":0
+    }
+  ]
+}
 .
 .fi
 .
