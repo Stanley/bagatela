@@ -1,7 +1,7 @@
 Bagatela - wyszukiwarka połączeń komunikacji miejskiej.
 =======================================================
 
-Bagatela udostępnia interfejs programistyczny do wyszukiwania przystanków i optymalnych połączeń w sieci komunikacji miejskiej.
+Bagatela udostępnia interfejs programistyczny do wyszukiwania przystanków <strike>i optymalnych połączeń</strike> w sieci komunikacji miejskiej.
 
 Zanim zaczniesz czytać dalej
 ----------------------------
@@ -15,7 +15,7 @@ Wykorzystywane technologie
 * Web framework: [Sinatra.rb](http://www.sinatrarb.com/)
 * Testing frameworks: [Cucumber](http://cukes.info) i [RSpec](http://rspec.info/) + [Rack::Test](http://brynary.github.com/rack-test/)
 * Bazy danych: połączeń [Neo4j](http://neo4j.org/) i rozkładów jazdy [CouchDB](http://couchdb.apache.org)
-* Small-text search: [Picky](http://github.com/floere/picky)
+* Full-text search: [Elasticsearch](http://www.elasticsearch.org/)
 
 Instalacja
 ----------
@@ -27,7 +27,7 @@ Ustaw domyślny interpreter ruby na jruby (jeżeli nie korszystasz z [Ruby Versi
 
 Ściągamy repozytorium i zainstalemy niezbędne pakiety (wymagany [git](http://git-scm.com/) i [bundler](http://gembundler.com/):)
 
-    $ git clone http://github.com/Stanley/bagatela
+    $ git clone git://github.com/Stanley/bagatela.git
     $ cd bagatela
     $ bundle install
 
@@ -59,7 +59,7 @@ Uruchomienie
 
         $ bundle exec cucumber features/
 
-  Uwaga: domyślnie test przeprowadzony jest na `http://localhost:8000`. Z powodu braku praw do zapisu, zmiana tego parametru na `http://api.bagate.la` w pliku `features/support/env.rb` nie ma sensu (choć teoretycznie jest możliwa). W przyszłości w systemie produkcyjnym zostanie udostępniony jeden użytkownik i baza danych do celów testowych.
+  Uwaga: domyślnie test przeprowadzony jest na `http://localhost:8000`. Z powodu braku praw do zapisu, zmiana tego parametru na `http://api.bagate.la` w pliku `features/support/env.rb` nie ma sensu (choć teoretycznie jest możliwa). W przyszłości w systemie produkcyjnym zostanie udostępniony jeden użytkownik i baza danych do celów testowych. Testy wymagają uruchomionej bazy CouchDB.
 
         $ bundle exec spec spec/
 
@@ -72,4 +72,4 @@ Uruchomienie
 Dokumentacja API
 ----------------
 
-Docelowo <http://stanley.github.com/bagatela>. Do czasu uruchomienia API nie jest publicznie dostępna.
+Docelowo <http://stanley.github.com/bagatela/API.1.html>.
