@@ -6,7 +6,7 @@
       "map": "function(doc) {
         if(doc.type==\"Timetable\"){
           var destination = doc.destination || doc.route.split(/-|,/).reverse()[0].replace(/^\\s*/, \"\").replace(/\\s*$/, \"\");
-          emit([doc.stop, parseInt(doc.line), destination], doc);
+          emit([doc.stop, doc.line, destination], doc);
         }
       }"
     },

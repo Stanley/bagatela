@@ -278,7 +278,7 @@ Feature: List timetables
       """
       { "total_rows": 4, "offset": 0, "rows": [
           { "id": "4",
-            "key": [ "Bagatela", 14, "BRONOWICE" ],
+            "key": [ "Bagatela", "14", "BRONOWICE" ],
             "value": {
               "_id": "4",
               "line": "14",
@@ -290,7 +290,7 @@ Feature: List timetables
             }
           },
           { "id": "5",
-            "key": [ "Bagatela", 14, "MISTRZEJOWICE" ],
+            "key": [ "Bagatela", "14", "MISTRZEJOWICE" ],
             "value": {
               "_id": "5",
               "line": "14",
@@ -302,7 +302,7 @@ Feature: List timetables
             }
           },
           { "id": "7",
-            "key": [ "Bagatela", 15, "CICHY KĄCIK" ],
+            "key": [ "Bagatela", "15", "CICHY KĄCIK" ],
             "value": {
               "_id": "7",
               "line": "15",
@@ -314,7 +314,7 @@ Feature: List timetables
             }
           },
           { "id": "6",
-            "key": [ "Bagatela", 15, "PLESZÓW" ],
+            "key": [ "Bagatela", "15", "PLESZÓW" ],
             "value": {
               "_id": "6",
               "line": "15",
@@ -329,7 +329,7 @@ Feature: List timetables
       }
       """
     # Find timetables by stop name and line number
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop?startkey=["Bagatela",14]&endkey=["Bagatela",14,{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop?startkey=["Bagatela","14"]&endkey=["Bagatela","14",{}]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -337,7 +337,7 @@ Feature: List timetables
        "offset": 0,
        "rows": 
         [{"id": "4",
-          "key": ["Bagatela", 14, "BRONOWICE"],
+          "key": ["Bagatela", "14", "BRONOWICE"],
           "value": {
             "_id": "4",
             "line": "14",
@@ -348,7 +348,7 @@ Feature: List timetables
             "table": {},
             "type": "Timetable"}},
          {"id": "5",
-          "key": ["Bagatela", 14, "MISTRZEJOWICE"],
+          "key": ["Bagatela", "14", "MISTRZEJOWICE"],
           "value": {
             "_id": "5",
             "line": "14",
@@ -360,7 +360,7 @@ Feature: List timetables
             "type": "Timetable"}}]}
       """
     # Find one timetable by stop name, line number and it's destination
-    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop?key=["Bagatela",14,"BRONOWICE"]
+    When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_view/by_stop?key=["Bagatela","14","BRONOWICE"]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -368,7 +368,7 @@ Feature: List timetables
        "offset": 0,
        "rows": 
         [{"id": "4",
-          "key": ["Bagatela", 14, "BRONOWICE"],
+          "key": ["Bagatela", "14", "BRONOWICE"],
           "value": {
             "_id": "4",
             "line": "14",
@@ -422,7 +422,7 @@ Feature: List timetables
       And the response should be:
       """
       {"total_rows": 1, "offset": 0, "rows": [
-        {"id": "1", "key": ["Darwina", 1, "POCZTA GŁÓWNA"], "value": {"stop": "Darwina", "line": "1"}}
+        {"id": "1", "key": ["Darwina", "1", "POCZTA GŁÓWNA"], "value": {"stop": "Darwina", "line": "1"}}
       ]}
       """
     When I send a GET request to http://api.bagate.la/kr/_design/Timetables/_list/filter/by_stop?except=_id,_rev,route,table
@@ -430,6 +430,6 @@ Feature: List timetables
       And the response should be:
       """
       {"total_rows": 1, "offset": 0, "rows": [
-        {"id": "1", "key": ["Darwina", 1, "POCZTA GŁÓWNA"], "value": {"line": "1", "stop": "Darwina", "valid_since": "14.10.2010", "type": "Timetable"}}
+        {"id": "1", "key": ["Darwina", "1", "POCZTA GŁÓWNA"], "value": {"line": "1", "stop": "Darwina", "valid_since": "14.10.2010", "type": "Timetable"}}
       ]}
       """
