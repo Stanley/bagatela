@@ -22,25 +22,27 @@ Oto kody miast, których rozkłady są aktualnie gromadzone (oczekuj nowych mias
 ### Przykłady
 Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli `curl` i zostały wykonane w systemie GNU/Linux.
 
-    $ curl api.bagate.la --verbose
-    * About to connect() to api.bagate.la port 80 (#0)
-    *   Trying 178.32.166.216... connected
-    * Connected to api.bagate.la (178.32.166.216) port 80 (#0)
-    > GET / HTTP/1.1
-    > User-Agent: curl/7.21.3 (x86_64-pc-linux-gnu) libcurl/7.21.3 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18
-    > Host: api.bagate.la
-    > Accept: */*
-    > 
-    < HTTP/1.1 200 OK
-    < Server: nginx/0.5.36
-    < Date: Thu, 30 Jun 2011 10:01:43 GMT
-    < Content-Type: text/plain;charset=utf-8
-    < Transfer-Encoding: chunked
-    < Connection: keep-alive
-    < 
-    {"message":"Welcome aboard!","revision":"0348acb71ec"}
-    * Connection #0 to host api.bagate.la left intact
-    * Closing connection #0
+    curl http://api.bagate.la --verbose
+
+<pre><code>* About to connect() to api.bagate.la port 80 (#0)
+*   Trying 31.222.178.135... connected
+* Connected to api.bagate.la (31.222.178.135) port 80 (#0)
+> GET / HTTP/1.1
+> User-Agent: curl/7.21.3 (x86_64-pc-linux-gnu) libcurl/7.21.3 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18
+> Host: api.bagate.la
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Content-Type: application/json
+< Connection: keep-alive
+< Status: 200
+< X-Powered-By: Phusion Passenger (mod_rails/mod_rack) 3.0.7
+< Content-Length: 48
+< Server: nginx/1.0.4 + Phusion Passenger 3.0.7 (mod_rails/mod_rack)
+< 
+* Connection #0 to host api.bagate.la left intact
+* Closing connection #0
+{"message":"Welcome aboard!","version":"40f6ca"}</code></pre>
 
 ### Debugging
 Flaga `--verbose` wyświetla bardziej szczegółowe informacje o połączeniu. Więcej informacji o narzędziu `curl` znajdziesz w [jego dokumentacji](http://curl.haxx.se/docs/manpage.html). Przy nauce protokołu, przydatne mogą okazać się również [inne](http://justniffer.sourceforge.net/index.html) [narzędzia](http://postbin.org).
@@ -57,27 +59,28 @@ Dokument jest podstawową strukturą organizacji danych w bazie. Motywacją uży
 
 Każdy dokument posiada unikalny identyfikator `_id` oraz numer rewizji `_rev`. Atrybuty te są nadawane automatycznie przez bazę danych. Aby otrzymać pojedynczy dokument, (prawie zawsze) wystarczy przekazać jedynie identyfikator `_id`. Np.:
 
-	http://api.bagate.la/kr/d778919c8c13d6dfc59d8a4fbcffa40
+	http://api.bagate.la/kr/d778919c8c13d6dfc59d8a4fbcffa409
 
-Ścieżka: `/<id>?rev=<rev>`  
+Ścieżka: `/<id>`  
 Metoda: `GET`  
-Parametry: `id`, `rev` (opcjonalnie)  
-Odpowiedź: dokument o identyfikatorze `id` i numerze rewizji `rev` (domyślnie najnowsza rewizja).
+Parametry: `id`, `rev` (opcjonalnie) - numer rewizji  
+Odpowiedź: dokument o identyfikatorze `id` (domyślnie najnowsza rewizja).
 
 Przykładowe użycie:
 
-    > curl -XGET http://api.bagate.la/kr/d778919c8c13d6dfc59d8a4fbcffa409
-    {
-      "_id":"d778919c8c13d6dfc59d8a4fbcffa409",
-      "_rev":"3-c7ea32524b4fb94e66d7214a2eb62427",
-      "type":"Stop",
-      "updated_at":"2011-06-24T08:47:04Z",
-      "name":"Agatowa",
-      "location":{
-        "lat":50.02198398,
-        "lon":20.04249077
-      }
-    }
+    curl -XGET http://api.bagate.la/kr/d778919c8c13d6dfc59d8a4fbcffa409
+
+<pre class="highlight"><code class="language-javascript">{
+  "_id":"d778919c8c13d6dfc59d8a4fbcffa409",
+  "_rev":"3-c7ea32524b4fb94e66d7214a2eb62427",
+  "type":"Stop",
+  "updated_at":"2011-06-24T08:47:04Z",
+  "name":"Agatowa",
+  "location":{
+    "lat":50.02198398,
+    "lon":20.04249077
+  }
+}</code></pre>
 
 Przeczytaj więcej o dokumentach w CouchDB na: <http://guide.couchdb.org/editions/1/en/api.html#documents>.
 
@@ -163,9 +166,9 @@ Odpowiedź: liczba dokumentów w danej grupie
 
 Przykładowe użycia:
 
-    curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_line?key=["X","Y"]&group_level=2
+    curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_line?startkey=["113","ALEJA PRZYJAŹNI"]&endkey=["113","ALEJA PRZYJAŹNI",{}]&group_level=2
 
-Zwraca liczbę przystanków na linii *X* w kierunku *Y*.
+Zwraca liczbę przystanków na linii *113* w kierunku przystanku *Aleja Przyjaźni*.
 
     curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_line?group_level=1
 
@@ -193,11 +196,13 @@ Kolejność sortowania: `stop`, `line`, `destination`
 
 Przykładowe użycie:
 
-    curl /_design/Timetables/_view/by_stop?key=["125","XYZ"]
+    curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_stop?key=["Agatowa","125","ZŁOCIEŃ"]
 
-Zwraca rozkłady jazdy linii *"125"* na przystanku *"XYZ"* (w obie strony).
+Zwraca rozkłady jazdy linii *"125"*, w stronę przystanku *"Złocień"*, na przystanku *"Agatowa"*.
 
 **[map] by\_stop\_id**
+
+**UWAGA**: *ten widok wymaga, aby rozkłady jazdy deklarowały konkretny przystanek na którym się znajdują w polu `stop_id`, które może być nie zdefiniowane.*
 
 Ścieżka: `/_design/Timetables/_view/by_stop_id`  
 Metoda: `GET`  
@@ -207,7 +212,7 @@ Kolejność sortowania rozkładów: `line`
 
 Przykładowe użycie:
 
-    curl /_design/Timetables/_view/by_stop_id?startkey=["1234567890"]&endkey=["1234567890",{}]
+    curl -XGET http://api.bagate.la/kr/_design/Timetables/_view/by_stop_id?startkey=["d778919c8c13d6dfc59d8a4fbcfeeb5f"]&endkey=["d778919c8c13d6dfc59d8a4fbcfeeb5f",{}]
 
 Zwraca przystanek oraz wszystkie rozkłady jazdy na danym przystanku. Aby pominąć przystanek, należy dodać parametr `skip=1`.
 
@@ -220,7 +225,7 @@ Odpowiedź: to samo co zwróci widok, z filtrowanymi wartościami
 
 Przykładowe użycie:
 
-    curl /_design/Timetables/_list/filter/by_line?only=stop,table&limit=1
+    curl -XGET http://api.bagate.la/kr/_design/Timetables/_list/filter/by_line?only=stop,table&reduce=false&limit=1
 
 Zwraca jeden rozkład jazdy z polami: `stop` i `table`.
 
@@ -258,7 +263,7 @@ Kolejność sortowania: `line`, `destination`, `source`
 
 Przykładowe użycie:
 
-    curl -XGET /_view/by_line?startkey=["9","MISTRZEJOWICE"]&endkey=["9","MISTRZEJOWICE",{}]
+    curl -XGET http://api.bagate.la/kr/_design/Stops/_view/by_line?startkey=["9","MISTRZEJOWICE"]&endkey=["9","MISTRZEJOWICE",{}]
 
 Zwraca wszystkie przystanki na linii *"9"*, jadącej w kierunku przystanku *"Mistrzejowice"*.
 
@@ -271,7 +276,7 @@ Kolejność sortowania: `name`, `address`
 
 Przykładowe użycie:
 
-    curl -XGET /_view/by_name?key=["Reymana","Aleja 3 maja"]
+    curl -XGET http://api.bagate.la/kr/_design/Stops/_view/by_name?key=["Reymana","Aleja 3 maja"]
 
 Zwraca przystanki o nazwie *"Reymana"* i adresie *"Aleja 3 maja"*. Uwaga: możemy otrzymać więcej niż jeden dokument, mimo że nie zdefiniowaliśmy zakresu klucza, a konkretną wartość, która w tym przypadku nie jest unikalna.
 
@@ -318,9 +323,13 @@ Frazę można doprecyzować, dopisując przed nią *name:* lub *address:*, co og
 
 Przykładowe użycia:
  
-    curl /_search/Stops?q=baszt
+    curl -XGET http://api.bagate.la/kr/_search/Stops?q=baszt*
 
-    curl /_search/Stops?q=dworzec location:basztowa
+Zwróci wszystkie przystanki, których nazwa lub lokalizacja zawiera słowo zaczynające się od: *"baszt"*.
+
+    curl -XGET http://api.bagate.la/kr/_search/Stops?q=dworzec%20AND%20location:basztowa
+
+Zwróci wszystkie przystanki, których nazwa lub lokalizacja zawiera słowo *"dworzec"*, a lokalizacja zawiera słowo *"basztowa"*.
 
 **Alternatywne użycie:**
 
@@ -330,10 +339,28 @@ Metoda: `POST`
 
 DSL (język zapytania) jest udokumentowany na stronie: <http://www.elasticsearch.org/guide/reference/query-dsl/>. Ta forma pozwala formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka.
 
-Przykładowe użycia:
+Przykładowe użycie:
  
-    > curl -XPOST /_search/Stops -d '{
+    curl -XPOST http://api.bagate.la/kr/_search/Stops -d '{
+      "query": {
+        "filtered" : {
+          "query" : {
+            "match_all" : {}
+          },
+          "filter" : {
+            "geo_distance" : {
+              "distance" : "1km",
+              "location" : {
+                "lat" : 50.06551,
+                "lon" : 19.94693
+              }
+            }
+          }
+        }
+      }
     }'
+
+Zwróci wszystkie przystanki w promieniu *1* kilometra od Dworca Głównego w Krakowie (punkt: *50.06551, 19.94693*).
 
 [Zobacz scenariusze testujące.](https://github.com/Stanley/bagatela/blob/master/features/stops_search.feature)
 
@@ -358,31 +385,10 @@ Odpowiedź: Raport z wykonanej (lub przerwanej) replikacji.
 
 Przykładowe użycie:
 
-    > curl -XPOST http://api.bagate.la/_replicate -H 'Content-Type: application/json' -d '{
+    curl -XPOST http://api.bagate.la/_replicate -H 'Content-Type: application/json' -d '{
       "source":"dw",
       "target":"https://stanley:<password>@stanley.cloudant.com/dw/"
-    }'
-    {
-      "ok":true,
-      "session_id":"c4f91d44ce906e0c05057d02c0e38935",
-      "source_last_seq":4,
-      "replication_id_version":2,
-      "history":[
-        {
-          "session_id":"c4f91d44ce906e0c05057d02c0e38935",
-          "start_time":"Thu, 30 Jun 2011 10:30:45 GMT",
-          "end_time":"Thu, 30 Jun 2011 10:30:47 GMT",
-          "start_last_seq":0,
-          "end_last_seq":4,
-          "recorded_seq":4,
-          "missing_checked":0,
-          "missing_found":2,
-          "docs_read":2,
-          "docs_written":2,
-          "doc_write_failures":0
-        }
-      ]
-    }
+    }'    
 
 SCENARIUSZE TESTUJĄCE
 ---------------------

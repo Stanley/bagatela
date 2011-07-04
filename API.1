@@ -47,25 +47,35 @@ Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli 
 .
 .nf
 
-$ curl api\.bagate\.la \-\-verbose
+curl http://api\.bagate\.la \-\-verbose
+.
+.fi
+.
+.IP "" 0
+.
+.IP "" 4
+.
+.nf
+
 * About to connect() to api\.bagate\.la port 80 (#0)
-*   Trying 178\.32\.166\.216\.\.\. connected
-* Connected to api\.bagate\.la (178\.32\.166\.216) port 80 (#0)
+*   Trying 31\.222\.178\.135\.\.\. connected
+* Connected to api\.bagate\.la (31\.222\.178\.135) port 80 (#0)
 > GET / HTTP/1\.1
 > User\-Agent: curl/7\.21\.3 (x86_64\-pc\-linux\-gnu) libcurl/7\.21\.3 OpenSSL/0\.9\.8o zlib/1\.2\.3\.4 libidn/1\.18
 > Host: api\.bagate\.la
 > Accept: */*
 >
 < HTTP/1\.1 200 OK
-< Server: nginx/0\.5\.36
-< Date: Thu, 30 Jun 2011 10:01:43 GMT
-< Content\-Type: text/plain;charset=utf\-8
-< Transfer\-Encoding: chunked
+< Content\-Type: application/json
 < Connection: keep\-alive
+< Status: 200
+< X\-Powered\-By: Phusion Passenger (mod_rails/mod_rack) 3\.0\.7
+< Content\-Length: 48
+< Server: nginx/1\.0\.4 + Phusion Passenger 3\.0\.7 (mod_rails/mod_rack)
 <
-{"message":"Welcome aboard!","revision":"0348acb71ec"}
 * Connection #0 to host api\.bagate\.la left intact
 * Closing connection #0
+{"message":"Welcome aboard!","version":"40f6ca"}
 .
 .fi
 .
@@ -90,23 +100,23 @@ Każdy dokument posiada unikalny identyfikator \fB_id\fR oraz numer rewizji \fB_
 .
 .nf
 
-http://api\.bagate\.la/kr/d778919c8c13d6dfc59d8a4fbcffa40
+http://api\.bagate\.la/kr/d778919c8c13d6dfc59d8a4fbcffa409
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Ścieżka: \fB/<id>?rev=<rev>\fR
+Ścieżka: \fB/<id>\fR
 .
 .br
 Metoda: \fBGET\fR
 .
 .br
-Parametry: \fBid\fR, \fBrev\fR (opcjonalnie)
+Parametry: \fBid\fR, \fBrev\fR (opcjonalnie) \- numer rewizji
 .
 .br
-Odpowiedź: dokument o identyfikatorze \fBid\fR i numerze rewizji \fBrev\fR (domyślnie najnowsza rewizja)\.
+Odpowiedź: dokument o identyfikatorze \fBid\fR (domyślnie najnowsza rewizja)\.
 .
 .P
 Przykładowe użycie:
@@ -115,7 +125,16 @@ Przykładowe użycie:
 .
 .nf
 
-> curl \-XGET http://api\.bagate\.la/kr/d778919c8c13d6dfc59d8a4fbcffa409
+curl \-XGET http://api\.bagate\.la/kr/d778919c8c13d6dfc59d8a4fbcffa409
+.
+.fi
+.
+.IP "" 0
+.
+.IP "" 4
+.
+.nf
+
 {
   "_id":"d778919c8c13d6dfc59d8a4fbcffa409",
   "_rev":"3\-c7ea32524b4fb94e66d7214a2eb62427",
@@ -312,14 +331,14 @@ Przykładowe użycia:
 .
 .nf
 
-curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_view/by_line?key=["X","Y"]&group_level=2
+curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_view/by_line?startkey=["113","ALEJA PRZYJAŹNI"]&endkey=["113","ALEJA PRZYJAŹNI",{}]&group_level=2
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Zwraca liczbę przystanków na linii \fIX\fR w kierunku \fIY\fR\.
+Zwraca liczbę przystanków na linii \fI113\fR w kierunku przystanku \fIAleja Przyjaźni\fR\.
 .
 .IP "" 4
 .
@@ -387,17 +406,20 @@ Przykładowe użycie:
 .
 .nf
 
-curl /_design/Timetables/_view/by_stop?key=["125","XYZ"]
+curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_view/by_stop?key=["Agatowa","125","ZŁOCIEŃ"]
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Zwraca rozkłady jazdy linii \fI"125"\fR na przystanku \fI"XYZ"\fR (w obie strony)\.
+Zwraca rozkłady jazdy linii \fI"125"\fR, w stronę przystanku \fI"Złocień"\fR, na przystanku \fI"Agatowa"\fR\.
 .
 .P
 \fB[map] by_stop_id\fR
+.
+.P
+\fBUWAGA\fR: \fIten widok wymaga, aby rozkłady jazdy deklarowały konkretny przystanek na którym się znajdują w polu \fBstop_id\fR, które może być nie zdefiniowane\.\fR
 .
 .P
 Ścieżka: \fB/_design/Timetables/_view/by_stop_id\fR
@@ -421,7 +443,7 @@ Przykładowe użycie:
 .
 .nf
 
-curl /_design/Timetables/_view/by_stop_id?startkey=["1234567890"]&endkey=["1234567890",{}]
+curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_view/by_stop_id?startkey=["d778919c8c13d6dfc59d8a4fbcfeeb5f"]&endkey=["d778919c8c13d6dfc59d8a4fbcfeeb5f",{}]
 .
 .fi
 .
@@ -452,7 +474,7 @@ Przykładowe użycie:
 .
 .nf
 
-curl /_design/Timetables/_list/filter/by_line?only=stop,table&limit=1
+curl \-XGET http://api\.bagate\.la/kr/_design/Timetables/_list/filter/by_line?only=stop,table&reduce=false&limit=1
 .
 .fi
 .
@@ -526,7 +548,7 @@ Przykładowe użycie:
 .
 .nf
 
-curl \-XGET /_view/by_line?startkey=["9","MISTRZEJOWICE"]&endkey=["9","MISTRZEJOWICE",{}]
+curl \-XGET http://api\.bagate\.la/kr/_design/Stops/_view/by_line?startkey=["9","MISTRZEJOWICE"]&endkey=["9","MISTRZEJOWICE",{}]
 .
 .fi
 .
@@ -557,7 +579,7 @@ Przykładowe użycie:
 .
 .nf
 
-curl \-XGET /_view/by_name?key=["Reymana","Aleja 3 maja"]
+curl \-XGET http://api\.bagate\.la/kr/_design/Stops/_view/by_name?key=["Reymana","Aleja 3 maja"]
 .
 .fi
 .
@@ -639,13 +661,27 @@ Przykładowe użycia:
 .
 .nf
 
-curl /_search/Stops?q=baszt
-
-curl /_search/Stops?q=dworzec location:basztowa
+curl \-XGET http://api\.bagate\.la/kr/_search/Stops?q=baszt*
 .
 .fi
 .
 .IP "" 0
+.
+.P
+Zwróci wszystkie przystanki, których nazwa lub lokalizacja zawiera słowo zaczynające się od: \fI"baszt"\fR\.
+.
+.IP "" 4
+.
+.nf
+
+curl \-XGET http://api\.bagate\.la/kr/_search/Stops?q=dworzec%20AND%20location:basztowa
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zwróci wszystkie przystanki, których nazwa lub lokalizacja zawiera słowo \fI"dworzec"\fR, a lokalizacja zawiera słowo \fI"basztowa"\fR\.
 .
 .P
 \fBAlternatywne użycie:\fR
@@ -663,18 +699,37 @@ Metoda: \fBPOST\fR
 DSL (język zapytania) jest udokumentowany na stronie: \fIhttp://www\.elasticsearch\.org/guide/reference/query\-dsl/\fR\. Ta forma pozwala formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka\.
 .
 .P
-Przykładowe użycia:
+Przykładowe użycie:
 .
 .IP "" 4
 .
 .nf
 
-> curl \-XPOST /_search/Stops \-d \'{
+curl \-XPOST http://api\.bagate\.la/kr/_search/Stops \-d \'{
+  "query": {
+    "filtered" : {
+      "query" : {
+        "match_all" : {}
+      },
+      "filter" : {
+        "geo_distance" : {
+          "distance" : "1km",
+          "location" : {
+            "lat" : 50\.06551,
+            "lon" : 19\.94693
+          }
+        }
+      }
+    }
+  }
 }\'
 .
 .fi
 .
 .IP "" 0
+.
+.P
+Zwróci wszystkie przystanki w promieniu \fI1\fR kilometra od Dworca Głównego w Krakowie (punkt: \fI50\.06551, 19\.94693\fR)\.
 .
 .P
 Zobacz scenariusze testujące\. \fIhttps://github\.com/Stanley/bagatela/blob/master/features/stops_search\.feature\fR
@@ -715,31 +770,10 @@ Przykładowe użycie:
 .
 .nf
 
-> curl \-XPOST http://api\.bagate\.la/_replicate \-H \'Content\-Type: application/json\' \-d \'{
+curl \-XPOST http://api\.bagate\.la/_replicate \-H \'Content\-Type: application/json\' \-d \'{
   "source":"dw",
   "target":"https://stanley:<password>@stanley\.cloudant\.com/dw/"
 }\'
-{
-  "ok":true,
-  "session_id":"c4f91d44ce906e0c05057d02c0e38935",
-  "source_last_seq":4,
-  "replication_id_version":2,
-  "history":[
-    {
-      "session_id":"c4f91d44ce906e0c05057d02c0e38935",
-      "start_time":"Thu, 30 Jun 2011 10:30:45 GMT",
-      "end_time":"Thu, 30 Jun 2011 10:30:47 GMT",
-      "start_last_seq":0,
-      "end_last_seq":4,
-      "recorded_seq":4,
-      "missing_checked":0,
-      "missing_found":2,
-      "docs_read":2,
-      "docs_written":2,
-      "doc_write_failures":0
-    }
-  ]
-}
 .
 .fi
 .
