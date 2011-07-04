@@ -46,7 +46,7 @@ namespace :couchdb do
   desc "Create ES couchdb river"
   task :river, [:db] do |t, args|
     river = YAML::load File.read(File.join(File.dirname(__FILE__), 'config', 'river.yaml'))
-    river['couchdb']['host'], river['couchdb']['port'] = CONFIG['couch'].split(':')
+    river['couchdb']['host'], river['couchdb']['port'] = CONFIG['couch'].match(/@(.+)\:(\d+)/)[1..2]
     river['couchdb']['db'] = river['index']['type'] = args[:db]
     RestClient.delete CONFIG['es'] +'/_river/couchdb' do |resp|; end
     RestClient.put CONFIG['es'] +'/_river/couchdb/_meta', river.to_json do |resp|; end

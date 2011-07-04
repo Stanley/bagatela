@@ -1,6 +1,6 @@
 { "type" : "couchdb",
   "couchdb" : {
-    "filter" : "Stop/all"
+    "filter" : "Stops/all"
   },
   "index" : {
     "index" : "stops",
