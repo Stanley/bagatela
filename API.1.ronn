@@ -367,7 +367,7 @@ Zwróci wszystkie przystanki w promieniu *1* kilometra od Dworca Głównego w Kr
 
 WYSZUKIWARKA POŁĄCZEŃ
 ---------------------
-Comming soon.
+Coming soon.
 
 REPLIKACJE
 ----------
