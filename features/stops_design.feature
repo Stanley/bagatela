@@ -26,11 +26,11 @@ Feature: List stops
 
   Scenario: Find stops by name
     Given the following stops:
-      | _id | name     | address      |
+      | _id | name     | address       |
       | 1   | Bagatela | Dunajewskiego |
       | 2   | Bagatela | Karmelicka    |
       | 3   | Bagatela | Podwale       |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?reduce=false&startkey=["Bagatela"]&endkey=["Bagatela",{}]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -41,12 +41,31 @@ Feature: List stops
       ]}
       """
 
+  @by_name
+
   Scenario: Attempt to find stops which do not exist
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?startkey=["Utopia"]&endkey=["Utopia",{}]
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?reduce=false&startkey=["Utopia"]&endkey=["Utopia",{}]
     Then the response status should be 200
       And the response should be:
       """
       {"total_rows":0, "offset":0, "rows":[]}
+      """
+
+  @by_name
+  
+  Scenario: Get hub location
+    Given the following stops:
+      | _id | name     | address       | location             |
+      | 1   | Bagatela | Dunajewskiego | {"lat":3, "lon":7.7} |
+      | 2   | Bagatela | Karmelicka    | {"lat":4, "lon":8.1} |
+      | 3   | Bagatela | Podwale       | {"lat":8, "lon":8.2} |
+    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&group_level=1
+    Then the response status should be 200
+      And the response without rows' value._rev should be:
+      """
+      {"rows":[
+        {"key":["Bagatela"], "value":{"location":{"lat":5, "lon":8}}}
+      ]}
       """
 
   @by_line

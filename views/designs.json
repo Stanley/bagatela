@@ -103,6 +103,14 @@
         if (doc.type == 'Stop'){
           emit([doc.name, doc.address], doc);
         }
+      }",
+      "reduce": "function(keys,values,rereduce){
+        var lat=0,lon=0;
+        values.forEach(function(val){
+          lat += val.location.lat;
+          lon += val.location.lon;
+        });
+        return {location:{lat:lat/values.length, lon:lon/values.length}}
       }"
     },
     "by_line": {
