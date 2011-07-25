@@ -15,7 +15,7 @@ class Bagatela < Sinatra::Base
   
   # Welcome message
   get '/' do 
-    {message: 'Welcome aboard!', version: VERSION}.to_json
+    {:message => 'Welcome aboard!', :version => VERSION}.to_json
   end
 
   # Search for connections
