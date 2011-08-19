@@ -3,9 +3,8 @@
 
 require 'rake'
 require 'restclient'
-require 'unicode'
 #require 'spec/rake/spectask'
-require File.join(File.dirname(__FILE__), 'config', 'environment')
+require 'lib/bagatela'
 
 #task :default => :test
 #task :test => :spec
@@ -21,61 +20,63 @@ require File.join(File.dirname(__FILE__), 'config', 'environment')
 #end
 
 namespace :neo4j do
-  desc "Populate graph"
+  desc "Create graph from static documents"
   task :import, [:db] do |t, args|
 
-    require 'neo4j'
-    db = CONFIG['couch'] +'/'+ args[:db]
-    stops = {}
+    Bagatela::Graph::Import.relationships!(args[:db])
 
-    Neo4j::Transaction.run do
-      # Get all stops
-      JSON.parse(RestClient.get db+'/_design/Stops/_view/by_name?group_level=1')['rows'].
-        each do |row|
-        location = row['value']['location']
-        name = Unicode::upcase(row['key'].first)
-        stops[name] = Neo4j::Node.new(location)
-      end
+    #require 'neo4j'
+    #db = CONFIG['couch'] +'/'+ args[:db]
+    #stops = {}
 
-      # Destination hub name
-      destination = nil
-      # Node from which we're adding connection
-      from = nil
+    #Neo4j::Transaction.run do
+      ## Get all stops
+      #JSON.parse(RestClient.get db+'/_design/Stops/_view/by_name?group_level=1')['rows'].
+        #each do |row|
+        #location = row['value']['location']
+        #name = Unicode::upcase(row['key'].first)
+        #stops[name] = Neo4j::Node.new(location)
+      #end
 
-      # Get all timetables
-      JSON.parse(RestClient.get db+'/_design/Timetables/_view/by_source?limit=200&descending=true')['rows'].
-        map{|row| row['value']}.
-        each do |timetable|
-          # timetable's destination
-          dest = Unicode::upcase((timetable['destination'] || timetable['route'].split('-').last).strip)
-          timetable['stop'] = Unicode.upcase(timetable['stop'])
+      ## Destination hub name
+      #destination = nil
+      ## Node from which we're adding connection
+      #from = nil
 
-          to = destination === dest ? from : stops[dest]
-          from = stops[timetable['stop']] # timetables['stop_id']
+      ## Get all timetables
+      #JSON.parse(RestClient.get db+'/_design/Timetables/_view/by_source?limit=200&descending=true')['rows'].
+        #map{|row| row['value']}.
+        #each do |timetable|
+          ## timetable's destination
+          #dest = Unicode::upcase((timetable['destination'] || timetable['route'].split('-').last).strip)
+          #timetable['stop'] = Unicode.upcase(timetable['stop'])
 
-          puts "#{timetable['line']}\n" if destination != dest
-          destination = dest
+          #to = destination === dest ? from : stops[dest]
+          #from = stops[timetable['stop']] # timetables['stop_id']
 
-          if to == from
-            plus_one = timetable['stop'] +"+1"
-            unless from = stops[plus_one]
-              # create new node
-              from = stops[plus_one] = Neo4j::Node.new({}) # todo location
-            end
-          end
+          #puts "#{timetable['line']}\n" if destination != dest
+          #destination = dest
 
-          puts "<- #{timetable['stop']} (#{from})"
-          puts "ERROR: #{dest}" unless to
+          #if to == from
+            #plus_one = timetable['stop'] +"+1"
+            #unless from = stops[plus_one]
+              ## create new node
+              #from = stops[plus_one] = Neo4j::Node.new({}) # todo location
+            #end
+          #end
+
+          #puts "<- #{timetable['stop']} (#{from})"
+          #puts "ERROR: #{dest}" unless to
           
-          # Get or create relationship between from and to stops
-          unless connection = from.rels(:connections).outgoing.to_other(to).first
-            connection = Neo4j::Relationship.new(:connections, from, to)
-            connection['cost'] = 0
-          end
-          # add departures from current timetable
-          connection['departures'] = "?"
-        end
-    end
+          ## Get or create relationship between from and to stops
+          #unless connection = from.rels(:connections).outgoing.to_other(to).first
+            #connection = Neo4j::Relationship.new(:connections, from, to)
+            #connection['cost'] = 0
+          #end
+          ## add departures from current timetable
+          #connection['departures'] = "?"
+        #end
+    #end
   end
 end
 
@@ -83,20 +84,29 @@ namespace :couchdb do
 
   desc "Push Couchdb views"
   task :views, [:db] do |t, args|
-    couch = CONFIG['couch'] +'/'+ args[:db]
-    designs = File.read './views/designs.json'
-    RestClient.post couch +'/_bulk_docs', designs, :content_type => :json, :accept => :json do |resp, req| 
-      JSON.parse(resp).each do |status|
-        if(status['error'] === 'conflict')
-          p status
-        end
-      end
+
+    db = "#{Bagatela::Resources::COUCHDB}/#{args[:db]}"
+    headers = {:content_type => :json, :accept => :json}
+    # Create database if it doesn't exist; ignore errors
+    RestClient.put db, nil do |resp|; end 
+
+    JSON.parse(File.read('./views/designs.json').
+      # We have to remove new lines from strings in order to get valid JSON
+      gsub(/(\"[^\"]+\")/){|str| str.gsub("\n",'\n') })['docs'].
+      each do |doc|
+        # Get previous revison and check if there are any changes
+        old = JSON.parse(RestClient.get("#{db}/#{doc['_id']}"){|resp|; resp })
+        doc.merge!({'_rev' => old.delete('_rev')}) if old['_rev']
+        # Create or update document
+        RestClient.post db, doc.to_json, headers unless doc == old
     end
+
   end
 
   desc "Create ES couchdb river"
   task :river, [:db] do |t, args|
-    river = YAML::load File.read(File.join(File.dirname(__FILE__), 'config', 'river.yaml'))
+    yaml = File.join(File.dirname(__FILE__), 'config', 'elasticsearch', 'river.yaml')
+    river = YAML::load File.read(yaml)
     river['couchdb']['host'], river['couchdb']['port'] = CONFIG['couch'].match(/@(.+)\:(\d+)/)[1..2]
     river['couchdb']['db'] = river['index']['type'] = args[:db]
     RestClient.delete CONFIG['es'] +'/_river/couchdb' do |resp|; end
@@ -107,6 +117,7 @@ end
 desc "Create new index"
 task :elasticsearch do
   RestClient.delete CONFIG['es'] +'/stops' do |resp|; end
-  index = YAML::load(File.read(File.join(File.dirname(__FILE__), 'config', 'index.yaml'))).to_json
+  yaml = File.read(File.join(File.dirname(__FILE__), 'config', 'elasticsearch', 'index.yaml'))
+  index = YAML::load(yaml).to_json
   RestClient.put CONFIG['es'] +'/stops', index do |resp|; end
 end
