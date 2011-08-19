@@ -1,0 +1,263 @@
+bagatela-graph(1) -- połączona struktura do wyszukiwania i analizy połączeń 
+===========================================================================
+
+WSTĘP DO API
+------------
+API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych
+([węzłów](#W-ZE-), [połączeń](#PO-CZENIE), [przesiadek](#PRZESIADKA)) i usług
+([wyszukiwarka połączeń](#PO-CZENIA-KOMUNIKACYJNE)) z poziomu aplikacji
+trzecich.
+
+API jest zgodne ze wzorcem
+[REST](http://en.wikipedia.org/wiki/Representational_State_Transfer).
+Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie
+zapytań typu GET i POST. Dane przyjmowane i zwracane są w formacie
+[JSON](http://json.org).
+
+### Url
+
+Dla każdego dnia instnieje osobny graf:
+
+    http://graph.bagate.la/<YYYY-MM-DD>
+
+Zawiera on w sobie dane ze wszystkich miast (obsługiwanych tego dnia).
+
+### Przykłady
+Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli
+`curl` i zostały wykonane w systemie GNU/Linux.
+
+    curl http://graph.bagate.la --verbose
+
+### Kontrybucja
+(również do dokumentacji) jest mile widziana! Weź
+<https://github.com/Stanley/bagatela> na widły i poproś o akceptacje zmian.
+
+ZAPYTANIA O DANE
+-------------------------
+Ponieważ dane są przechowywane w grafowej bazie danych
+[Neo4J](http://neo4j.org/), która udostępnia interfejs REST, nasz interfejs
+programistyczny jest z nim całkowicie zgodny. Jego szczegóły opisano w
+[dokumentacji Neo4J REST
+API](http://components.neo4j.org/neo4j-server/milestone/rest.html).
+
+### Zasoby
+Graf składa się wyłącznie z wierzchołków i skierowanych relacji między nimi,
+zwanych krawędziami. Dalszy podział tych zasobów na klasy jest umowny, gdyż ich
+atrybuty nie są ograniczone żadną strukturą.
+
+### Indeksy
+Indeks wierzchołków lub krawędzi służy do znalezienia punktu wejścia do grafu w
+celu trawersacji, a nie wyszukiwania konkretnych danych.
+
+### Odkrywalność
+Struktura grafu jest ze sobą połączona, co znaczy że dane które on zawiera, są
+od siebie zależne. Naturalną konsekwencją tego jest API, które zwraca te
+zależności w postaci linków, czyli adresów URI, zawsze tam gdzie ma to sens.
+Zaleca się w ten sposób "odkrywać" graf, zamiast polegać na dokumentacji, gdyż
+uchroni nas to przez możliwymi zmianami w API w przyszłości. Odkrywanie
+najlepiej zacząć od korzenia:
+
+Ścieżka: `/`  
+Metoda: `GET`  
+Odpowiedź: *200* - referencje do najważniejszych zasobów. *404* - graf nie
+istnieje (brak danych z danego dnia lub zły format daty).
+
+Przykładowe użycie:
+
+    curl http://graph.bagate.la/2011-08-18/
+
+WĘZEŁ
+-----
+Wierzchołek w grafie. Reprezentuje punkt na mapie. Węzły są tworzone na
+podstawie [przystanków](API.1.html#PRZYSTANEK).
+
+Ścieżka: `/node/<id>`  
+Metoda: `GET`  
+Parametry: `id` - identyfikator węzła.  
+Odpowiedź: *200* - wartości atrybutów i referencje do relacji węzła. *404* -
+węzeł nie istnieje.
+
+Przykładowe użycie:
+
+    curl http://graph.bagate.la/2011-09-09/node/7
+
+### Atrybuty
+
+* `_classname` - *"Stop"* - gdy reprezentuje fizyczny przystanek (wiata albo
+słupek) lub *"Hub"* (szczegóły poniżej).
+* `lat` - szerokość geograficzna. Np.: *50.123*. 
+* `lon` - długość geograficzna. Np.: *19.987*.
+* `source` - adres URI do dokumentu, na podstawie którego został utworzony ten
+węzeł (istnieje tylko dla klasy *"Stop"*). Np.:
+*"http://api.bagate.la/kr/abc?rev=def"*.
+
+W sytuacji, gdy nie mamy wiedzy o tym który dokładnie przystanek każdy rozkład
+jazdy reprezentuje (brak wartości `stop_id` w dokumencie
+[*Timetable*](API.1.html#ROZK-AD-JAZDY)), zbiór przystanków o tej samej nazwie,
+będzie reprezentowany na grafie tylko przez jeden węzeł klasy *Hub*. Sprawi to,
+że nie pojawią się relacje przesiadek, dlatego przy trawersacji nie będziemy w
+stanie stwierdzić czy nastąpiło przejście z jednego przystanku do drugiego o
+tej samej nazwie.
+
+### Indeks
+Wierzchołki w grafie są indeksowane jedynie po źródle pochodzenia, czyli bazie
+danych i identyfikatorze dokumentu. Skorzystaj z
+[wyszukiwarki](API.1.html#Wyszukiwarka), aby odnaleźć przystanek według
+dowolnych kryteriów.
+
+Ścieżka: `/index/node/source/<database>/<id>`  
+Metoda: `GET`  
+Parametry: `database` - baza danych, `id` - identyfikator dokumentu.  
+Odpowiedź: *200* - 
+
+Przykładowe użycie:
+
+    curl http://graph.bagate.la/2011-08-18/index/node/source/kr/000e0590ceae3be9ada4466fc112ca65dc0dc36a
+
+POŁĄCZENIE
+----------
+Relacja między dwoma węzłami. Zachodzi gdy istnieje
+przynajmniej jedna linia, która kursuje między nimi bezpośrednio (np. linia
+jeżdżąca po przystankach *A* &rarr; *B* &rarr; *C*, składa się z dokładnie
+dwóch połączeń: *A* do *B* i *B* do *C*).
+
+Ścieżka: `/node/<id>/relationships/<dir>/CONNECTS`  
+Metoda: `GET`  
+Parametry: `id` - identyfikator węzła, `dir` - kierunek relacji. Może być *in*, *out* lub *all*.  
+Odpowiedź: *200* - połączenia (przychodzące, wychodzące lub wszystkie) z węzła `id`.
+
+### Atrybuty
+* `_classname` - zawsze *"Connection"*.
+* `rides` - lista kursów wszystkich linii na danej krawędzi. Atrybut typu
+tablicy asocjacyjnej. Przechowuje pary, w których godzinie odjazdu (w formacie
+liczby minut od północy; np. dla *"12:00"* jest to *720*) odpowiada tablica z
+informacjami o połączeniu (patrz niżej). UWAGA: ponieważ Neo4J natywnie nie
+wspiera wartości tego typu, tablica jest serializowana za pomocą
+[MessagePack](http://msgpack.org/) do ciągu znaków i tak jest przechowywana w
+bazie. Do odkodowania wartości będziemy potrzebowali dodatkowej
+[biblioteki](http://wiki.msgpack.org/display/MSGPACK/QuickStart).
+* `length` - długość odcinka w metrach. Liczona wzdłuż trasy (jeżeli ta jest
+zdefiniowana w polu `polylines` [przystanku](API.1.html#PRZYSTANEK)
+początkowego), lub po linii prostej.
+
+### Atrybuty informacji o połączeniu
+Obiekt typu tablicy asocjacyjnej, zawierającej następujące pary:
+
+* `line` - numer linii. Np. *"4"*.
+* `duration` - czas podróży w minutach. Np. *2*.
+
+PRZESIADKA
+----------
+Relacja między dwoma węzłami klasy *Stop*. Jeżeli istnieje relacja z węzła
+*A* do *B* to istnieje też druga, inna relacja z węzła *B* do *A*.
+
+Ścieżka: `/node/<id>/relationships/<dir>/TRANSFERS`  
+Metoda: `GET`  
+Parametry: `id` - identyfikator węzła, `dir` - kierunek relacji. Może być *in*, *out* lub *all*.  
+Odpowiedź: *200* - przesiadki (do, z lub wszystkie) z węzła `<id>`.
+
+### Atrybuty
+* `penatly` - orientacyjny czas w minutach, potrzeby do przemieszczenia się z
+jednego węzła do drugiego. Np.: *1*.
+
+TRAWERSACJA GRAFU
+-----------------
+Przechodzenie grafu w zdefiniowany sposób. Zaczynamy zawsze od jednego
+wierzchołka, a następnie, po jego krawędziach, odwiedzamy kolejne wierzchołki
+(wiele w tym samym czasie) itd.  Celem tego procesu może być uzyskanie: węzłów,
+krawędzi lub obu tych typów, odwiedzonych w procesie trawersacji.
+
+Ścieżka: `/node/<id>/traverse/<return_type>`  
+Metoda: `POST`  
+Parametry: `id` - identyfikator węzła początkowego, `return_type` - typ zwracanych
+danych. Może być: *node*, *relationship*, *path* lub *fullpath*.  
+Parametry ładunku:
+
+* `order`
+* `uniqueness`
+* `relationships`
+* `prune_evaluator`
+* `return_filter`
+* `max_depth`
+
+Odpowiedź: *200* - węzły, krawędzie, ścieżka (identyfikatory węzłów i krawędzi)
+lub pełna ścieżka wraz z atrybutami węzłów i krawędzi. *404* - węzeł `id` nie
+istnieje.
+
+Przykładowe użycie:
+
+    curl -XPOST http://graph.bagate.la/2011-08-18/node/100/traverse/path -d {}
+
+ŚCIEŻKI
+-------
+Znajdywanie jednej lub wielu ścieżek między dwoma wierzchołkami grafu zgodnie
+z jednym z algorytmów teorii grafów. Ścieżka jest sekwencją wierzchołków grafu
+w której każdy z nich jest związany krawędzią z kolejnym wierzchołkiem w tej
+sekwencji.
+
+Ścieżka: `/node/<id>/path`  
+Metoda: `POST`  
+Parametry: `id` - identyfikator węzła początkowego.  
+Parametry ładunku:  
+
+* `to` - węzeł docelowy.
+* `relationships` - lista dozwolonych typów relacji.
+* `max_depth` - limit długości pojedynczej ścieżki wyrażony w wierzchołkach.
+* `algorithm` - algorytm. Jeden z: *shortestPath*, *allPaths*, *allSimplePaths*, *dijkstra*.
+
+Odpowiedź: *200* - ścieżka, to jest lista węzłów i krawędzi je łączących.
+
+Przykładowe użycie:
+
+    curl
+
+Ścieżka: `/node/<id>/paths`  
+Metoda: `POST`  
+Parametry zapytania i ładunku jak powyżej.  
+Odpowiedź:
+
+Przykładowe użycie:
+
+    curl
+
+POŁĄCZENIA KOMUNIKACYJNE
+------------------------
+Połączenie komunikacyjne jest ścieżką, która składa się z węzłów, połączonych
+konkretnym odjazdem (lub przesiadką), a nie listą wszystkich kursów (odjazdów)
+w danym połączeniu. Ponieważ wynik jest związany z czasem, zarówno kursy jak i
+węzły będą zależeć od czasu, będącym jednym z parametrów tego zapytania.
+
+Ścieżka: `/node/<id>/connection`  
+Metoda: `POST`  
+Parametry: `id` - identyfikator węzła początkowego.  
+Parametry ładunku:  
+
+* `start_at` - czas odjazdu z węzła początkowego (nie wcześniej niż
+`start_at`).
+* `finish_at` - czas przejazdu na węzeł docelowy (nie później niż
+`finish_at`). Jeżeli parametr `start_at` jest zdefiniowany, `finish_at`
+zostanie zignorowany.
+* `time_limit` - limit czasu trwania połączenia w minutach. Domyślnie *120*.
+* `to` - węzeł docelowy.
+
+Odpowiedź: *200* - teoretycznie (zgodnie z algorytmem
+[A*](http://en.wikipedia.org/wiki/A*_search_algorithm)) najszybsze czasowo
+połączenie komunikacyjne, pomiędzy dwoma wierzchołkami grafu.
+
+Przykładowe użycie:
+
+    curl http://graph.bagate.la/2011-08-18/node/189/connection -d {}
+
+[Zobacz scenariusze testujące](http://relishapp.com/stanley/bagatela/docs/graph/connections)
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-24458797-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>

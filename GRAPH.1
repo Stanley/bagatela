@@ -1,0 +1,384 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "BAGATELA\-GRAPH" "1" "September 2011" "Stanisław Wasiutyński" ""
+.
+.SH "NAME"
+\fBbagatela\-graph\fR \- połączona struktura do wyszukiwania i analizy połączeń
+.
+.SH "WSTĘP DO API"
+API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych (\fIwęzłów\fR, \fIpołączeń\fR, \fIprzesiadek\fR) i usług (\fIwyszukiwarka połączeń\fR) z poziomu aplikacji trzecich\.
+.
+.P
+API jest zgodne ze wzorcem REST \fIhttp://en\.wikipedia\.org/wiki/Representational_State_Transfer\fR\. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET i POST\. Dane przyjmowane i zwracane są w formacie JSON \fIhttp://json\.org\fR\.
+.
+.SS "Url"
+Dla każdego dnia instnieje osobny graf:
+.
+.IP "" 4
+.
+.nf
+
+http://graph\.bagate\.la/<YYYY\-MM\-DD>
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zawiera on w sobie dane ze wszystkich miast (obsługiwanych tego dnia)\.
+.
+.SS "Przykłady"
+Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli \fBcurl\fR i zostały wykonane w systemie GNU/Linux\.
+.
+.IP "" 4
+.
+.nf
+
+curl http://graph\.bagate\.la \-\-verbose
+.
+.fi
+.
+.IP "" 0
+.
+.SS "Kontrybucja"
+(również do dokumentacji) jest mile widziana! Weź \fIhttps://github\.com/Stanley/bagatela\fR na widły i poproś o akceptacje zmian\.
+.
+.SH "ZAPYTANIA O DANE"
+Ponieważ dane są przechowywane w grafowej bazie danych Neo4J \fIhttp://neo4j\.org/\fR, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny\. Jego szczegóły opisano w dokumentacji Neo4J REST API \fIhttp://components\.neo4j\.org/neo4j\-server/milestone/rest\.html\fR\.
+.
+.SS "Zasoby"
+Graf składa się wyłącznie z wierzchołków i skierowanych relacji między nimi, zwanych krawędziami\. Dalszy podział tych zasobów na klasy jest umowny, gdyż ich atrybuty nie są ograniczone żadną strukturą\.
+.
+.SS "Indeksy"
+Indeks wierzchołków lub krawędzi służy do znalezienia punktu wejścia do grafu w celu trawersacji, a nie wyszukiwania konkretnych danych\.
+.
+.SS "Odkrywalność"
+Struktura grafu jest ze sobą połączona, co znaczy że dane które on zawiera, są od siebie zależne\. Naturalną konsekwencją tego jest API, które zwraca te zależności w postaci linków, czyli adresów URI, zawsze tam gdzie ma to sens\. Zaleca się w ten sposób "odkrywać" graf, zamiast polegać na dokumentacji, gdyż uchroni nas to przez możliwymi zmianami w API w przyszłości\. Odkrywanie najlepiej zacząć od korzenia:
+.
+.P
+Ścieżka: \fB/\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Odpowiedź: \fI200\fR \- referencje do najważniejszych zasobów\. \fI404\fR \- graf nie istnieje (brak danych z danego dnia lub zły format daty)\.
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl http://graph\.bagate\.la/2011\-08\-18/
+.
+.fi
+.
+.IP "" 0
+.
+.SH "WĘZEŁ"
+Wierzchołek w grafie\. Reprezentuje punkt na mapie\. Węzły są tworzone na podstawie przystanków \fIAPI\.1\.html#PRZYSTANEK\fR\.
+.
+.P
+Ścieżka: \fB/node/<id>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBid\fR \- identyfikator węzła\.
+.
+.br
+Odpowiedź: \fI200\fR \- wartości atrybutów i referencje do relacji węzła\. \fI404\fR \- węzeł nie istnieje\.
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl http://graph\.bagate\.la/2011\-09\-09/node/7
+.
+.fi
+.
+.IP "" 0
+.
+.SS "Atrybuty"
+.
+.IP "\(bu" 4
+\fB_classname\fR \- \fI"Stop"\fR \- gdy reprezentuje fizyczny przystanek (wiata albo słupek) lub \fI"Hub"\fR (szczegóły poniżej)\.
+.
+.IP "\(bu" 4
+\fBlat\fR \- szerokość geograficzna\. Np\.: \fI50\.123\fR\.
+.
+.IP "\(bu" 4
+\fBlon\fR \- długość geograficzna\. Np\.: \fI19\.987\fR\.
+.
+.IP "\(bu" 4
+\fBsource\fR \- adres URI do dokumentu, na podstawie którego został utworzony ten węzeł (istnieje tylko dla klasy \fI"Stop"\fR)\. Np\.: \fI"http://api\.bagate\.la/kr/abc?rev=def"\fR\.
+.
+.IP "" 0
+.
+.P
+W sytuacji, gdy nie mamy wiedzy o tym który dokładnie przystanek każdy rozkład jazdy reprezentuje (brak wartości \fBstop_id\fR w dokumencie \fITimetable\fR \fIAPI\.1\.html#ROZK\-AD\-JAZDY\fR), zbiór przystanków o tej samej nazwie, będzie reprezentowany na grafie tylko przez jeden węzeł klasy \fIHub\fR\. Sprawi to, że nie pojawią się relacje przesiadek, dlatego przy trawersacji nie będziemy w stanie stwierdzić czy nastąpiło przejście z jednego przystanku do drugiego o tej samej nazwie\.
+.
+.SS "Indeks"
+Wierzchołki w grafie są indeksowane jedynie po źródle pochodzenia, czyli bazie danych i identyfikatorze dokumentu\. Skorzystaj z wyszukiwarki \fIAPI\.1\.html#Wyszukiwarka\fR, aby odnaleźć przystanek według dowolnych kryteriów\.
+.
+.P
+Ścieżka: \fB/index/node/source/<database>/<id>\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBdatabase\fR \- baza danych, \fBid\fR \- identyfikator dokumentu\.
+.
+.br
+Odpowiedź: \fI200\fR \-
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl http://graph\.bagate\.la/2011\-08\-18/index/node/source/kr/000e0590ceae3be9ada4466fc112ca65dc0dc36a
+.
+.fi
+.
+.IP "" 0
+.
+.SH "POŁĄCZENIE"
+Relacja między dwoma węzłami\. Zachodzi gdy istnieje przynajmniej jedna linia, która kursuje między nimi bezpośrednio (np\. linia jeżdżąca po przystankach \fIA\fR &rarr; \fIB\fR &rarr; \fIC\fR, składa się z dokładnie dwóch połączeń: \fIA\fR do \fIB\fR i \fIB\fR do \fIC\fR)\.
+.
+.P
+Ścieżka: \fB/node/<id>/relationships/<dir>/CONNECTS\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBid\fR \- identyfikator węzła, \fBdir\fR \- kierunek relacji\. Może być \fIin\fR, \fIout\fR lub \fIall\fR\.
+.
+.br
+Odpowiedź: \fI200\fR \- połączenia (przychodzące, wychodzące lub wszystkie) z węzła \fBid\fR\.
+.
+.SS "Atrybuty"
+.
+.IP "\(bu" 4
+\fB_classname\fR \- zawsze \fI"Connection"\fR\.
+.
+.IP "\(bu" 4
+\fBrides\fR \- lista kursów wszystkich linii na danej krawędzi\. Atrybut typu tablicy asocjacyjnej\. Przechowuje pary, w których godzinie odjazdu (w formacie liczby minut od północy; np\. dla \fI"12:00"\fR jest to \fI720\fR) odpowiada tablica z informacjami o połączeniu (patrz niżej)\. UWAGA: ponieważ Neo4J natywnie nie wspiera wartości tego typu, tablica jest serializowana za pomocą MessagePack \fIhttp://msgpack\.org/\fR do ciągu znaków i tak jest przechowywana w bazie\. Do odkodowania wartości będziemy potrzebowali dodatkowej biblioteki \fIhttp://wiki\.msgpack\.org/display/MSGPACK/QuickStart\fR\.
+.
+.IP "\(bu" 4
+\fBlength\fR \- długość odcinka w metrach\. Liczona wzdłuż trasy (jeżeli ta jest zdefiniowana w polu \fBpolylines\fR przystanku \fIAPI\.1\.html#PRZYSTANEK\fR początkowego), lub po linii prostej\.
+.
+.IP "" 0
+.
+.SS "Atrybuty informacji o połączeniu"
+Obiekt typu tablicy asocjacyjnej, zawierającej następujące pary:
+.
+.IP "\(bu" 4
+\fBline\fR \- numer linii\. Np\. \fI"4"\fR\.
+.
+.IP "\(bu" 4
+\fBduration\fR \- czas podróży w minutach\. Np\. \fI2\fR\.
+.
+.IP "" 0
+.
+.SH "PRZESIADKA"
+Relacja między dwoma węzłami klasy \fIStop\fR\. Jeżeli istnieje relacja z węzła \fIA\fR do \fIB\fR to istnieje też druga, inna relacja z węzła \fIB\fR do \fIA\fR\.
+.
+.P
+Ścieżka: \fB/node/<id>/relationships/<dir>/TRANSFERS\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Parametry: \fBid\fR \- identyfikator węzła, \fBdir\fR \- kierunek relacji\. Może być \fIin\fR, \fIout\fR lub \fIall\fR\.
+.
+.br
+Odpowiedź: \fI200\fR \- przesiadki (do, z lub wszystkie) z węzła \fB<id>\fR\.
+.
+.SS "Atrybuty"
+.
+.IP "\(bu" 4
+\fBpenatly\fR \- orientacyjny czas w minutach, potrzeby do przemieszczenia się z jednego węzła do drugiego\. Np\.: \fI1\fR\.
+.
+.IP "" 0
+.
+.SH "TRAWERSACJA GRAFU"
+Przechodzenie grafu w zdefiniowany sposób\. Zaczynamy zawsze od jednego wierzchołka, a następnie, po jego krawędziach, odwiedzamy kolejne wierzchołki (wiele w tym samym czasie) itd\. Celem tego procesu może być uzyskanie: węzłów, krawędzi lub obu tych typów, odwiedzonych w procesie trawersacji\.
+.
+.P
+Ścieżka: \fB/node/<id>/traverse/<return_type>\fR
+.
+.br
+Metoda: \fBPOST\fR
+.
+.br
+Parametry: \fBid\fR \- identyfikator węzła początkowego, \fBreturn_type\fR \- typ zwracanych danych\. Może być: \fInode\fR, \fIrelationship\fR, \fIpath\fR lub \fIfullpath\fR\.
+.
+.br
+Parametry ładunku:
+.
+.IP "\(bu" 4
+\fBorder\fR
+.
+.IP "\(bu" 4
+\fBuniqueness\fR
+.
+.IP "\(bu" 4
+\fBrelationships\fR
+.
+.IP "\(bu" 4
+\fBprune_evaluator\fR
+.
+.IP "\(bu" 4
+\fBreturn_filter\fR
+.
+.IP "\(bu" 4
+\fBmax_depth\fR
+.
+.IP "" 0
+.
+.P
+Odpowiedź: \fI200\fR \- węzły, krawędzie, ścieżka (identyfikatory węzłów i krawędzi) lub pełna ścieżka wraz z atrybutami węzłów i krawędzi\. \fI404\fR \- węzeł \fBid\fR nie istnieje\.
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl \-XPOST http://graph\.bagate\.la/2011\-08\-18/node/100/traverse/path \-d {}
+.
+.fi
+.
+.IP "" 0
+.
+.SH "ŚCIEŻKI"
+Znajdywanie jednej lub wielu ścieżek między dwoma wierzchołkami grafu zgodnie z jednym z algorytmów teorii grafów\. Ścieżka jest sekwencją wierzchołków grafu w której każdy z nich jest związany krawędzią z kolejnym wierzchołkiem w tej sekwencji\.
+.
+.P
+Ścieżka: \fB/node/<id>/path\fR
+.
+.br
+Metoda: \fBPOST\fR
+.
+.br
+Parametry: \fBid\fR \- identyfikator węzła początkowego\.
+.
+.br
+Parametry ładunku:
+.
+.IP "\(bu" 4
+\fBto\fR \- węzeł docelowy\.
+.
+.IP "\(bu" 4
+\fBrelationships\fR \- lista dozwolonych typów relacji\.
+.
+.IP "\(bu" 4
+\fBmax_depth\fR \- limit długości pojedynczej ścieżki wyrażony w wierzchołkach\.
+.
+.IP "\(bu" 4
+\fBalgorithm\fR \- algorytm\. Jeden z: \fIshortestPath\fR, \fIallPaths\fR, \fIallSimplePaths\fR, \fIdijkstra\fR\.
+.
+.IP "" 0
+.
+.P
+Odpowiedź: \fI200\fR \- ścieżka, to jest lista węzłów i krawędzi je łączących\.
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Ścieżka: \fB/node/<id>/paths\fR
+.
+.br
+Metoda: \fBPOST\fR
+.
+.br
+Parametry zapytania i ładunku jak powyżej\.
+.
+.br
+Odpowiedź:
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl
+.
+.fi
+.
+.IP "" 0
+.
+.SH "POŁĄCZENIA KOMUNIKACYJNE"
+Połączenie komunikacyjne jest ścieżką, która składa się z węzłów, połączonych konkretnym odjazdem (lub przesiadką), a nie listą wszystkich kursów (odjazdów) w danym połączeniu\. Ponieważ wynik jest związany z czasem, zarówno kursy jak i węzły będą zależeć od czasu, będącym jednym z parametrów tego zapytania\.
+.
+.P
+Ścieżka: \fB/node/<id>/connection\fR
+.
+.br
+Metoda: \fBPOST\fR
+.
+.br
+Parametry: \fBid\fR \- identyfikator węzła początkowego\.
+.
+.br
+Parametry ładunku:
+.
+.IP "\(bu" 4
+\fBstart_at\fR \- czas odjazdu z węzła początkowego (nie wcześniej niż \fBstart_at\fR)\.
+.
+.IP "\(bu" 4
+\fBfinish_at\fR \- czas przejazdu na węzeł docelowy (nie później niż \fBfinish_at\fR)\. Jeżeli parametr \fBstart_at\fR jest zdefiniowany, \fBfinish_at\fR zostanie zignorowany\.
+.
+.IP "\(bu" 4
+\fBtime_limit\fR \- limit czasu trwania połączenia w minutach\. Domyślnie \fI120\fR\.
+.
+.IP "\(bu" 4
+\fBto\fR \- węzeł docelowy\.
+.
+.IP "" 0
+.
+.P
+Odpowiedź: \fI200\fR \- teoretycznie (zgodnie z algorytmem A* \fIhttp://en\.wikipedia\.org/wiki/A*_search_algorithm\fR) najszybsze czasowo połączenie komunikacyjne, pomiędzy dwoma wierzchołkami grafu\.
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl http://graph\.bagate\.la/2011\-08\-18/node/189/connection \-d {}
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Zobacz scenariusze testujące \fIhttp://relishapp\.com/stanley/bagatela/docs/graph/connections\fR

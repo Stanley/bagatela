@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>bagatela-graph(1) - połączona struktura do wyszukiwania i analizy połączeń </title>
+  <style type='text/css' media='all'>
+  /* style: man */
+  body#manpage {margin:0}
+  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
+  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
+  .mp h2 {margin:10px 0 0 0}
+  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
+  .mp h3 {margin:0 0 0 4ex}
+  .mp dt {margin:0;clear:left}
+  .mp dt.flush {float:left;width:8ex}
+  .mp dd {margin:0 0 0 9ex}
+  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
+  .mp pre {margin-bottom:20px}
+  .mp pre+h2,.mp pre+h3 {margin-top:22px}
+  .mp h2+pre,.mp h3+pre {margin-top:5px}
+  .mp img {display:block;margin:auto}
+  .mp h1.man-title {display:none}
+  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
+  .mp h2 {font-size:16px;line-height:1.25}
+  .mp h1 {font-size:20px;line-height:2}
+  .mp {text-align:justify;background:#fff}
+  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
+  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
+  .mp u {text-decoration:underline}
+  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
+  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
+  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
+  .mp b.man-ref {font-weight:normal;color:#434241}
+  .mp pre {padding:0 4ex}
+  .mp pre code {font-weight:normal;color:#434241}
+  .mp h2+pre,h3+pre {padding-left:0}
+  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
+  ol.man-decor {width:100%}
+  ol.man-decor li.tl {text-align:left}
+  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
+  ol.man-decor li.tr {text-align:right;float:right}
+  </style>
+  <style type='text/css' media='all'>
+  /* style: toc */
+  .man-navigation {display:block !important;position:fixed;top:0;left:113ex;height:100%;width:100%;padding:48px 0 0 0;border-left:1px solid #dbdbdb;background:#eee}
+  .man-navigation a,.man-navigation a:hover,.man-navigation a:link,.man-navigation a:visited {display:block;margin:0;padding:5px 2px 5px 30px;color:#999;text-decoration:none}
+  .man-navigation a:hover {color:#111;text-decoration:underline}
+  </style>
+  <style type='text/css' media='all'>
+  /* style: custom */
+  pre{border: 1px solid #CACACA;border-radius: 3px;overflow: auto;padding: 10px !important}
+  </style>
+</head>
+<!--
+  The following styles are deprecated and will be removed at some point:
+  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+
+  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
+  .man-navigation should be used instead.
+-->
+<body id='manpage'>
+  <div class='mp' id='man'>
+
+  <div class='man-navigation' style='display:none'>
+    <a href="#NAME">NAME</a>
+    <a href="#WST-P-DO-API">WSTĘP DO API</a>
+    <a href="#ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</a>
+    <a href="#W-ZE-">WĘZEŁ</a>
+    <a href="#PO-CZENIE">POŁĄCZENIE</a>
+    <a href="#PRZESIADKA">PRZESIADKA</a>
+    <a href="#TRAWERSACJA-GRAFU">TRAWERSACJA GRAFU</a>
+    <a href="#-CIE-KI">ŚCIEŻKI</a>
+    <a href="#PO-CZENIA-KOMUNIKACYJNE">POŁĄCZENIA KOMUNIKACYJNE</a>
+  </div>
+
+  <ol class='man-decor man-head man head'>
+    <li class='tl'>bagatela-graph(1)</li>
+    <li class='tc'></li>
+    <li class='tr'>bagatela-graph(1)</li>
+  </ol>
+
+  <h2 id="NAME">NAME</h2>
+<p class="man-name">
+  <code>bagatela-graph</code> - <span class="man-whatis">połączona struktura do wyszukiwania i analizy połączeń </span>
+</p>
+
+<h2 id="WST-P-DO-API">WSTĘP DO API</h2>
+
+<p>API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych
+(<a href="#W-ZE-" data-bare-link="true">węzłów</a>, <a href="#PO-CZENIE" data-bare-link="true">połączeń</a>, <a href="#PRZESIADKA" data-bare-link="true">przesiadek</a>) i usług
+(<a href="#PO-CZENIA-KOMUNIKACYJNE" data-bare-link="true">wyszukiwarka połączeń</a>) z poziomu aplikacji
+trzecich.</p>
+
+<p>API jest zgodne ze wzorcem
+<a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>.
+Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie
+zapytań typu GET i POST. Dane przyjmowane i zwracane są w formacie
+<a href="http://json.org">JSON</a>.</p>
+
+<h3 id="Url">Url</h3>
+
+<p>Dla każdego dnia instnieje osobny graf:</p>
+
+<pre><code>http://graph.bagate.la/&lt;YYYY-MM-DD>
+</code></pre>
+
+<p>Zawiera on w sobie dane ze wszystkich miast (obsługiwanych tego dnia).</p>
+
+<h3 id="Przyk-ady">Przykłady</h3>
+
+<p>Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli
+<code>curl</code> i zostały wykonane w systemie GNU/Linux.</p>
+
+<pre><code>curl http://graph.bagate.la --verbose
+</code></pre>
+
+<h3 id="Kontrybucja">Kontrybucja</h3>
+
+<p>(również do dokumentacji) jest mile widziana! Weź
+<a href="https://github.com/Stanley/bagatela" data-bare-link="true">https://github.com/Stanley/bagatela</a> na widły i poproś o akceptacje zmian.</p>
+
+<h2 id="ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</h2>
+
+<p>Ponieważ dane są przechowywane w grafowej bazie danych
+<a href="http://neo4j.org/">Neo4J</a>, która udostępnia interfejs REST, nasz interfejs
+programistyczny jest z nim całkowicie zgodny. Jego szczegóły opisano w
+<a href="http://components.neo4j.org/neo4j-server/milestone/rest.html">dokumentacji Neo4J REST
+API</a>.</p>
+
+<h3 id="Zasoby">Zasoby</h3>
+
+<p>Graf składa się wyłącznie z wierzchołków i skierowanych relacji między nimi,
+zwanych krawędziami. Dalszy podział tych zasobów na klasy jest umowny, gdyż ich
+atrybuty nie są ograniczone żadną strukturą.</p>
+
+<h3 id="Indeksy">Indeksy</h3>
+
+<p>Indeks wierzchołków lub krawędzi służy do znalezienia punktu wejścia do grafu w
+celu trawersacji, a nie wyszukiwania konkretnych danych.</p>
+
+<h3 id="Odkrywalno-">Odkrywalność</h3>
+
+<p>Struktura grafu jest ze sobą połączona, co znaczy że dane które on zawiera, są
+od siebie zależne. Naturalną konsekwencją tego jest API, które zwraca te
+zależności w postaci linków, czyli adresów URI, zawsze tam gdzie ma to sens.
+Zaleca się w ten sposób "odkrywać" graf, zamiast polegać na dokumentacji, gdyż
+uchroni nas to przez możliwymi zmianami w API w przyszłości. Odkrywanie
+najlepiej zacząć od korzenia:</p>
+
+<p>Ścieżka: <code>/</code><br />
+Metoda: <code>GET</code><br />
+Odpowiedź: <em>200</em> - referencje do najważniejszych zasobów. <em>404</em> - graf nie
+istnieje (brak danych z danego dnia lub zły format daty).</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl http://graph.bagate.la/2011-08-18/
+</code></pre>
+
+<h2 id="W-ZE-">WĘZEŁ</h2>
+
+<p>Wierzchołek w grafie. Reprezentuje punkt na mapie. Węzły są tworzone na
+podstawie <a href="API.1.html#PRZYSTANEK">przystanków</a>.</p>
+
+<p>Ścieżka: <code>/node/&lt;id></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>id</code> - identyfikator węzła.<br />
+Odpowiedź: <em>200</em> - wartości atrybutów i referencje do relacji węzła. <em>404</em> -
+węzeł nie istnieje.</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl http://graph.bagate.la/2011-09-09/node/7
+</code></pre>
+
+<h3 id="Atrybuty">Atrybuty</h3>
+
+<ul>
+<li><code>_classname</code> - <em>"Stop"</em> - gdy reprezentuje fizyczny przystanek (wiata albo
+słupek) lub <em>"Hub"</em> (szczegóły poniżej).</li>
+<li><code>lat</code> - szerokość geograficzna. Np.: <em>50.123</em>.</li>
+<li><code>lon</code> - długość geograficzna. Np.: <em>19.987</em>.</li>
+<li><code>source</code> - adres URI do dokumentu, na podstawie którego został utworzony ten
+węzeł (istnieje tylko dla klasy <em>"Stop"</em>). Np.:
+<em>"http://api.bagate.la/kr/abc?rev=def"</em>.</li>
+</ul>
+
+
+<p>W sytuacji, gdy nie mamy wiedzy o tym który dokładnie przystanek każdy rozkład
+jazdy reprezentuje (brak wartości <code>stop_id</code> w dokumencie
+<a href="API.1.html#ROZK-AD-JAZDY"><em>Timetable</em></a>), zbiór przystanków o tej samej nazwie,
+będzie reprezentowany na grafie tylko przez jeden węzeł klasy <em>Hub</em>. Sprawi to,
+że nie pojawią się relacje przesiadek, dlatego przy trawersacji nie będziemy w
+stanie stwierdzić czy nastąpiło przejście z jednego przystanku do drugiego o
+tej samej nazwie.</p>
+
+<h3 id="Indeks">Indeks</h3>
+
+<p>Wierzchołki w grafie są indeksowane jedynie po źródle pochodzenia, czyli bazie
+danych i identyfikatorze dokumentu. Skorzystaj z
+<a href="API.1.html#Wyszukiwarka">wyszukiwarki</a>, aby odnaleźć przystanek według
+dowolnych kryteriów.</p>
+
+<p>Ścieżka: <code>/index/node/source/&lt;database>/&lt;id></code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>database</code> - baza danych, <code>id</code> - identyfikator dokumentu.<br />
+Odpowiedź: <em>200</em> -</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl http://graph.bagate.la/2011-08-18/index/node/source/kr/000e0590ceae3be9ada4466fc112ca65dc0dc36a
+</code></pre>
+
+<h2 id="PO-CZENIE">POŁĄCZENIE</h2>
+
+<p>Relacja między dwoma węzłami. Zachodzi gdy istnieje
+przynajmniej jedna linia, która kursuje między nimi bezpośrednio (np. linia
+jeżdżąca po przystankach <em>A</em> &rarr; <em>B</em> &rarr; <em>C</em>, składa się z dokładnie
+dwóch połączeń: <em>A</em> do <em>B</em> i <em>B</em> do <em>C</em>).</p>
+
+<p>Ścieżka: <code>/node/&lt;id>/relationships/&lt;dir&gt;/CONNECTS</code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>id</code> - identyfikator węzła, <code>dir</code> - kierunek relacji. Może być <em>in</em>, <em>out</em> lub <em>all</em>.<br />
+Odpowiedź: <em>200</em> - połączenia (przychodzące, wychodzące lub wszystkie) z węzła <code>id</code>.</p>
+
+<h3 id="Atrybuty">Atrybuty</h3>
+
+<ul>
+<li><code>_classname</code> - zawsze <em>"Connection"</em>.</li>
+<li><code>rides</code> - lista kursów wszystkich linii na danej krawędzi. Atrybut typu
+tablicy asocjacyjnej. Przechowuje pary, w których godzinie odjazdu (w formacie
+liczby minut od północy; np. dla <em>"12:00"</em> jest to <em>720</em>) odpowiada tablica z
+informacjami o połączeniu (patrz niżej). UWAGA: ponieważ Neo4J natywnie nie
+wspiera wartości tego typu, tablica jest serializowana za pomocą
+<a href="http://msgpack.org/">MessagePack</a> do ciągu znaków i tak jest przechowywana w
+bazie. Do odkodowania wartości będziemy potrzebowali dodatkowej
+<a href="http://wiki.msgpack.org/display/MSGPACK/QuickStart">biblioteki</a>.</li>
+<li><code>length</code> - długość odcinka w metrach. Liczona wzdłuż trasy (jeżeli ta jest
+zdefiniowana w polu <code>polylines</code> <a href="API.1.html#PRZYSTANEK">przystanku</a>
+początkowego), lub po linii prostej.</li>
+</ul>
+
+
+<h3 id="Atrybuty-informacji-o-po-czeniu">Atrybuty informacji o połączeniu</h3>
+
+<p>Obiekt typu tablicy asocjacyjnej, zawierającej następujące pary:</p>
+
+<ul>
+<li><code>line</code> - numer linii. Np. <em>"4"</em>.</li>
+<li><code>duration</code> - czas podróży w minutach. Np. <em>2</em>.</li>
+</ul>
+
+
+<h2 id="PRZESIADKA">PRZESIADKA</h2>
+
+<p>Relacja między dwoma węzłami klasy <em>Stop</em>. Jeżeli istnieje relacja z węzła
+<em>A</em> do <em>B</em> to istnieje też druga, inna relacja z węzła <em>B</em> do <em>A</em>.</p>
+
+<p>Ścieżka: <code>/node/&lt;id>/relationships/&lt;dir&gt;/TRANSFERS</code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>id</code> - identyfikator węzła, <code>dir</code> - kierunek relacji. Może być <em>in</em>, <em>out</em> lub <em>all</em>.<br />
+Odpowiedź: <em>200</em> - przesiadki (do, z lub wszystkie) z węzła <code>&lt;id></code>.</p>
+
+<h3 id="Atrybuty">Atrybuty</h3>
+
+<ul>
+<li><code>penatly</code> - orientacyjny czas w minutach, potrzeby do przemieszczenia się z
+jednego węzła do drugiego. Np.: <em>1</em>.</li>
+</ul>
+
+
+<h2 id="TRAWERSACJA-GRAFU">TRAWERSACJA GRAFU</h2>
+
+<p>Przechodzenie grafu w zdefiniowany sposób. Zaczynamy zawsze od jednego
+wierzchołka, a następnie, po jego krawędziach, odwiedzamy kolejne wierzchołki
+(wiele w tym samym czasie) itd.  Celem tego procesu może być uzyskanie: węzłów,
+krawędzi lub obu tych typów, odwiedzonych w procesie trawersacji.</p>
+
+<p>Ścieżka: <code>/node/&lt;id>/traverse/&lt;return_type></code><br />
+Metoda: <code>POST</code><br />
+Parametry: <code>id</code> - identyfikator węzła początkowego, <code>return_type</code> - typ zwracanych
+danych. Może być: <em>node</em>, <em>relationship</em>, <em>path</em> lub <em>fullpath</em>.<br />
+Parametry ładunku:</p>
+
+<ul>
+<li><code>order</code></li>
+<li><code>uniqueness</code></li>
+<li><code>relationships</code></li>
+<li><code>prune_evaluator</code></li>
+<li><code>return_filter</code></li>
+<li><code>max_depth</code></li>
+</ul>
+
+
+<p>Odpowiedź: <em>200</em> - węzły, krawędzie, ścieżka (identyfikatory węzłów i krawędzi)
+lub pełna ścieżka wraz z atrybutami węzłów i krawędzi. <em>404</em> - węzeł <code>id</code> nie
+istnieje.</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl -XPOST http://graph.bagate.la/2011-08-18/node/100/traverse/path -d {}
+</code></pre>
+
+<h2 id="-CIE-KI">ŚCIEŻKI</h2>
+
+<p>Znajdywanie jednej lub wielu ścieżek między dwoma wierzchołkami grafu zgodnie
+z jednym z algorytmów teorii grafów. Ścieżka jest sekwencją wierzchołków grafu
+w której każdy z nich jest związany krawędzią z kolejnym wierzchołkiem w tej
+sekwencji.</p>
+
+<p>Ścieżka: <code>/node/&lt;id>/path</code><br />
+Metoda: <code>POST</code><br />
+Parametry: <code>id</code> - identyfikator węzła początkowego.<br />
+Parametry ładunku:</p>
+
+<ul>
+<li><code>to</code> - węzeł docelowy.</li>
+<li><code>relationships</code> - lista dozwolonych typów relacji.</li>
+<li><code>max_depth</code> - limit długości pojedynczej ścieżki wyrażony w wierzchołkach.</li>
+<li><code>algorithm</code> - algorytm. Jeden z: <em>shortestPath</em>, <em>allPaths</em>, <em>allSimplePaths</em>, <em>dijkstra</em>.</li>
+</ul>
+
+
+<p>Odpowiedź: <em>200</em> - ścieżka, to jest lista węzłów i krawędzi je łączących.</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<p>Ścieżka: <code>/node/&lt;id>/paths</code><br />
+Metoda: <code>POST</code><br />
+Parametry zapytania i ładunku jak powyżej.<br />
+Odpowiedź:</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl
+</code></pre>
+
+<h2 id="PO-CZENIA-KOMUNIKACYJNE">POŁĄCZENIA KOMUNIKACYJNE</h2>
+
+<p>Połączenie komunikacyjne jest ścieżką, która składa się z węzłów, połączonych
+konkretnym odjazdem (lub przesiadką), a nie listą wszystkich kursów (odjazdów)
+w danym połączeniu. Ponieważ wynik jest związany z czasem, zarówno kursy jak i
+węzły będą zależeć od czasu, będącym jednym z parametrów tego zapytania.</p>
+
+<p>Ścieżka: <code>/node/&lt;id>/connection</code><br />
+Metoda: <code>POST</code><br />
+Parametry: <code>id</code> - identyfikator węzła początkowego.<br />
+Parametry ładunku:</p>
+
+<ul>
+<li><code>start_at</code> - czas odjazdu z węzła początkowego (nie wcześniej niż
+<code>start_at</code>).</li>
+<li><code>finish_at</code> - czas przejazdu na węzeł docelowy (nie później niż
+<code>finish_at</code>). Jeżeli parametr <code>start_at</code> jest zdefiniowany, <code>finish_at</code>
+zostanie zignorowany.</li>
+<li><code>time_limit</code> - limit czasu trwania połączenia w minutach. Domyślnie <em>120</em>.</li>
+<li><code>to</code> - węzeł docelowy.</li>
+</ul>
+
+
+<p>Odpowiedź: <em>200</em> - teoretycznie (zgodnie z algorytmem
+<a href="http://en.wikipedia.org/wiki/A*_search_algorithm">A*</a>) najszybsze czasowo
+połączenie komunikacyjne, pomiędzy dwoma wierzchołkami grafu.</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl http://graph.bagate.la/2011-08-18/node/189/connection -d {}
+</code></pre>
+
+<p><a href="http://relishapp.com/stanley/bagatela/docs/graph/connections">Zobacz scenariusze testujące</a></p>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-24458797-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+
+
+  <ol class='man-decor man-foot man foot'>
+    <li class='tl'>Stanisław Wasiutyński</li>
+    <li class='tc'>September 2011</li>
+    <li class='tr'>bagatela-graph(1)</li>
+  </ol>
+
+  </div>
+</body>
+</html>

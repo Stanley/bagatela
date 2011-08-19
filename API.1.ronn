@@ -1,11 +1,11 @@
-bagatela(1) -- wyszukiwarka, bagatela, połączeń w komunikacji miejskiej
-=======================================================================
+bagatela-api(1) -- dane o komunikacji miejskiej od przewoźników
+===============================================================
 
 WSTĘP DO API
 ------------
-API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych ([przystanków]( #PRZYSTANEK ), [rozkładów jazdy]( #ROZK-AD-JAZDY )) i usług ([wyszukiwarka połączeń]( #WYSZUKIWARKA-PO-CZE- )) z poziomu aplikacji trzecich.
+API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych ([przystanków]( #PRZYSTANEK ), [rozkładów jazdy]( #ROZK-AD-JAZDY )) i usług ([wyszukiwarka przystanków](#Wyszukiwarka)) z poziomu aplikacji trzecich.
 
-API jest zgodne ze wzorcem [REST](http://en.wikipedia.org/wiki/Representational_State_Transfer). Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE. Dane przyjmowane i zwracane są w formacie [JSON](http://json.org).
+API jest zgodne ze wzorcem [REST](http://en.wikipedia.org/wiki/Representational_State_Transfer). Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET i POST. Dane przyjmowane i zwracane są w formacie [JSON](http://json.org).
 
 ### Url
 
@@ -84,6 +84,9 @@ Przykładowe użycie:
 
 Przeczytaj więcej o dokumentach w CouchDB na: <http://guide.couchdb.org/editions/1/en/api.html#documents>.
 
+### Zasoby
+Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej, którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu `type`.
+
 ### Widoki
 Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze `key`, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej, gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą.
 
@@ -111,10 +114,6 @@ Parametry:
 * `startkey_docid` - identyfikator pierwszego dokumentu w odpowiedzi (używane do paginacji).
 
 Wszystkie wyżej wymienione parametry są opcjonalne.
-
-ZASOBY
-------
-Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej, którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu `type`.
 
 ROZKŁAD JAZDY
 -------------
@@ -220,7 +219,7 @@ Zwraca przystanek oraz wszystkie rozkłady jazdy na danym przystanku. Aby pomin�
 
 Ścieżka: `/_design/Timetables/_list/filter/<widok>`  
 Metoda: `GET`  
-Parametr: `widok`, `only` lub `except` - lista parametrów, połączonych przecinkiem, które mają (lub których nie mają) zawierać wartości zwrócone przez funckję mapującą  
+Parametr: `widok`, *only* lub *except* - lista parametrów, połączonych przecinkiem, które mają (lub których nie mają) zawierać wartości zwrócone przez funckję mapującą  
 Odpowiedź: to samo co zwróci widok, z filtrowanymi wartościami
 
 Przykładowe użycie:
@@ -364,11 +363,6 @@ Zwróci wszystkie przystanki w promieniu *1* kilometra od Dworca Głównego w Kr
 
 [Zobacz scenariusze testujące.](https://github.com/Stanley/bagatela/blob/master/features/stops_search.feature)
 
-
-WYSZUKIWARKA POŁĄCZEŃ
----------------------
-Coming soon.
-
 REPLIKACJE
 ----------
 Replikacje są wykorzystywane do synchronizacji dwóch kopii tej samej bazy danych.
@@ -392,7 +386,13 @@ Przykładowe użycie:
 
 SCENARIUSZE TESTUJĄCE
 ---------------------
-Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji [został napisany](https://github.com/Stanley/bagatela/tree/master/features) odrępny test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia [Cucumber](http://cukes.info/).
+Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów
+funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego
+zagadnienia dokumentacji [został
+napisany](https://github.com/Stanley/bagatela/tree/master/features) odrępny
+test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla
+każdego języku angielskim, który jest interpretowany przez komputer za pomocą
+nadzędzia [Cucumber](http://cukes.info/).
 
 <script type="text/javascript">
   var _gaq = _gaq || [];

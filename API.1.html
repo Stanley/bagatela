@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv='content-type' value='text/html;charset=utf8'>
   <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
-  <title>bagatela(1) - wyszukiwarka, bagatela, połączeń w komunikacji miejskiej</title>
+  <title>bagatela-api(1) - dane o komunikacji miejskiej od przewoźników</title>
   <style type='text/css' media='all'>
   /* style: man */
   body#manpage {margin:0}
@@ -66,30 +66,28 @@
     <a href="#NAME">NAME</a>
     <a href="#WST-P-DO-API">WSTĘP DO API</a>
     <a href="#ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</a>
-    <a href="#ZASOBY">ZASOBY</a>
     <a href="#ROZK-AD-JAZDY">ROZKŁAD JAZDY</a>
     <a href="#PRZYSTANEK">PRZYSTANEK</a>
-    <a href="#WYSZUKIWARKA-PO-CZE-">WYSZUKIWARKA POŁĄCZEŃ</a>
     <a href="#REPLIKACJE">REPLIKACJE</a>
     <a href="#SCENARIUSZE-TESTUJ-CE">SCENARIUSZE TESTUJĄCE</a>
   </div>
 
   <ol class='man-decor man-head man head'>
-    <li class='tl'>bagatela(1)</li>
+    <li class='tl'>bagatela-api(1)</li>
     <li class='tc'></li>
-    <li class='tr'>bagatela(1)</li>
+    <li class='tr'>bagatela-api(1)</li>
   </ol>
 
   <h2 id="NAME">NAME</h2>
 <p class="man-name">
-  <code>bagatela</code> - <span class="man-whatis">wyszukiwarka, bagatela, połączeń w komunikacji miejskiej</span>
+  <code>bagatela-api</code> - <span class="man-whatis">dane o komunikacji miejskiej od przewoźników</span>
 </p>
 
 <h2 id="WST-P-DO-API">WSTĘP DO API</h2>
 
-<p>API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych (<a href="#PRZYSTANEK" data-bare-link="true">przystanków</a>, <a href="#ROZK-AD-JAZDY" data-bare-link="true">rozkładów jazdy</a>) i usług (<a href="#WYSZUKIWARKA-PO-CZE-" data-bare-link="true">wyszukiwarka połączeń</a>) z poziomu aplikacji trzecich.</p>
+<p>API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych (<a href="#PRZYSTANEK" data-bare-link="true">przystanków</a>, <a href="#ROZK-AD-JAZDY" data-bare-link="true">rozkładów jazdy</a>) i usług (<a href="#Wyszukiwarka" data-bare-link="true">wyszukiwarka przystanków</a>) z poziomu aplikacji trzecich.</p>
 
-<p>API jest zgodne ze wzorcem <a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET, POST, PUT i DELETE. Dane przyjmowane i zwracane są w formacie <a href="http://json.org">JSON</a>.</p>
+<p>API jest zgodne ze wzorcem <a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>. Interakcja na zbiorach odbywa się protokołem HTTP i pozwala na wykonywanie zapytań typu GET i POST. Dane przyjmowane i zwracane są w formacie <a href="http://json.org">JSON</a>.</p>
 
 <h3 id="Url">Url</h3>
 
@@ -179,6 +177,10 @@ Odpowiedź: dokument o identyfikatorze <code>id</code> (domyślnie najnowsza rew
 
 <p>Przeczytaj więcej o dokumentach w CouchDB na: <a href="http://guide.couchdb.org/editions/1/en/api.html#documents" data-bare-link="true">http://guide.couchdb.org/editions/1/en/api.html#documents</a>.</p>
 
+<h3 id="Zasoby">Zasoby</h3>
+
+<p>Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej, którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu <code>type</code>.</p>
+
 <h3 id="Widoki">Widoki</h3>
 
 <p>Widok to predefiniowany indeks danych. Definicja widoku jest w bazie danych specjalnym dokumentem i zawiera funkcje: mapującą i opcjonalnie redukującą. Funkcje przetwarzają każdy dokument z osobna i zapisują wynik w posortowanej liście (widoku). Istnieją dwa rodzaje wyszukań tego indeksu: o dokumenty z danym kluczem i o dokumenty z kluczami mieszczącymi się w danym zakresie. Jeżeli znamy konkretny klucz i dodamy go ścieżki widoku w parametrze <code>key</code>, to w rezultacie otrzymamy wartość wygenerowaną przez dokument (jeden lub więcej, gdy klucz nie jest unikalny), będący wynikiem przetwarzania funkcją mapującą lub redukującą.</p>
@@ -210,10 +212,6 @@ Parametry:</p>
 
 
 <p>Wszystkie wyżej wymienione parametry są opcjonalne.</p>
-
-<h2 id="ZASOBY">ZASOBY</h2>
-
-<p>Zasób jest podzbiorem danych w bazie, wydzielonych względem typu (klasy) danej, którą reprezentuje. Typ zasobu do którego należy dokument jest określony w polu <code>type</code>.</p>
 
 <h2 id="ROZK-AD-JAZDY">ROZKŁAD JAZDY</h2>
 
@@ -332,7 +330,7 @@ Kolejność sortowania rozkładów: <code>line</code></p>
 
 <p>Ścieżka: <code>/_design/Timetables/_list/filter/&lt;widok></code><br />
 Metoda: <code>GET</code><br />
-Parametr: <code>widok</code>, <code>only</code> lub <code>except</code> - lista parametrów, połączonych przecinkiem, które mają (lub których nie mają) zawierać wartości zwrócone przez funckję mapującą<br />
+Parametr: <code>widok</code>, <em>only</em> lub <em>except</em> - lista parametrów, połączonych przecinkiem, które mają (lub których nie mają) zawierać wartości zwrócone przez funckję mapującą<br />
 Odpowiedź: to samo co zwróci widok, z filtrowanymi wartościami</p>
 
 <p>Przykładowe użycie:</p>
@@ -492,10 +490,6 @@ Metoda: <code>POST</code><br />
 
 <p><a href="https://github.com/Stanley/bagatela/blob/master/features/stops_search.feature">Zobacz scenariusze testujące.</a></p>
 
-<h2 id="WYSZUKIWARKA-PO-CZE-">WYSZUKIWARKA POŁĄCZEŃ</h2>
-
-<p>Coming soon.</p>
-
 <h2 id="REPLIKACJE">REPLIKACJE</h2>
 
 <p>Replikacje są wykorzystywane do synchronizacji dwóch kopii tej samej bazy danych.</p>
@@ -523,7 +517,13 @@ Parametry ładunku:</p>
 
 <h2 id="SCENARIUSZE-TESTUJ-CE">SCENARIUSZE TESTUJĄCE</h2>
 
-<p>Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego zagadnienia dokumentacji <a href="https://github.com/Stanley/bagatela/tree/master/features">został napisany</a> odrępny test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla każdego języku angielskim, który jest interpretowany przez komputer za pomocą nadzędzia <a href="http://cukes.info/">Cucumber</a>.</p>
+<p>Aby zapewnić stabilność i niezawodność API, konieczne jest posiadanie testów
+funkcjonalnych. Ponieważ są one również świetną dokumentacją, dla każdego
+zagadnienia dokumentacji <a href="https://github.com/Stanley/bagatela/tree/master/features">został
+napisany</a> odrępny
+test. Każdy z nich jest scenariuszem użycia API w czystym i zrozumiałym dla
+każdego języku angielskim, który jest interpretowany przez komputer za pomocą
+nadzędzia <a href="http://cukes.info/">Cucumber</a>.</p>
 
 <script type="text/javascript">
   var _gaq = _gaq || [];
@@ -543,8 +543,8 @@ Parametry ładunku:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Stanisław Wasiutyński</li>
-    <li class='tc'>July 2011</li>
-    <li class='tr'>bagatela(1)</li>
+    <li class='tc'>August 2011</li>
+    <li class='tr'>bagatela-api(1)</li>
   </ol>
 
   </div>
