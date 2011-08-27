@@ -1,7 +1,7 @@
-Feature: List timetables
+Feature: Querying timetables
   In order to provide users with detailed information about their journey
   As a developer
-  I want to build applications which know exactly when buses and trams departure
+  I want to build applications which have easy access to timetables
 
   Background:
     Given an empty database "kr"

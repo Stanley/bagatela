@@ -1,7 +1,7 @@
-Feature: List stops
+Feature: Querying stops
   In order to provide users with detailed information about their journey
   As a developer
-  I want to build applications which know exactly where each stop is
+  I want to build applications which have easy access to stops details
 
   Background:
     Given an empty database "kr"

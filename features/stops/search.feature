@@ -1,4 +1,4 @@
-Feature: Search stops
+Feature: Search for stops
   In order to find begining/ending stops
   As a developer
   I want to use a simple yet powerful, couchdb like API
