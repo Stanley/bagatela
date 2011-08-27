@@ -1,0 +1,60 @@
+html, body {
+  font-family: helvetica, arial, sans-serif;
+  padding: 0;
+  margin: 0
+}
+
+a {
+  color: #0058AE;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.header{
+  width: 100%;
+  background-color: #eee;
+  border-bottom: 1px solid #DBDBDB
+}
+
+h1 {
+  padding: 20px;
+  font-family: "Cabin Sketch", lucida grande, tahoma, sans-serif
+}
+
+h1, .content {
+ width: 600px;
+ margin: auto;
+}
+
+p {
+ text-align: justify
+}
+
+.button {    
+  display:block;
+  border-left: 4px #DBDBDB solid;
+  margin: 30px;
+  padding: 10px; 
+}
+
+.button:hover {
+  background-color: #eee;
+}
+
+.button > strong {
+  display: block;
+  padding-bottom: 5px
+}
+
+.author {
+  border-top: 1px solid #DBDBDB;
+  padding: 5px
+}
+
+.author, .author > a {
+  font-style: italic;
+  color: #888;
+}
