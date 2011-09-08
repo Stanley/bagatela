@@ -1,5 +1,5 @@
 Given /^an empty database "([^\"]+)"$/ do |db|
-  @db = RestClient::Resource.new API+db
+  @db = RestClient::Resource.new "#{API}/#{db}"
   @db_name = db
   @db.delete do; end
   @db.put '', {'Content-Length' => 0}
@@ -10,7 +10,7 @@ Given /^design documents$/ do
   Rake.application["couchdb:views"].invoke(@db_name)
 end
 
-Given /^the following ([a-z]+)s:$/ do |type, resources|
+Given /^the following ([a-z]+) documents:$/ do |type, resources|
   resources.hashes.each do |resource|
     resource['type'] = type.capitalize
     ['table', 'polylines', 'location'].each do |key|

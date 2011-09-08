@@ -4,16 +4,16 @@ Feature: Querying stops
   I want to build applications which have easy access to stops details
 
   Background:
-    Given an empty database "kr"
+    Given an empty database "foo"
       And design documents
 
   Scenario: Find stop by name
-    Given the following stops:
-      | _id | name     | address      |
+    Given the following stop documents:
+      | _id | name     | address       |
       | 1   | Bagatela | Dunajewskiego |
       | 2   | Bagatela | Karmelicka    |
       | 3   | Bagatela | Podwale       |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?key=["Bagatela","Karmelicka"]
+    When I send a GET request to http://api.bagate.la/foo/_design/Stops/_view/by_name?key=["Bagatela","Karmelicka"]&reduce=false
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -25,12 +25,12 @@ Feature: Querying stops
   @by_name
 
   Scenario: Find stops by name
-    Given the following stops:
+    Given the following stop documents:
       | _id | name     | address       |
       | 1   | Bagatela | Dunajewskiego |
       | 2   | Bagatela | Karmelicka    |
       | 3   | Bagatela | Podwale       |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?reduce=false&startkey=["Bagatela"]&endkey=["Bagatela",{}]
+    When I send a GET request to http://api.bagate.la/foo/_design/Stops/_view/by_name?reduce=false&startkey=["Bagatela"]&endkey=["Bagatela",{}]
     Then the response status should be 200
       And the response without rows' value._rev should be:
       """
@@ -44,7 +44,7 @@ Feature: Querying stops
   @by_name
 
   Scenario: Attempt to find stops which do not exist
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?reduce=false&startkey=["Utopia"]&endkey=["Utopia",{}]
+    When I send a GET request to http://api.bagate.la/foo/_design/Stops/_view/by_name?reduce=false&startkey=["Utopia"]&endkey=["Utopia",{}]
     Then the response status should be 200
       And the response should be:
       """
@@ -54,24 +54,24 @@ Feature: Querying stops
   @by_name
   
   Scenario: Get hub location
-    Given the following stops:
+    Given the following stop documents:
       | _id | name     | address       | location             |
-      | 1   | Bagatela | Dunajewskiego | {"lat":3, "lon":7.7} |
-      | 2   | Bagatela | Karmelicka    | {"lat":4, "lon":8.1} |
+      | 1   | Bagatela | Dunajewskiego | {"lat":3, "lon":7.6} |
+      | 2   | Bagatela | Karmelicka    | {"lat":4, "lon":8.2} |
       | 3   | Bagatela | Podwale       | {"lat":8, "lon":8.2} |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&group_level=1
+    When I send a GET request to http://api.bagate.la/foo/_design/Stops/_view/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&group_level=1
     Then the response status should be 200
-      And the response without rows' value._rev should be:
+      And the response should be:
       """
       {"rows":[
-        {"key":["Bagatela"], "value":{"location":{"lat":5, "lon":8}}}
+        {"key":["Bagatela"], "value":{"docs":["3","2","1"], "location":{"lat":5, "lon":8}}}
       ]}
       """
 
   @by_line
 
   Scenario: Find stops in line
-    Given the following stops:
+    Given the following stop documents:
       | _id | name                    |
       | 1   | Cmentarz Rakowicki      |
       | 2   | Cmentarz Rakowicki      |
@@ -86,7 +86,7 @@ Feature: Querying stops
       | 11  | Komorowskiego           |
       | 12  | Flisacka                |
       | 13  | Salvator                |
-    And the following timetables:
+    And the following timetable documents:
       | _id | stop                    | stop_id | line | route                                   | source |
       | 14  | Cmentarz Rakowicki      | 1       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | a      |
       | 15  | Cmentarz Rakowicki      | 2       | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | b      |
@@ -100,7 +100,7 @@ Feature: Querying stops
       | 23  | Jubilat                 | 10      | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | j      |
       | 24  | Komorowskiego           | 11      | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | k      |
       | 25  | Flisacka                | 12      | 2    | CMENTARZ - Rakowicka, Lubicz - SALWATOR | l      |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_view/by_line?startkey=["2", "SALWATOR"]&endkey=["2", "SALWATOR", {}]&include_docs=true
+    When I send a GET request to http://api.bagate.la/foo/_design/Stops/_view/by_line?startkey=["2", "SALWATOR"]&endkey=["2", "SALWATOR", {}]&include_docs=true
     Then the response status should be 200
       And the response without rows' doc._rev should be:
       """
@@ -123,16 +123,16 @@ Feature: Querying stops
   @polylines
 
   Scenario: Find line's route polyline
-    Given the following stops:
+    Given the following stop documents:
       | _id | name     | polylines               |
       | 1   | Pierwszy | { "2": [[0,0], [1,1]] } |
       | 2   | Środkowy | { "3": [[1,1], [2,2]] } |
-    And the following timetables:
+    And the following timetable documents:
       | line | stop_id | destination |
       | L    | 1       | OSTATNI     |
       | L    | 2       | OSTATNI     |
       | L    | 3       | OSTATNI     |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_list/polyline/by_line?startkey=["L", "OSTATNI"]&endkey=["L", "OSTATNI", {}]&include_docs=true
+    When I send a GET request to http://api.bagate.la/foo/_design/Stops/_list/polyline/by_line?startkey=["L", "OSTATNI"]&endkey=["L", "OSTATNI", {}]&include_docs=true
     Then the response status should be 200
       And the response should be:
       """
@@ -145,22 +145,22 @@ Feature: Querying stops
   @filter
 
   Scenario: Attributes filtering
-    Given the following stops:
-      | _id | name     | lat         | lng         | address       |
+    Given the following stop documents:
+      | _id | name     | lat         | lon         | address       |
       | 1   | Bagatela | 50.06380081 | 19.93320084 | Dunajewskiego |
       | 2   | Bagatela | 50.0637207  | 19.93255997 | Karmelicka    |
       | 3   | Bagatela | 50.06309891 | 19.9326992  | Podwale       |
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_list/filter/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&only=lat,lng
+    When I send a GET request to http://api.bagate.la/foo/_design/Stops/_list/filter/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&reduce=false&only=lat,lon
     Then the response status should be 200
       And the response should be:
       """
       {"total_rows":3,"offset":0,"rows":[
-        {"id":"1","key":["Bagatela","Dunajewskiego"],"value":{"lat":"50.06380081","lng":"19.93320084"}},
-        {"id":"2","key":["Bagatela","Karmelicka"],"value":{"lat":"50.0637207","lng":"19.93255997"}},
-        {"id":"3","key":["Bagatela","Podwale"],"value":{"lat":"50.06309891","lng":"19.9326992"}}
+        {"id":"1","key":["Bagatela","Dunajewskiego"],"value":{"lat":"50.06380081","lon":"19.93320084"}},
+        {"id":"2","key":["Bagatela","Karmelicka"],"value":{"lat":"50.0637207","lon":"19.93255997"}},
+        {"id":"3","key":["Bagatela","Podwale"],"value":{"lat":"50.06309891","lon":"19.9326992"}}
       ]}
       """
-    When I send a GET request to http://api.bagate.la/kr/_design/Stops/_list/filter/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&except=_rev,lat,lng
+    When I send a GET request to http://api.bagate.la/foo/_design/Stops/_list/filter/by_name?startkey=["Bagatela"]&endkey=["Bagatela",{}]&reduce=false&except=_rev,lat,lon
     Then the response status should be 200
       And the response should be:
       """

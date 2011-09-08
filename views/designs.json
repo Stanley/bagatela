@@ -105,12 +105,18 @@
         }
       }",
       "reduce": "function(keys,values,rereduce){
-        var lat=0,lon=0;
+        var ids=[], lat=0, lon=0;
         values.forEach(function(val){
-          lat += val.location.lat;
-          lon += val.location.lon;
+          if(val.location){
+            val._id ? ids.push(val._id) : ids.concat(val.docs)
+            lat += val.location.lat;
+            lon += val.location.lon;
+          }
         });
-        return {location:{lat:lat/values.length, lon:lon/values.length}}
+        return {
+          docs: ids,
+          location: {lat:lat/values.length, lon:lon/values.length}
+        }
       }"
     },
     "by_line": {
