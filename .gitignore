@@ -1,7 +1,6 @@
 *~
 *.swp
-.idea/
+tags
 .bundle/
-tmp/
 log/
-utils/picky/index
+db/

@@ -4,71 +4,44 @@
 require 'sinatra'
 require File.join(File.dirname(__FILE__), '..', 'config', 'environment')
 
-module Bagatela
-  class RestApi < Sinatra::Base
+class RestApi < Sinatra::Base
 
-  #  disable :show_exceptions, :raise_errors
+  disable :raise_errors, :show_exceptions
+  include Bagatela::Graph
 
-    before do
-      content_type :json
-      @result = {}
-    end
-    
-    # Welcome message
-    get '/' do 
-      {:message => 'Welcome aboard!', :version => VERSION}.to_json
-    end
+  before do
+    content_type :json
+  end
+  
+  # Welcome message
+  get '/' do 
+    {:message => 'Welcome aboard!', :version => REVISION}.to_json
+  end
 
-    # Search for connections
-    get /^([a-z]+)/ do |db|
-      #
-      from, to = params[:q].split(':')
-      raise BadRequest, "two_different_stops_required" unless from and to and from != to
-      #Neo4j::Transaction.run do
-        # Distance we've traveled so far
-        distance = 0
-        #
-        stop = {}
-        # Output - Array of Hashes which describes our trip
-        results = []                        
-        # Initial time
-        time = params['time'] ? Time.parse(params['time']) : Time.new
-        # What we optimize for
-        discriminant = params['priority'] || 'dist'
-        # Time we measure during trip (in minutes from 00:00)
-  #      currently = now.hour*60 + now.min
-       
-        path = AStar.new(from, to, time, discriminant)
-        path.each_run do |departure, stop_a, duration, stop_b|
+  # Example POST /2011-08-31/node/123/connection
+  post /^\/(\d{4}-\d{2}-\d{2})\/node\/(\d+)\/connection/ do |date, start|
 
-          stop["stop"] ||= stop_a
-          stop["departure"] = departure.strftime("%H:%M")
-          results.push stop
+    Neo4j::Config[:storage_path] = date
 
-          stop = {'stop'    => stop_b,
-                  'arrival' => Time.at(departure + duration*60).strftime("%H:%M") }
-        end
+    params = JSON.parse request.body.read
+    to = /node\/(\d+)/.match(params['to']) || raise("fail")
+    time = Time.parse(params['start_at'])
+    from = Neo4j::Node.load start
+    to = Neo4j::Node.load to[1]
+    journey = Search::Fast.journey(from: from, to: to, time: time)
 
-        if results.empty?
-          @result[:from]  = from
-          @result[:to]    = to
-          raise NotFound, 'no_connection'
-        end
-        
-        @result[:from]  = results.first['stop']
-        @result[:to]    = stop['stop']
+    JSON.pretty_generate({ 
+      #:start => from.uri,
+      :nodes => journey.nodes,
+      :departures => journey.departures_details,
+      :length => journey.length,
+      :arrival => journey.arrival
+      #:end => to.uri
+    })
+  end
 
-        arrival = stop['arrival'].split(':').map{|x|x.to_i}
-        @result[:duration] = (arrival[0]-time.hour)*60 + arrival[1]-time.min
-        @result[:distance] = nil #distance
-        @result[:results]  = results << stop
-        @result.to_json
-      #end    
-    end
-
-    error do
-      e = env['sinatra.error']
-      error e.respond_to?(:status) ? e.status : 500, @result.merge({"error" => e.underscore, "reason" => e.message}).to_json
-    end
+  error do
+    e = env['sinatra.error']
+    error e.respond_to?(:status) ? e.status : 500, {"error" => e.underscore, "message" => e.message}.to_json
   end
 end

@@ -8,10 +8,15 @@ class Exception
   end
 end
 
-class NotFound < RuntimeError
+class NotFound < Exception
   def status; 404 end
 end
 
-class BadRequest < RuntimeError
+class BadRequest < Exception
   def status; 400 end
 end
+
+class ConnectionNotFound < NotFound
+  def message; "No connection found using current algorithm and parameters" end
+end
+
