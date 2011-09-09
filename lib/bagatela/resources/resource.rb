@@ -1,3 +1,4 @@
+require 'uri'
 require 'json'
 require 'restclient'
 
@@ -13,11 +14,12 @@ module Bagatela
       # Returns an array of documents.
       def self.view(db, view_name, options={})
         JSON.parse(
-          RestClient.get("#{COUCHDB}/#{db}" +
+          RestClient.get(URI.escape("#{COUCHDB}/#{db}" +
             "/_design/#{self}/_view/#{view_name}" +
             '?'+ options.each_pair.map{|key,val| "#{key}=#{val}"}.join('&')
-          )
+          ))
         )['rows'].map do |row|
+          raise row.inspect unless row['value']
           row['value']['_key'] = row['key'] if row['key']
           self.new row['value']
         end

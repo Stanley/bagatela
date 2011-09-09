@@ -24,6 +24,10 @@ require 'lib/bagatela/graph/hub'
 require 'lib/bagatela/graph/stop'
 require 'lib/bagatela/graph/import'
 
+require 'lib/bagatela/graph/journey'
+require 'lib/bagatela/graph/search/fast'
+require 'lib/bagatela/graph/search/astar'
+
 module Bagatela
   module Resources
     # Load configuration from YAML file.

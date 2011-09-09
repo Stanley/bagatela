@@ -39,22 +39,21 @@ module Bagatela
         output
       end
 
-      # Unique stop id. That is *stop_id* (if defined) or *stop* - the name.
+      # Unique stop id. That is *stop_id* (if defined) or upcased *stop* - the name.
       # 
       # Returns String.
       def stop_id
         self['stop_id'] || Unicode.upcase(self['stop']).force_encoding("UTF-8")
       end
 
-      # Find table
+      # Find one of many tables.
       #
       # date - [Time]: day during which returned table must be relevant.
       #
-      # Returns Table
+      # Returns Table.
       def table(date)
-        return Table.new({}) unless self['tables'] || self['table']
-        # Days class natural language descriptions.
-        (self['tables'] || self['table']).map do |description, table|
+        # Iterate over each days class
+        self['tables'].map do |description, table|
           [Chronik::Label.new(description), table]
         end.each do |label, table|
           return Table.new(table) if label.holidays.include?(date)

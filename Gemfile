@@ -2,11 +2,11 @@ source :rubygems
 
 group :app do
   gem 'sinatra'
-  gem 'neo4j', '1.1.2', :platforms => :jruby
+  gem 'neo4j', :path => "/github/neo4j"
   gem 'unicode'
   gem 'jruby-openssl'
-  gem 'chronik'
-  gem 'msgpack'
+  gem 'chronik', :path => "/code/chronik"
+  gem 'msgpack-jruby' 
 end
 
 group :test do
@@ -16,4 +16,9 @@ group :test do
   gem 'fuubar'
   gem 'cucumber'
   gem 'rest-client'
+end
+
+group :debug do
+  gem 'ruby-debug'
+  gem 'interactive_editor'
 end

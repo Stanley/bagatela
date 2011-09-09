@@ -7,7 +7,7 @@ module Neo4j::TypeConverters
         type == Hash
       end
       def to_java(val)
-        (val || {}).to_msgpack
+        MessagePack.pack(val || {})
       end
       def to_ruby(val)
         val ? MessagePack.unpack(val.encode "ASCII-8BIT") : {}
@@ -21,12 +21,19 @@ module Bagatela
     # Connection between hubs can not be described by one polyline (can connect many-to-many stops) but an average length of all this polylines is used to determine cost of connection.
     class Connection
       include Neo4j::RelationshipMixin
+      include Resource
 
       # Distance in meters.
       property :length
       # Hash of rides where the key is departure time (minutes from midnight) and
       # the value is hash with *line* and ride's *duration* time properties.
       property :rides, :type=>Hash
+
+      alias_method :length_property, :length
+
+      def length
+        length_property || 1
+      end
 
       # Returns nil if there are no more runs
       # Otherwise return cost (that is waiting time + trip time), departure time and trip time
@@ -41,15 +48,17 @@ module Bagatela
         #[cost || start_node.by_dist(end_node), dep, dur]
       #end
 
-      #private
+      # Finds next run 
+      #
+      # Returns Array: departure time and trip time
+      #                or empty array
+      def next_run(time) 
+        rides.
+          sort.
+          map{|dep, hash| [dep.to_i, hash['duration']]}.
+          find{|dep, _| dep >= time}
+      end
 
-      ## Finds next run and returns its departure time and waiting time
-      #def next_run(time) 
-        ## TODO: do not use json!
-        #JSON.parse(timetables).sort.
-          #map{|dep, _| [dep.to_i, _]}.
-          #find{|dep, _| dep.to_i >= time}
-      #end
     end
   end
 end

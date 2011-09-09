@@ -1,4 +1,4 @@
 class Transfer
   include Neo4j::RelationshipMixin
-  property :cost # distance in meters
+  property :length # distance in meters
 end
