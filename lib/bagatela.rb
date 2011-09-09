@@ -7,7 +7,6 @@ require 'yaml'
 # 3rd party
 require 'json'
 require 'neo4j'
-require 'sinatra'
 
 require '../chronik/lib/chronik'
 
@@ -18,10 +17,11 @@ require 'lib/bagatela/resources/timetable'
 require 'lib/bagatela/resources/stop'
 require 'lib/bagatela/resources/hub'
 
+require 'lib/bagatela/graph/resource'
 require 'lib/bagatela/graph/connection'
-#require 'lib/bagatela/graph/transfer'
-#require 'lib/bagatela/graph/stop'
+require 'lib/bagatela/graph/transfer'
 require 'lib/bagatela/graph/hub'
+require 'lib/bagatela/graph/stop'
 require 'lib/bagatela/graph/import'
 
 module Bagatela
