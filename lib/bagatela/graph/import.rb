@@ -19,7 +19,7 @@ module Bagatela
       # date  - [Time]:
       #
       # Returns Array of Graph::Connections
-      def self.relationships(db, group_stops=false, date=Time.now)
+      def self.relationships!(db, group_stops=false, date=Time.now)
 
         inserter = Neo4j::Batch::Inserter.new
         stops = nodes!(db, group_stops, inserter)

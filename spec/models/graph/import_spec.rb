@@ -36,7 +36,7 @@ describe Import do
           end
         end
 
-        @relationships = Import.relationships(source)
+        @relationships = Import.relationships!(source)
       end
 
       it "should return an array" do
@@ -72,7 +72,7 @@ describe Import do
           end
         end
 
-        @relationships = Import.relationships(source, true)
+        @relationships = Import.relationships!(source, true)
       end
 
       it "should create a new node" do
@@ -111,7 +111,7 @@ describe Import do
           end
         end
 
-        @relationships = Import.relationships(source)
+        @relationships = Import.relationships!(source)
       end
 
       describe "relationship" do
