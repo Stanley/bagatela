@@ -2,9 +2,10 @@
 # encoding: utf-8
 
 require 'rake'
+require 'yaml'
+require 'json'
 require 'restclient'
 #require 'spec/rake/spectask'
-require 'lib/bagatela'
 
 #task :default => :test
 #task :test => :spec
@@ -19,78 +20,45 @@ require 'lib/bagatela'
   #end
 #end
 
-namespace :neo4j do
-  desc "Create graph from static documents"
-  task :import, [:db] do |t, args|
+config_file = File.join(File.dirname(__FILE__), 'config', 'database.yaml')
+config = YAML.load_file(config_file)['development']
 
-    Bagatela::Graph::Import.relationships!(args[:db])
-
-    #require 'neo4j'
-    #db = CONFIG['couch'] +'/'+ args[:db]
-    #stops = {}
-
-    #Neo4j::Transaction.run do
-      ## Get all stops
-      #JSON.parse(RestClient.get db+'/_design/Stops/_view/by_name?group_level=1')['rows'].
-        #each do |row|
-        #location = row['value']['location']
-        #name = Unicode::upcase(row['key'].first)
-        #stops[name] = Neo4j::Node.new(location)
-      #end
-
-      ## Destination hub name
-      #destination = nil
-      ## Node from which we're adding connection
-      #from = nil
-
-      ## Get all timetables
-      #JSON.parse(RestClient.get db+'/_design/Timetables/_view/by_source?limit=200&descending=true')['rows'].
-        #map{|row| row['value']}.
-        #each do |timetable|
-          ## timetable's destination
-          #dest = Unicode::upcase((timetable['destination'] || timetable['route'].split('-').last).strip)
-          #timetable['stop'] = Unicode.upcase(timetable['stop'])
-
-          #to = destination === dest ? from : stops[dest]
-          #from = stops[timetable['stop']] # timetables['stop_id']
-
-          #puts "#{timetable['line']}\n" if destination != dest
-          #destination = dest
-
-          #if to == from
-            #plus_one = timetable['stop'] +"+1"
-            #unless from = stops[plus_one]
-              ## create new node
-              #from = stops[plus_one] = Neo4j::Node.new({}) # todo location
-            #end
-          #end
-
-          #puts "<- #{timetable['stop']} (#{from})"
-          #puts "ERROR: #{dest}" unless to
-          
-          ## Get or create relationship between from and to stops
-          #unless connection = from.rels(:connections).outgoing.to_other(to).first
-            #connection = Neo4j::Relationship.new(:connections, from, to)
-            #connection['cost'] = 0
-          #end
-          ## add departures from current timetable
-          #connection['departures'] = "?"
-        #end
-    #end
-  end
-end
+desc "The same as couchdb:views"
+task :couchdb, [:db] => 'couchdb:views'
 
 namespace :couchdb do 
 
-  desc "Push Couchdb views"
-  task :views, [:db] do |t, args|
+  desc "Create database if it doesn't exist"
+  task :initialize, [:db] do |t, args|
+    db = config['couchdb'] + args[:db]
+    RestClient.put db, nil do |resp|
+      if resp.code == 201 # Import stops
+        pwd = File.dirname(__FILE__)
+        path = "#{pwd}/config/cities/#{args[:db]}.json"
+        # Execute proper external script
+        Dir.chdir("#{pwd}/bin/import/stops")
+        source, city = JSON.parse(File.read path)['stops']
+        case source
+        when 'mpk.krakow'
+          `ruby mpk_krakow.rb`
+        when 'kzkgop'
+          `node kzkgop.js`
+        when 'jakdojade'
+          `node jakdojade.js #{city} | ruby jakdojade.rb #{args[:db]}`
+        else
+          raise 'Unknown source'
+        end
+      end
+    end 
+  end
 
-    db = "#{Bagatela::Resources::COUCHDB}/#{args[:db]}"
+  desc "Push all design documents from views/ to CouchDB"
+  task :views, [:db] => :initialize do |t, args|
+
+    db = config['couchdb'] + args[:db]
     headers = {:content_type => :json, :accept => :json}
-    # Create database if it doesn't exist; ignore errors
-    RestClient.put db, nil do |resp|; end 
 
-    JSON.parse(File.read('./views/designs.json').
+    JSON.parse(File.read("#{File.dirname(__FILE__)}/views/designs.json").
       # We have to remove new lines from strings in order to get valid JSON
       gsub(/(\"[^\"]+\")/){|str| str.gsub("\n",'\n') })['docs'].
       each do |doc|

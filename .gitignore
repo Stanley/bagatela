@@ -4,3 +4,4 @@ tags
 .bundle/
 log/
 db/
+node_modules/

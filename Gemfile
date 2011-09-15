@@ -7,6 +7,10 @@ group :app do
   gem 'jruby-openssl'
   gem 'chronik', :path => "/code/chronik"
   gem 'msgpack-jruby' 
+
+group :rake do
+  gem 'nokogiri'
+  gem 'couchrest'
 end
 
 group :test do
