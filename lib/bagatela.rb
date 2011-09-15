@@ -7,26 +7,25 @@ require 'yaml'
 # 3rd party
 require 'json'
 require 'neo4j'
-
-require '../chronik/lib/chronik'
+require 'chronik'
 
 # internals
-require 'lib/bagatela/resources/resource'
-require 'lib/bagatela/resources/table'
-require 'lib/bagatela/resources/timetable'
-require 'lib/bagatela/resources/stop'
-require 'lib/bagatela/resources/hub'
+require './lib/bagatela/resources/resource'
+require './lib/bagatela/resources/table'
+require './lib/bagatela/resources/timetable'
+require './lib/bagatela/resources/stop'
+require './lib/bagatela/resources/hub'
 
-require 'lib/bagatela/graph/resource'
-require 'lib/bagatela/graph/connection'
-require 'lib/bagatela/graph/transfer'
-require 'lib/bagatela/graph/hub'
-require 'lib/bagatela/graph/stop'
-require 'lib/bagatela/graph/import'
+require './lib/bagatela/graph/resource'
+require './lib/bagatela/graph/connection'
+require './lib/bagatela/graph/transfer'
+require './lib/bagatela/graph/hub'
+require './lib/bagatela/graph/stop'
+require './lib/bagatela/graph/import'
 
-require 'lib/bagatela/graph/journey'
-require 'lib/bagatela/graph/search/fast'
-require 'lib/bagatela/graph/search/astar'
+require './lib/bagatela/graph/journey'
+require './lib/bagatela/graph/search/fast'
+require './lib/bagatela/graph/search/astar'
 
 module Bagatela
   module Resources
