@@ -27,6 +27,13 @@ require './lib/bagatela/graph/journey'
 require './lib/bagatela/graph/search/fast'
 require './lib/bagatela/graph/search/astar'
 
+# Monkey patch
+class String
+  def upcase
+    to_java_string.to_upper_case
+  end
+end
+
 module Bagatela
   module Resources
     # Load configuration from YAML file.

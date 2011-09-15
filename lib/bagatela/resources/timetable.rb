@@ -1,5 +1,3 @@
-require 'unicode'
-
 module Bagatela
   module Resources
     class Timetable < Resource
@@ -12,8 +10,8 @@ module Bagatela
       #
       # Returns String; timetable's line destination.
       def destination
-        self['destination'] ? Unicode.upcase(self['destination']).force_encoding("UTF-8") :
-        self['route'].split('-').last.strip.split.map{|word| Unicode.upcase(word)}.join(' ').force_encoding("UTF-8")
+        return self['destination'].upcase if self['destination']
+        self['route'] ? self['route'].split('-').last.strip.upcase : ''
       end
 
       # Based on two timetables, where one follows another, we can guess (with
@@ -43,7 +41,7 @@ module Bagatela
       # 
       # Returns String.
       def stop_id
-        self['stop_id'] || Unicode.upcase(self['stop']).force_encoding("UTF-8")
+        self['stop_id'] || self['stop'].upcase
       end
 
       # Find one of many tables.

@@ -4,6 +4,7 @@ group :app do
   gem 'sinatra'
   gem 'neo4j', :path => "/github/neo4j"
   gem 'unicode'
+  gem 'chronik', :path=>'/code/chronik'
   gem 'jruby-openssl'
   gem 'chronik', :path => "/code/chronik"
   gem 'msgpack-jruby' 

@@ -1,5 +1,4 @@
 require 'msgpack'
-require 'unicode'
 require 'jruby/profiler'
 
 module Bagatela
@@ -102,7 +101,7 @@ module Bagatela
 
       def self.stops(db)
         Resources::Stop.view(db, :by_name, :reduce=>false).map do |doc|
-          id = doc['finish'] ? Unicode.upcase(doc['name']) : doc['_id']
+          id = doc['finish'] ? doc['name'].upcase : doc['_id']
           stop = doc['location'] || {}
           stop['name'] = doc['name']
           [id, stop]
@@ -111,11 +110,11 @@ module Bagatela
 
       def self.hubs(db)
         Resources::Stop.view(db, :by_name, :group_level=>1).map do |doc|
-          id = Unicode.upcase(doc['_key'][0]).force_encoding("UTF-8")
+          id = doc['_key'][0].upcase
           #hub = Hub.new(doc['location'])
           #hub[:name] = doc['_key'][0].force_encoding("UTF-8")
           #hub[:source] = doc['docs'].map{|id| "#{db}-#{id}"} if doc['docs']
-          [id, {'name' => doc['_key'][0].force_encoding("UTF-8")}.merge(doc['location'] || {})]
+          [id, {'name' => doc['_key'][0]}.merge(doc['location'] || {})]
         end
       end
 
