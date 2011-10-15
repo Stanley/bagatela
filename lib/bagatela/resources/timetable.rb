@@ -24,18 +24,9 @@ module Bagatela
       # Returns Hash, where the key is time - minutes from 00:00 (eg. for 12:00
       # it would be 720) and the value is a hash with: *line* and ride's
       # *duration* time values.
-      def rides(date, next_timetable=nil)
-        output = {}
-        table(date).each do |departure|
-          arrival = if next_timetable
-            next_timetable.table(date).after(departure)
-          end || departure + 1 # TODO: we can do better
-
-          output[departure] = {'line' => self['line'],
-                               'duration' => arrival-departure}
-        end
-        output
-      end
+      #def rides(date, following=nil)
+        #table(date).rides(following)
+      #end
 
       # Unique stop id. That is *stop_id* (if defined) or upcased *stop* - the name.
       # 
@@ -54,12 +45,16 @@ module Bagatela
         self['tables'].map do |description, table|
           [Chronik::Label.new(description), table]
         end.each do |label, table|
-          return Table.new(table) if label.holidays.include?(date)
+          return Table.new(table, self) if label.holidays.include?(date)
         end.each do |label, table|
-          return Table.new(table) if label.weekdays.include?(date.wday)
+          return Table.new(table, self) if label.weekdays.include?(date.wday)
         end
         # There is no table for given day
-        Table.new({})
+        Table.new({}, self)
+      end
+
+      def to_s
+        stop_id
       end
 
     end

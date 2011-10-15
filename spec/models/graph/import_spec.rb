@@ -24,9 +24,9 @@ describe Import do
       before :all do
         RestClient.stub(:get) do |uri|
           case uri
-          when Regexp.new('/_design/Timetables/_view/by_source')
+          when Regexp.new('/_design/Timetables/_view/by_line')
             {:rows => [
-              {:value => {'stop_id'=>'a', 'destination'=>'Foo', 'tables'=>{}}}
+              {:value => {:_key=>['L','Foo'], :stop_id=>'a', :tables=>{'*'=>{'0'=>['00']}}}}
             ]}.to_json
           when Regexp.new('/_design/Stops/_view/by_name')
             {:rows => [
@@ -60,10 +60,10 @@ describe Import do
       before :all do
         RestClient.stub(:get) do |uri|
           case uri
-          when Regexp.new('/_design/Timetables/_view/by_source')
+          when Regexp.new('/_design/Timetables/_view/by_line')
             {:rows => [
-              {:value => {'stop'=>'Foo', 'destination'=>'FOO', 'line'=>'A', 'tables'=>{}}},
-              {:value => {'stop'=>'Foo', 'destination'=>'FOO', 'line'=>'B', 'tables'=>{}}}
+              {:value => {:_key=>['A','FOO'], :stop=>'Foo', :tables=>{'*'=>{'0'=>['00']}}}},
+              {:value => {:_key=>['B','FOO'], :stop=>'Foo', :tables=>{'*'=>{'0'=>['00']}}}}
             ]}.to_json
           when Regexp.new('/_design/Stops/_view/by_name')
             {:rows => [
@@ -89,19 +89,10 @@ describe Import do
       before :all do
         RestClient.stub(:get) do |uri|
           case uri
-          when Regexp.new('/_design/Timetables/_view/by_source')
+          when Regexp.new('/_design/Timetables/_view/by_line')
             {:rows => [
-              {:value => {
-                'stop_id'=>'a',
-                'destination'=>'Bar',
-                'line'=>'A',
-                'tables'=>{'*'=>{'11'=>['11']}}
-              }},{:value => {
-                'stop_id'=>'a',
-                'destination'=>'Bar',
-                'line'=>'B',
-                'tables'=>{'*'=>{'22'=>['22']}}
-              }}
+              {:value => {:_key=>['A','Bar'], :stop_id=>'a', :tables=>{'*'=>{'11'=>['11']}} }},
+              {:value => {:_key=>['B','Bar'], :stop_id=>'a', :tables=>{'*'=>{'22'=>['22']}} }}
             ]}.to_json
           when Regexp.new('/_design/Stops/_view/by_name')
             {:rows => [
@@ -118,11 +109,55 @@ describe Import do
         subject{ @relationships.values.map{|x| x.values}.flatten.first }
         
         it "should merge departures from different timetables" do
-          rides = {11*60+11 => {'line'=>'A', 'duration'=>1},
-                   22*60+22 => {'line'=>'B', 'duration'=>1}}
-          MessagePack.unpack(subject['rides']).should eql(rides)
+          departures = JSON.parse(subject['departures'])
+          #departures = MessagePack.unpack(subject['departures'])
+          
+          departures.should include(11*60+11)
+          departures.should include(22*60+22)
         end
 
+      end
+    end
+
+    describe "from empty table" do
+      it "should not be created" do
+        RestClient.stub(:get) do |uri|
+          case uri
+          when Regexp.new('/_design/Timetables/_view/by_line')
+            {:rows => [
+              {:value => {:_key=>['A','Foo'], :stop_id=>'a', :tables=>{}}},
+            ]}.to_json
+          when Regexp.new('/_design/Stops/_view/by_name')
+            {:rows => [
+              {:value => {:_id => 'a', :name => 'Bar'}},
+              {:value => {:_id => 'b', :name => 'Foo', :finish => true}}
+            ]}.to_json
+          end
+        end
+
+        Import.relationships!(source).should be_empty
+      end
+    end
+
+    describe "loop" do
+      it "can not exist" do
+        RestClient.stub(:get) do |uri|
+          case uri
+          when Regexp.new('/_design/Timetables/_view/by_line')
+            {:rows => [
+              {:value => {:_key=>['A','Baz'], :stop_id=>'a', :tables=>{"*"=>{"12"=>["00","10","50"]}}}},
+              {:value => {:_key=>['A','Baz'], :stop_id=>'b', :tables=>{"*"=>{"12"=>["02","12"]}}}}
+            ]}.to_json
+          when Regexp.new('/_design/Stops/_view/by_name')
+            {:rows => [
+              {:value => {:_id => 'a', :name => 'Bar'}},
+              {:value => {:_id => 'b', :name => 'Foo'}},
+              {:value => {:_id => 'c', :name => 'Baz', :finish=>true}}
+            ]}.to_json
+          end
+        end
+
+        Import.relationships!(source)["b"].should include("c")
       end
     end
 
