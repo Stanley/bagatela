@@ -6,7 +6,7 @@ require 'couchrest'
 require 'time'
 
 db = CouchRest.database "http://localhost:5984/#{ARGV[0]}" # TODO: read it from config/database
-all = JSON.parse($stdin.read[4..-3].sub('].concat([',','))
+all = JSON.parse($stdin.read[4..-3].sub('].concat([',',').sub('],[',','))
 a, b, stops, x, y = all.slice!(-5..-1)
 
 all.each_slice(25) do |slice|
