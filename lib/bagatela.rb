@@ -30,7 +30,11 @@ require './lib/bagatela/graph/search/astar'
 # Monkey patch
 class String
   def upcase
-    to_java_string.to_upper_case
+    force_encoding('UTF-8').
+      to_java_string.
+      to_upper_case.
+      gsub(/\.([^\s])/, '. \1').
+      gsub(/\s{2,}/, ' ')
   end
 end
 
