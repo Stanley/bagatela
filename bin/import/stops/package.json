@@ -2,6 +2,7 @@
   "name": "bagatela-stops-import",
   "version" : "0.0.1",
   "dependencies": {
-    "request" : "1.9.8"
+    "request" : "1.9.8",
+    "js-yaml" : "0.2.1"
   }
 }

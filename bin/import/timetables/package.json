@@ -4,10 +4,11 @@
   "author"              : "Stanisław Wasiutyński <staszek.wasiutynski@gmail.com>",
   "main"                : "import.js",
   "dependencies"        : {
-    "pigeons"           : "0.2.4",
+    "pigeons"           : "0.2.5",
     "request"           : "1.9.5",
     "async"             : "0.1.9",
     "long-stack-traces" : "0.1.2",
-    "iconv"             : "1.1.2"
+    "iconv"             : "1.1.2",
+    "js-yaml" : "0.2.1"
   }
 }

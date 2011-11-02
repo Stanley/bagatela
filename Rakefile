@@ -44,9 +44,9 @@ namespace :couchdb do
         when 'mpk.krakow'
           `ruby mpk_krakow.rb`
         when 'kzkgop'
-          `node kzkgop.js`
+          `node kzkgop.js #{db}`
         when 'jakdojade'
-          JakDojade.save!(args[:db], `node jakdojade.js #{city}`)
+          JakDojade.save!(db, `node jakdojade.js #{city}`)
         else
           raise 'Unknown source'
         end

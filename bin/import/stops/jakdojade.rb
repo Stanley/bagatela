@@ -7,7 +7,8 @@ require 'time'
 
 class JakDojade
   def self.save!(db, data)
-    db = CouchRest.database "http://localhost:5984/#{db}" # TODO: read it from config/database
+
+    couchdb = CouchRest.database db
     all = JSON.parse(data[4..-3].sub('].concat([',',').sub('],[',','))
     a, b, stops, x, y = all.slice!(-5..-1)
 
@@ -22,7 +23,9 @@ class JakDojade
       doc[:name] =  stops[slice[17]-1].force_encoding('UTF-8')
       doc[:operates] = [type]
      
-      db.save_doc doc
+      couchdb.save_doc doc
     end
   end
+
+  
 end
