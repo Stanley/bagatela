@@ -5,6 +5,8 @@ require 'rake'
 require 'yaml'
 require 'json'
 require 'restclient'
+
+require './bin/import/stops/jakdojade'
 #require 'spec/rake/spectask'
 
 #task :default => :test
@@ -44,7 +46,7 @@ namespace :couchdb do
         when 'kzkgop'
           `node kzkgop.js`
         when 'jakdojade'
-          `node jakdojade.js #{city} | ruby jakdojade.rb #{args[:db]}`
+          JakDojade.save!(args[:db], `node jakdojade.js #{city}`)
         else
           raise 'Unknown source'
         end
