@@ -2,11 +2,12 @@ source :rubygems
 
 group :app do
   gem 'sinatra'
-  gem 'neo4j', :path => '/github/neo4j'
+  gem 'neo4j'
   gem 'unicode'
   gem 'jruby-openssl'
-  gem 'chronik', :path => '/code/chronik'
+  gem 'chronik', :git => 'git://github.com/Stanley/Chronik.git'
   gem 'msgpack-jruby' 
+  gem 'whenever'
 end
 
 group :rake do
