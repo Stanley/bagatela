@@ -5,214 +5,272 @@ module Bagatela
   module Graph
     class Import
 
-      def self.nodes!(db, group=false, inserter=nil)
-        inserter = Neo4j::Batch::Inserter.new unless context = !!inserter
-        Hash[nodes(db,group).map do |id, stop|
-          [id, inserter.create_node(stop, group ? Hub : Stop)]
-        end].tap{ inserter.shutdown unless context }
-      end
-
-      # Create and save relationships in Neo4j databse.
+      #
       #
       # db    - [String]:
       # date  - [Time]:
       #
+      def initialize(db, group_stops=false)
+
+        # 
+        @db = db
+        @group_stops = group_stops
+        # All connections (arrays of: from, to, departures)
+        @connections = Hash.new do |hash,key|
+          length = 0
+          hash[key] = {:length => length, :departures => {}}
+        end
+      end
+
+      # Create and save relationships in Neo4j databse.
+      #
       # Returns Array of Graph::Connections
-      def self.relationships!(db, group_stops=false, date=Time.now)
-
-        inserter = Neo4j::Batch::Inserter.new
-        stops = nodes!(db, group_stops, inserter)
-
-        # Hash of connections
-        connections = {}
-
-        # Identification of previous stop (or hub)
-        from = nil
-        # Remember previous line to determine if it has changed
-        prev_line = nil
-        # A Timetable which is one stop ahead of current timetable.
-        next_timetable = nil
-        # Iterate _backwards_, that is against the line's direction;
-        # from the last timetable to the first.
+      def relationships!(date=Time.now)
         
         Resources::Timetable.
-          #view(db, :by_line, {:descending => true, :reduce => false}).
-          view(db, :by_line, {:descending => true, :reduce => false, :startkey => '["2210"]', :endkey => '["221"]'}).
+          #view(@db, :by_line, {:descending => true, :reduce => false}).
+          view(@db, :by_line, {:descending => true, :reduce => false, :startkey => '["2380"]', :endkey => '["0"]'}).
           group_by {|t| t['_key'][0]}.
           each_pair do |line, timetables| # each line
-            declining = []
+
             timetables.
               group_by {|t| t['_key'][1]}.
               each_pair do |destination, timetables| # each destination
+
                 puts "---#{line} (#{destination})---"
-                pairs = {}
-                segments = segment(timetables.map{|t| t.table(date)})
-                segments.each do |a|
-                  #to = nil
-                  a_table = a.last
-                  puts "=> #{a_table.to_s}"
 
-                  (segments.map{|x| x.first} - [a.first]).map do |b_table|
+                timetables.each {|t| t.cache = t.table(date) }
+                #weak_connections = []
 
-                    p "+++ #{b_table} (#{a_table.standard_deviation(b_table)})"
+                segments = segment(timetables) or return []
+
+                #segments.each do |a|
+                  #weakest = [0, nil]
+
+                  #(segments.map{|x| x.first} - [a.first]).map do |b_table|
+
+                    #p "+++ #{b_table} (#{a_table.standard_deviation(b_table)})"
                     
-                    #candidates.push [a_table.standard_deviation(b_table), b_table] unless a_table.standard_deviation(b_table) > 1
-                    score, avg, runs = a_table.standard_deviation(b_table)
-                    #puts "#{a.last.stop_id} -> #{b.first.stop_id} : #{score}"
-                    [score, avg, rand, b_table, runs] if runs
+                    ##candidates.push [a_table.standard_deviation(b_table), b_table] unless a_table.standard_deviation(b_table) > 1
+                    #score, avg, runs = a_table.standard_deviation(b_table)
+                    ##puts "#{a.last.stop_id} -> #{b.first.stop_id} : #{score}"
+                    #[score, avg, rand, b_table, runs] if runs
 
-                    ## Na wszelki wypadek gdyby rozkład był pusty
-                    #next unless first && last
-                    ## Sprawdź czy ostatni przystanek pierwszego odcinka należy do
-                    ## zbioru do drugiego odcinka. Jeżeli tak, przerwij poszukiwania.
-                    ##next([0,b]) if(a.include?(b.first))
+                    ### Na wszelki wypadek gdyby rozkład był pusty
+                    ##next unless first && last
+                    ### Sprawdź czy ostatni przystanek pierwszego odcinka należy do
+                    ### zbioru do drugiego odcinka. Jeżeli tak, przerwij poszukiwania.
+                    ###next([0,b]) if(a.include?(b.first))
 
-                    #score = (b_table.after(first) || next) - first + 
-                            #(b_table.after(last) || next) - last
+                    ##score = (b_table.after(first) || next) - first + 
+                            ##(b_table.after(last) || next) - last
 
-                    #raise "stop" unless score
+                    ##raise "stop" unless score
                     
-                  # Choose the best matching segment.
-                  end.compact.min.tap do |score, mean, rand, table, match|
-                    if score
-                      #to = table
-                      # [from, to, std_deviation]
-                      pairs[a.last] = [table, [score, mean, rand]]
-                      # sprawdź czy `a` traci kursy
-                      # TODO: not the best place for this
-                      unless match.all? {|key,val| val['duration']}
-                        declining.push([a.last, match])
-                      end
-                    else
-                      pairs[a.last] = [destination.upcase, []]
-                    end
+                  ## Choose the best matching segment.
+                  #end.compact.min.tap do |score, mean, rand, table, match|
+                    #if score
+                      ##to = table
+                      ## [from, to, std_deviation]
+                      #pairs[a.last] = [table, [score, mean, rand]]
+                      ## sprawdź czy `a` traci kursy
+                      ## TODO: not the best place for this
+                      #unless match.all? {|key,val| val['duration']}
+                        #declining.push([a.last, match])
+                      #end
+                    #else
+                      #pairs[a.last] = [destination.upcase, []]
+                    #end
+                  #end
+
+
+                # 
+                #pairs = Hash[segments.map{|a| [a.last,nil]}]
+
+                # Join segments
+                #puts "~~~ Joins ~~~"
+                #segments.permutation(2).each do |a,b|
+                  #if departures = a.last.departures(b.first)
+                      #puts "#{a.last} > #{b.first} (#{departures.score})"
+                    #if (pairs[a.last].nil? or pairs[a.last][1] > departures)
+                      #pairs[a.last] = [b.first, departures]
+                      ##puts "#{a.last} > #{b.first} (#{departures.score})"
+                    #end
+                  #end
+                #end
+
+                #
+                #puts "~~~ ??? ~~~"
+                #segments.each do |s|
+                  ##p weak_connections
+                  #weak_connections.each do |a,b,deps|
+                    #next if s.include?(a)
+                    ## TODO DRY!
+
+                    ##score, avg, runs = a.standard_deviation(b)
+                    #departures = a.departures(b)
+
+                    ##score1, avg1, runs1 = s.last.standard_deviation(b)
+                    #departures1 = s.last.departures(b)
+                    ##p "?? #{s.last} > #{b} (#{departures.score} ? #{departures1.score})"
+                    #smaller_size = [s.last.size, a.size].min
+                    ##p smaller_size
+
+                    #if !departures1.nil? and departures > departures1 and departures1.count{|key,val| val['duration']} == smaller_size
+
+                      ##score2, avg2, runs2 = a.standard_deviation(s.first)
+                      #departures2 = a.departures(s.first)
+                      ##p "?? #{s.first} < #{a} (#{departures2.score})"
+
+                      #if !departures2.nil? and departures > departures2 and departures2.count{|key,val| val['duration']} == smaller_size
+                      
+                        #puts "Removed connection: #{a} - #{b} (#{departures.score})"
+                        #connections.delete [a,b,deps]
+
+                        ##pairs[s.last] = [b, departures1]
+                        #connections.push [s.last, b, departures1]
+                        #puts "#{s.last} > #{b} (#{departures1.score})"
+
+                        ##pairs[a] = [s.first, departures2]
+                        #connections.push [a, s.first, departures2]
+                        #puts "#{a} > #{s.first} (#{departures2.score})"
+
+                      #end
+                    #end
+                  #end
+                #end
+
+              #end
+
+              segments.map!{|x|[x,[]]} 
+              segments.each do |segment, connections|
+
+                #puts "\tSegment #{segment.first}..#{segment.last}"
+
+                # Add line's departures to each relationship in segment.
+                # Connect segment `segment` with its next destination.
+                segment.each_cons(2).with_index do |(from, to), i|
+
+                  # If connection is not possible or we could not determine
+                  # duration of any run, split segment up.
+                  if departures = from.departures(to, date) and
+                    departures.all?{|key,val| val.has_key?('duration') }
+
+                    #puts "#{from} -> #{to}"
+                    #connections.push [from, to, departures]
+                    connections.push departures
+                  else 
+                    p "splitting up!! before: #{to}"
+                    # Split up segment where we couldn't connect nodes.
+                    segments.push [segment.slice!((i+1)..-1), []] # TODO TEST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    break # Remaining tables don't belong to this segment any 
+                          # more.
                   end
+                  
+                  #max = departures.map{|key,val| val['duration']}.max
+                  #if weakest[0] < max
+                    #weakest = [max, from, to, departures]
+                  #elsif weakest[0] == max
+                    #weakest = [0, nil]
+                  #end
+                #end
 
-                  # Add line's departures to each relationship in segment.
-                  # Connect segment `a` with its next destination.
-                  a.each_cons(2) do |from, to|
-                    #from = table
-                    #to_id = to.nil?? destination.upcase : to.to_s 
-                    puts "#{from} -> #{to}"
-
-                    # Get or create relationship between *from* and *to* stops
-                    connections[from.to_s] ||= {}
-                    unless connection = connections[from.to_s][to.to_s] #from.rels(:connects).outgoing.to_other(to).first
-                      connection = {
-                        'length' => 0, # TODO
-                        'departures' => {}
-                      }
-                      # Push newly created connection to output array.
-                      connections[from.to_s][to.to_s] = connection
-                    end
-                    connection['departures'].merge!(from.departures(to))
-                    raise("stop") if connection['departures'].empty?
-                    #to = from
-                  end
+                #puts "Weakest connection comes after: #{weakest[1]}"
+                #weak_connections.push weakest[1..-1] if weakest[0] > 0
                 end
-
-                # TODO ...
-                # sprawdź czy linia dojeżdza do pętli
-                if !pairs.empty? and pairs.all?{|key,val| val[1].size > 0 }
-                  # Wybierz najgorszą parę, podmień drugi element na
-                  # `destination`
-                  #p pairs
-                  mistake = pairs.max_by{|key,val| val[1]}[0]
-                  pairs[mistake] = destination.upcase
-                  p "FIXED"
-                else
-                  p "OK"
-                end
-                
-                # Dodaj połączenia do struktury `connections`
-                pairs.
-                  map {|from, (to, score)| [from, [to.is_a?(String) ? nil : to, to.to_s]] }.
-                  each do |from, (to, to_str)|
-                  # TODO DRY! DRY! DRY!
-                    puts "#{from} -> #{to_str}"
-
-                    # Get or create relationship between *from* and *to* stops
-                    connections[from.to_s] ||= {}
-                    unless connection = connections[from.to_s][to_str] #from.rels(:connects).outgoing.to_other(to).first
-                      connection = {
-                        'length' => 0, # TODO
-                        'departures' => {}
-                      }
-                      # Push newly created connection to output array.
-                      connections[from.to_s][to_str] = connection
-                    end
-                    connection['departures'].merge!(from.departures(to))
-                    raise("stop") if connection['departures'].empty?
-                  # END DRY TODO
-                end
-
               end
 
-              #p "~~~ #{declining.size}"
-              (connections.keys - connections.values.map{|x| x.keys}.flatten ).each do |y|
-                connections[y].each_pair do |to, connection|
-                  declining.each do |z, match|
-                    if connection['departures'].size == match.count{|key,val| val['duration'].nil?} 
-                      
+              raise "stop (#{segments.size})" if segments.size > 5
 
-                      source_table = Resources::Table.new(match.select{|key,val| val['duration'].nil?}.keys)
-                      target_table = Resources::Table.new(connection['departures'].keys)
-                      next unless departures = source_table.departures(target_table)
+              # debug
+              segments.each do |segment,conn|
+                puts segment.map{|x| x.to_s}.join(", ")
+              end
 
-                      p '-------------------', z.to_s, y
-                      connections[z.to_s][y] = {'departures' => departures}
-                      #p ({'departures' => source_table.departures(target_table)}).inspect
-                      # TODO: delete_if val_duration.nil?
-                      #p "#{z} -> #{y}"
-                    end
-                  end
+              lines = segments.permutation.map do |permutation|
+                begin
+                copy = Marshal.load(Marshal.dump(permutation))
+                Resources::Line.new copy, destination
+                rescue Resources::SegmentsMismatch # TODO specs
                 end
+              end # The best line
+
+              #lines.each do |line|
+                #puts "#{line.score}: " + line.map {|from,to| from.to_s}.join(", ")
+              #end
+
+              l= lines.compact.min
+
+        puts "\n#{l.score}: " + l.map {|from,to| "#{from}-#{to}"}.join(", ")
+              
+              p "-=-=-=-=-=-"
+              # Dodaj połączenia do struktury `connections`
+              l. 
+                each do |from,to,departures|
+                  #if to.nil?
+                    #to = destination.upcase
+                    #departures = from.departures
+                  #end
+                  puts "#{from} => #{to}"
+                  #connections.push [from, to, departures]
+              end
+
+              merge l.to_a
+
+            # TODO: create each connection in `connections`
+
+              #p "~~~ #{declining.size}"
+              #(connections.keys - connections.values.map{|x| x.keys}.flatten ).each do |y|
+                #connections[y].each_pair do |to, connection|
+                  #declining.each do |z, match|
+                    #if connection['departures'].size == match.count{|key,val| val['duration'].nil?} 
+                      
+                      #p '-------------------', "#{z} -> #{y}"
+                      #source_table = Resources::Table.new(match.select{|key,val| val['duration'].nil?}.keys)
+                      #target_table = Resources::Table.new(connection['departures'].keys)
+                      #next unless departures = source_table.departures(target_table)
+
+                      #connections[z.to_s][y] = {'departures' => departures}
+                      ##p ({'departures' => source_table.departures(target_table)}).inspect
+                      ## TODO: delete_if val_duration.nil?
+                      ##p "#{z} -> #{y}"
+                    #end
+                  #end
+                #end
               end
           end
 
           # If any used node doesn't exist in database, create it.
-          (connections.keys + connections.values.map{|x| x.keys}.flatten ).uniq.each do |x|
-            if stops[x].nil?
-              puts "added #{x.inspect}: #{stops[x] = inserter.create_node({'name'=>x}, Hub)}"
-            end
-          end
+          #(connections.keys + connections.values.map{|x| x.keys}.flatten ).uniq.each do |x|
+            #if stops[x].nil?
+              #puts "added #{x.inspect}: #{stops[x] = inserter.create_node({'name'=>x}, Hub)}"
+            #end
+          #end
 
-          # Save all relationships to the database.
-          connections.each_pair do |from_id, to_ids|
-            from = stops[from_id] 
-            to_ids.each do |to_id, connection|
-              connection['Label'] = connection['departures'].map{|key,val| val['line']}.uniq.join(',') # Debugging
-              connection['departures'] = JSON.generate(connection['departures']) 
-              #connection['departures'] = MessagePack.pack(connection['departures'])
-              to = stops[to_id]
-              inserter.create_rel(:connects, from, to, connection, Graph::Connection)
-            end
-          end.tap{ inserter.shutdown }
+          commit!
+
       end
 
       private
 
-      # Create nodes in Neo4j databse.
-      #
-      # db -
-      # group - [true or false]: 
+      # Retrives all nodes
       #
       # Returns Hash of pairs: self.id => Graph::Hub
-      def self.nodes(db, group)
-        Hash[group ? hubs(db) : stops(db)]
+      def nodes
+        Hash[@group_stops ? hubs : stops]
       end
 
-      def self.stops(db)
-        Resources::Stop.view(db, :by_name, :reduce=>false).map do |doc|
+      def stops
+        Resources::Stop.view(@db, :by_name, :reduce=>false).map do |doc|
           id = doc['finish'] ? doc['name'].upcase : doc['_id']
           stop = doc['location'] || {}
-          stop['name'] = doc['name']
+          stop['name'] = doc['name'] unless doc['name'].nil?
           [id, stop]
         end
       end
 
-      def self.hubs(db)
-        Resources::Stop.view(db, :by_name, :group_level=>1).map do |doc|
+      def hubs
+        Resources::Stop.view(@db, :by_name, :group_level=>1).map do |doc|
           id = doc['_key'][0].upcase
           #hub = Hub.new(doc['location'])
           #hub[:name] = doc['_key'][0].force_encoding("UTF-8")
@@ -226,20 +284,59 @@ module Bagatela
       # timetables - [Array]:
       #
       # Return Array
-      def self.segment(tables)
-        segments = []; length = nil
-        return [] if tables.any?{|t| t.empty? }
-
+      def segment(tables)
+        output = []
         tables.
-          group_by {|t| [t.size, t.last-t.first]}. # group by departures count
-          sort.each do |key,val|                   # sort by length so we can merge +/-1 min segments
-            p key
-            length == key[1]-1 ? segments[-1] += val : segments.push(val)
-            length = key[1]
+          group_by {|t| t.size }. # group by departures count
+          select {|size,tables| size > 0}. # drop empty tables
+          each do |size,tables|
+            by_first = tables.sort_by {|table| table.first }
+            by_last  = tables.sort_by {|table| table.last }
+            if by_first == by_last
+              output.push by_first
+            else
+              tables.group_by{|t| t.last - t.first}.each do |diff,tables| 
+                output.push tables.sort_by{|t| t.first}
+              end
+            end
           end
+        output
+      end
 
-        segments.map do |tables|
-          segment = tables.sort_by {|table| table.first} # TODO table[0] ?
+      # Saves
+      def nodes!
+        Hash[nodes.map do |id, stop|
+          [id, @inserter.create_node(stop, @group_stops ? Hub : Stop)]
+        end]
+      end
+
+      # Save all @@connections to the database
+      # 
+      # Returns ?
+      def commit!
+
+        @inserter = Neo4j::Batch::Inserter.new
+        @stops = nodes!
+
+        # Save all relationships to the database.
+        @connections.each_pair do |(from, to), connection|
+          # Debugging
+          connection['Label'] = connection[:departures].map{|key,val| val['line'] || '?'}.uniq.join(',') 
+          connection['departures'] = JSON.generate(connection.delete(:departures)) 
+          connection['length'] = connection.delete(:length)
+          #connection['departures'] = MessagePack.pack(connection['departures'])
+          @inserter.create_rel(:connects, *@stops.values_at(from, to), connection, Graph::Connection)
+        end.tap{ @inserter.shutdown }
+      end
+
+      # Merge departures from all connection to global structure
+      #
+      # connections - [Array]
+      #
+      # Returns ?
+      def merge(connections)
+        connections.each do |from, to, departures|
+          @connections[[from.to_s,to.to_s]][:departures].merge!(departures)
         end
       end
 

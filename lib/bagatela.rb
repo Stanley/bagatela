@@ -11,6 +11,8 @@ require 'chronik'
 
 # internals
 require './lib/bagatela/resources/resource'
+require './lib/bagatela/resources/departures'
+require './lib/bagatela/resources/line'
 require './lib/bagatela/resources/table'
 require './lib/bagatela/resources/timetable'
 require './lib/bagatela/resources/stop'

@@ -1,14 +1,19 @@
+require 'forwardable'
+
 module Bagatela
   module Resources
     # One of many tables on the timetable, which contains duration only for
     # one specific class of days
     class Table
       include Enumerable
+      extend Forwardable
+
+      def_delegators :@data, :each, :size, :empty?, :reverse, :find, :delete, :map, :to_a, :include?
 
       # Takes one of the Timetable's *tables*
       #
       # table - [Hash]: pairs of hour and array of minutes
-      def initialize(table, timetable=nil)
+      def initialize(table)
         if table.is_a?(Array) 
           @data = table
           return
@@ -21,146 +26,134 @@ module Bagatela
             @data.push(hour.to_i*60 + minute.to_i)
           end
         end
-        @timetable = timetable
-        @data.sort!
       end
-
-      # First departure after *minutes* from midnight
-      #
-      # minutes - [Integer]
-      # night
-      #
-      # Returns Integer - minutes from midnight
-      def after(minutes)
-        @data.find {|min| min > minutes} || (24*60 + @data[0])
-      end
-
-      #def before(minutes)
-      #end
-
-      #def index_before(minutes)
-        #count = index_after(minutes) or return(@data.size - 1)
-        #count > 0 ? count - 1 : nil
-      #end
-
-      # Number of departures that went before given time
-      #
-      # minutes
-      #
-      # Returns Integer - index in the minutes array
-      #def index_after(minutes)
-        #return nil if @data.last < minutes
-        #@data.count{|min| min < minutes}
-      #end
-
-      # Iterates over duration
-      def each &block
-        @data.each &block
-      end
-
-      #
-      #
-      # Retuns [Integer]: departure time in minutes from 00:00
-      def first
-        (@data+[@data.first]).
-          each_cons(2).
-          max_by{|x,y| x < y ? y-x : 24*60-x+y }[1]
-      end
-
-      def last
-        @data[@data.index(first)-1]
-      end
-
-      def size
-        @data.size
-      end
-
-      def empty?
-        @data.empty?
-      end
-
-      #def avg
-        #(@data.reduce{|sum,x| sum + (x > 12*60 ? -24*60+x : x)} / @data.size).abs % (12*60)
-      #end
 
       #
       # following - [Table]:
       #
-      # Returns Hash
-      def departures(following=nil)
+      # Returns Hash, Array or nil
+      def departures(a=nil,force=false)
+        
+        departures = Departures.new
+        r = runs(a)
+        #r.values.compact
+        max = r.values.compact.max
 
-        if @data == following.to_a
-          return Hash[@data.map{|x| [x,{'duration'=>0}]}]
-        end
-
-        arrivals = []
-        # ...
-        decrease = following.nil? || @data.size > following.size
-        Hash[@data.reverse.map do |departure|
-          #p [ departure, @data.size, following.size , arrivals.empty?, arrivals.last ] unless following.nil?
-
-          if !following.nil? and
-             arrival = following.after(departure) and
-             (arrival < 24*60 or night? or following.night?) and
-             !arrivals.include?(arrival % (24*60))
-
-            arrivals.push arrival 
-            [departure, {'duration' => arrival-departure}]
-          # Assume that runs do not collide.
-          elsif decrease && (arrivals.empty? || departure < arrivals.last)
-            # TODO: we can do better
-            [departure, {'prediction' => true}] 
-          else return end
-        # Add line attribute
-        end.each do |key,val|
-          val['line'] = line
-        # Validation
-        end].tap do |departures|
-          if !following.nil?
-            #p departures
-            return unless departures.count{|x,y| y['duration']} == [@data.size,following.size].min
-            f = departures[first]
-            #p departures
-            if f['duration'] and @data.size >= following.size
-              return unless (first+f['duration']) % (24*60) == following.first
-            #else
-              #return if false
-            end
+        r.values.compact.sort.each_cons(2) do |a,b|
+          if b-a > 1
+            max = a
+            break
           end
         end
+
+        r.each_pair do |departure, duration|
+          run = departures[departure] = {}
+          if !force and (duration.nil? or duration > max)
+            # TODO replace with number
+            run['prediction'] = max || 1 #true 
+          else
+            run['duration'] = duration
+          end
+        end
+
+        # Assume false connection if we couldn't match any pair.
+        return if !a.nil? and departures.all? {|key,val| val.has_key?('prediction')}
+
+        departures
       end
 
+      # Returns Array
+      def forked_departures(a,b)
+        [a,b].map do |table|
+          d = departures(table)
+          return if d.nil?
+          d.clean 
+        end
+        #all = departures(a+b)
+        #x = departures(a).clean
+        #y = departures(b).clean
+        #p all, x, y
+        #[a,b].map do |table|
+          #Departures[ all.select {|key,val| table.include? key+val['duration']} ]
+        #end
+      end
+        
       # Standard deviation
       #
       # following - [Table]: 
       #
       # Returns Array: Float, Float, Array
-      def standard_deviation(following)
+      #def standard_deviation(following)
 
-        runs = departures(following) or return
+        #runs = departures(following) or return
 
-        duration = runs.select do |key,val| 
-          val['duration']
-        end.map do |key, val| 
-          val['duration'] 
-        end 
-        return if duration.empty?
+        #duration = runs.select do |key,val| 
+          #val['duration']
+        #end.map do |key, val| 
+          #val['duration'] 
+        #end 
+        #return if duration.empty?
 
-        mean = duration.reduce(:+) / duration.size.to_f
-        variance = duration.inject(0){|variance, x| variance + (x-mean)**2 }
-        [Math.sqrt(duration.size > 1 ? variance/(duration.size-1) : 0), mean, runs]
+        #mean = duration.reduce(:+) / duration.size.to_f
+        #variance = duration.inject(0){|variance, x| variance + (x-mean)**2 }
+        #[Math.sqrt(duration.size > 1 ? variance/(duration.size-1) : 0), mean, runs]
+      #end
+
+      def first
+        data = @data.sort
+        shift = (data.size-1).downto(0).max_by do |i| 
+          diff = data[i]-data[i-1] 
+          i==0 ? (24*60+diff) : diff
+        end
+        shift == 0 ? data.first : -24*60+data[shift]
       end
 
-      def to_s
-        @timetable.stop_id
+      def last
+        f = first
+        f += 24*60 if f < 0
+        @data[@data.index(f) -1]
       end
 
-      def line
-        @timetable && @timetable['line'] || '?'
+      def +(table)
+        self.class.new(to_a + table.to_a)
       end
 
-      def night?
-        @data[0] != first
+      def -(departures)
+        self.class.new(to_a - departures.map{|key,val| key+val['duration']})
+      end
+
+      private 
+
+      # Returns Hash. Pairs of departure time & trip duration.
+      def runs(table)
+
+        departures = Hash[map{|x|[x]}]
+        return departures unless table
+
+        # Special case: both tables are identical. This is the only case where
+        # run duration is zero.
+        return Hash[map{|x|[x,0]}] if to_a == table.to_a
+
+        enum = merge(table).to_enum
+        loop do
+          x, y = enum.next, enum.peek
+          if include?(x) and !include?(y)
+            #departures[x]['duration'] = y-x
+            departures[x] = y>x ? y-x : 24*60-x+y
+            enum.next
+          end
+        end rescue StopIteration
+
+        departures
+      end
+
+      # Returns Array or nil
+      def merge(table)
+        sum = (@data + table.to_a).sort
+        sum.rotate(sum.size.times.max_by do |i|
+          diff = sum[i]-sum[i-1] 
+          i==0 ? (24*60+diff) : diff
+        end)
       end
 
     end

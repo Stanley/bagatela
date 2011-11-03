@@ -32,6 +32,15 @@ describe Timetable do
 
   end
 
+  describe "departures" do
+    it "should include line number" do
+      params = {'tables'=>{'*'=>{'12'=>['00']}},'line'=>'L'}
+      departures = Timetable.new(params).departures
+
+      departures[12*60]['line'].should eql('L')
+    end
+  end
+
   describe "single table" do
 
     let(:weekday){}

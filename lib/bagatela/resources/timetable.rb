@@ -1,6 +1,12 @@
+require 'forwardable'
+
 module Bagatela
   module Resources
     class Timetable < Resource
+      extend Forwardable
+
+      attr_writer :cache
+      def_delegators :@cache, :empty?, :first, :last, :size, :forked_departures, :to_a, :+, :-, :include?
 
       def self.to_s
         "Timetables"
@@ -41,16 +47,26 @@ module Bagatela
       #
       # Returns Table.
       def table(date)
+        return @cache unless @cache.nil?
+
         # Iterate over each days class
         self['tables'].map do |description, table|
           [Chronik::Label.new(description), table]
         end.each do |label, table|
-          return Table.new(table, self) if label.holidays.include?(date)
+          return Table.new(table) if label.holidays.include?(date)
         end.each do |label, table|
-          return Table.new(table, self) if label.weekdays.include?(date.wday)
+          return Table.new(table) if label.weekdays.include?(date.wday)
         end
         # There is no table for given day
-        Table.new({}, self)
+        Table.new({})
+      end
+
+      def departures(to=nil, date=Time.now)
+        #departures = table(date).departures(to.nil?? nil : to.table(date)) or return
+        d = @cache.departures(to) or return
+        d.each_pair do |key,val|
+          val['line'] = self['line']
+        end
       end
 
       def to_s
