@@ -124,13 +124,6 @@ describe Table do
       #departures.should be_nil
     #end
 
-    it "test" do
-      departures = Table.new('12'=>['10','15']).
-        departures(Table.new('12'=>['10','20']))
-
-      departures.should be_nil
-    end
-
     it "should be detected if first arrival goes before first deparute" do
       departures = Table.new('12'=>['10','30']).
         departures(Table.new('12'=>['00']))
@@ -198,6 +191,26 @@ describe Table do
       departures[12*60]['prediction'].should eql(2)
       departures[12*60+10]['prediction'].should eql(2)
       departures[12*60+20]['duration'].should eql(2)
+    end
+  end
+
+  describe "forked departures" do
+    it "should return nil if there are two arrival for one departure" do
+      x = Table.new('12'=>['00','10'])
+      y = Table.new('12'=>['05'])
+      z = Table.new('12'=>['05'])
+
+      x.forked_departures(y,z).should be_nil
+    end
+
+    it "should return two departures arrays" do
+      x = Table.new('12'=>['00','10'])
+      y = Table.new('12'=>['02'])
+      z = Table.new('12'=>['12'])
+      a = Departures[{12*60 => {'duration'=>2}}]
+      b = Departures[{12*60+10 => {'duration'=>2}}]
+
+      x.forked_departures(y,z).should eql([a,b])
     end
   end
 end

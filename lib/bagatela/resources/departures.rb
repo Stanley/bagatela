@@ -9,11 +9,19 @@ module Bagatela
       def clean
         self.class[select(&durations)]
       end
+
+      def clean!
+        select!(&durations)
+      end
+
+      def dirty
+        self.class[select(&durations(true))]
+      end
       
       private
 
-      def durations
-        lambda {|key,val| val.has_key?('duration')}
+      def durations(reverse=false)
+        lambda {|key,val| val.has_key?('duration')^reverse }
       end
 
     end

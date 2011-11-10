@@ -28,128 +28,32 @@ module Bagatela
       def relationships!(date=Time.now)
         
         Resources::Timetable.
-          #view(@db, :by_line, {:descending => true, :reduce => false}).
-          view(@db, :by_line, {:descending => true, :reduce => false, :startkey => '["2380"]', :endkey => '["0"]'}).
+          view(@db, :by_line, {:descending => true, :reduce => false}).
+          #view(@db, :by_line, {:descending => true, :reduce => false, :startkey => '["6080"]', :endkey => '["608"]'}).
           group_by {|t| t['_key'][0]}.
-          each_pair do |line, timetables| # each line
+          each_pair do |line_no, timetables| # each line
 
             timetables.
               group_by {|t| t['_key'][1]}.
               each_pair do |destination, timetables| # each destination
 
-                puts "---#{line} (#{destination})---"
+                puts "---#{line_no} (#{destination})---"
+                @line = nil # TODO get rid of
 
                 timetables.each {|t| t.cache = t.table(date) }
                 #weak_connections = []
 
-                segments = segment(timetables) or return []
+                segments = segment(timetables) 
+                next if segments.empty?
 
-                #segments.each do |a|
-                  #weakest = [0, nil]
+                segments.map!{|x|[x,[]]} 
+                segments.each do |segment, connections|
 
-                  #(segments.map{|x| x.first} - [a.first]).map do |b_table|
+                  #puts "\tSegment #{segment.first}..#{segment.last}"
 
-                    #p "+++ #{b_table} (#{a_table.standard_deviation(b_table)})"
-                    
-                    ##candidates.push [a_table.standard_deviation(b_table), b_table] unless a_table.standard_deviation(b_table) > 1
-                    #score, avg, runs = a_table.standard_deviation(b_table)
-                    ##puts "#{a.last.stop_id} -> #{b.first.stop_id} : #{score}"
-                    #[score, avg, rand, b_table, runs] if runs
-
-                    ### Na wszelki wypadek gdyby rozkład był pusty
-                    ##next unless first && last
-                    ### Sprawdź czy ostatni przystanek pierwszego odcinka należy do
-                    ### zbioru do drugiego odcinka. Jeżeli tak, przerwij poszukiwania.
-                    ###next([0,b]) if(a.include?(b.first))
-
-                    ##score = (b_table.after(first) || next) - first + 
-                            ##(b_table.after(last) || next) - last
-
-                    ##raise "stop" unless score
-                    
-                  ## Choose the best matching segment.
-                  #end.compact.min.tap do |score, mean, rand, table, match|
-                    #if score
-                      ##to = table
-                      ## [from, to, std_deviation]
-                      #pairs[a.last] = [table, [score, mean, rand]]
-                      ## sprawdź czy `a` traci kursy
-                      ## TODO: not the best place for this
-                      #unless match.all? {|key,val| val['duration']}
-                        #declining.push([a.last, match])
-                      #end
-                    #else
-                      #pairs[a.last] = [destination.upcase, []]
-                    #end
-                  #end
-
-
-                # 
-                #pairs = Hash[segments.map{|a| [a.last,nil]}]
-
-                # Join segments
-                #puts "~~~ Joins ~~~"
-                #segments.permutation(2).each do |a,b|
-                  #if departures = a.last.departures(b.first)
-                      #puts "#{a.last} > #{b.first} (#{departures.score})"
-                    #if (pairs[a.last].nil? or pairs[a.last][1] > departures)
-                      #pairs[a.last] = [b.first, departures]
-                      ##puts "#{a.last} > #{b.first} (#{departures.score})"
-                    #end
-                  #end
-                #end
-
-                #
-                #puts "~~~ ??? ~~~"
-                #segments.each do |s|
-                  ##p weak_connections
-                  #weak_connections.each do |a,b,deps|
-                    #next if s.include?(a)
-                    ## TODO DRY!
-
-                    ##score, avg, runs = a.standard_deviation(b)
-                    #departures = a.departures(b)
-
-                    ##score1, avg1, runs1 = s.last.standard_deviation(b)
-                    #departures1 = s.last.departures(b)
-                    ##p "?? #{s.last} > #{b} (#{departures.score} ? #{departures1.score})"
-                    #smaller_size = [s.last.size, a.size].min
-                    ##p smaller_size
-
-                    #if !departures1.nil? and departures > departures1 and departures1.count{|key,val| val['duration']} == smaller_size
-
-                      ##score2, avg2, runs2 = a.standard_deviation(s.first)
-                      #departures2 = a.departures(s.first)
-                      ##p "?? #{s.first} < #{a} (#{departures2.score})"
-
-                      #if !departures2.nil? and departures > departures2 and departures2.count{|key,val| val['duration']} == smaller_size
-                      
-                        #puts "Removed connection: #{a} - #{b} (#{departures.score})"
-                        #connections.delete [a,b,deps]
-
-                        ##pairs[s.last] = [b, departures1]
-                        #connections.push [s.last, b, departures1]
-                        #puts "#{s.last} > #{b} (#{departures1.score})"
-
-                        ##pairs[a] = [s.first, departures2]
-                        #connections.push [a, s.first, departures2]
-                        #puts "#{a} > #{s.first} (#{departures2.score})"
-
-                      #end
-                    #end
-                  #end
-                #end
-
-              #end
-
-              segments.map!{|x|[x,[]]} 
-              segments.each do |segment, connections|
-
-                #puts "\tSegment #{segment.first}..#{segment.last}"
-
-                # Add line's departures to each relationship in segment.
-                # Connect segment `segment` with its next destination.
-                segment.each_cons(2).with_index do |(from, to), i|
+                  # Add line's departures to each relationship in segment.
+                  # Connect segment `segment` with its next destination.
+                  segment.each_cons(2).with_index do |(from, to), i|
 
                   # If connection is not possible or we could not determine
                   # duration of any run, split segment up.
@@ -166,56 +70,55 @@ module Bagatela
                     break # Remaining tables don't belong to this segment any 
                           # more.
                   end
-                  
-                  #max = departures.map{|key,val| val['duration']}.max
-                  #if weakest[0] < max
-                    #weakest = [max, from, to, departures]
-                  #elsif weakest[0] == max
-                    #weakest = [0, nil]
-                  #end
-                #end
-
-                #puts "Weakest connection comes after: #{weakest[1]}"
-                #weak_connections.push weakest[1..-1] if weakest[0] > 0
                 end
               end
-
-              raise "stop (#{segments.size})" if segments.size > 5
 
               # debug
               segments.each do |segment,conn|
                 puts segment.map{|x| x.to_s}.join(", ")
               end
 
-              lines = segments.permutation.map do |permutation|
-                begin
-                copy = Marshal.load(Marshal.dump(permutation))
-                Resources::Line.new copy, destination
-                rescue Resources::SegmentsMismatch # TODO specs
+              #raise "stop (#{segments.size})" if segments.size > 5
+
+              if segments.size == 1
+                @line = Resources::Line.new segments, destination
+              else
+                #segments.permutation(2).each do |permutation|
+                  #line = Resources::Line.new permutation
+                  #p segments.size, permutation.size
+                  #p permutation.map{|x| x[0].map{|y| y.to_s} }
+                  #raise "WAAAAt?" unless segments.include?(permutation)
+                  #costamcostam(line, segments-permutation+[destination])
+                #end
+                indexes = segments.size.times.to_a
+                indexes.permutation(2).each do |permutation|
+                  line = Resources::Line.new segments.values_at(*permutation)
+                  costamcostam(line, segments.values_at(*(indexes-permutation))+[destination])
                 end
-              end # The best line
+              end
+
 
               #lines.each do |line|
                 #puts "#{line.score}: " + line.map {|from,to| from.to_s}.join(", ")
               #end
 
-              l= lines.compact.min
+              #l= lines.compact.min
 
-        puts "\n#{l.score}: " + l.map {|from,to| "#{from}-#{to}"}.join(", ")
+        puts "\n#{@line.score}: " + @line.map {|from,to| "#{from}-#{to}"}.join(", ")
               
               p "-=-=-=-=-=-"
               # Dodaj połączenia do struktury `connections`
-              l. 
+              @line. 
                 each do |from,to,departures|
                   #if to.nil?
                     #to = destination.upcase
                     #departures = from.departures
                   #end
-                  puts "#{from} => #{to}"
+                  puts "#{from} => #{to} (#{departures.size})"
                   #connections.push [from, to, departures]
               end
 
-              merge l.to_a
+              merge @line.to_a
 
             # TODO: create each connection in `connections`
 
@@ -240,15 +143,7 @@ module Bagatela
               end
           end
 
-          # If any used node doesn't exist in database, create it.
-          #(connections.keys + connections.values.map{|x| x.keys}.flatten ).uniq.each do |x|
-            #if stops[x].nil?
-              #puts "added #{x.inspect}: #{stops[x] = inserter.create_node({'name'=>x}, Hub)}"
-            #end
-          #end
-
           commit!
-
       end
 
       private
@@ -337,6 +232,37 @@ module Bagatela
       def merge(connections)
         connections.each do |from, to, departures|
           @connections[[from.to_s,to.to_s]][:departures].merge!(departures)
+        end
+      end
+
+      def costamcostam(line, segments)
+        if segments.size == 1
+          # Line is almost complete
+
+          line = Marshal.load(Marshal.dump(line)).+(segments.last)
+          puts line.to_s
+
+          @line = line if @line.nil? or is_better?(line)
+        else
+          # Line is missing some segments
+          segments[0..-2].each do |segment, connections|
+            begin
+              # Create one of the possible line variants. Will raise
+              # SegmentsMismatch if it's not possible.
+              newline = Marshal.load(Marshal.dump(line)).+(segment, connections)
+              # Allow line to continue growing unless we're sure current line's
+              # beginning is invalid.
+              costamcostam(newline, segments-[[segment, connections]])
+            rescue Resources::SegmentsMismatch; end
+          end
+        end
+      end
+
+      def is_better?(line)
+        begin
+          (@line.score <=> line.score) == 1
+        rescue
+          false
         end
       end
 

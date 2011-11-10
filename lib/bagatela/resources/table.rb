@@ -40,7 +40,7 @@ module Bagatela
         max = r.values.compact.max
 
         r.values.compact.sort.each_cons(2) do |a,b|
-          if b-a > 1
+          if b-a > 2
             max = a
             break
           end
@@ -62,20 +62,16 @@ module Bagatela
         departures
       end
 
-      # Returns Array
-      def forked_departures(a,b)
-        [a,b].map do |table|
-          d = departures(table)
-          return if d.nil?
+      # Branching.
+      #
+      # tables - [Table, Table]: two next-in-line, parallel tables.
+      #
+      # Returns Array: two Departures objects.
+      def forked_departures(*tables)
+        tables.map do |table|
+          d = departures(table) or return
           d.clean 
-        end
-        #all = departures(a+b)
-        #x = departures(a).clean
-        #y = departures(b).clean
-        #p all, x, y
-        #[a,b].map do |table|
-          #Departures[ all.select {|key,val| table.include? key+val['duration']} ]
-        #end
+        end.tap{|x| return if @data != x.map{|y| y.keys}.reduce(:+).sort}
       end
         
       # Standard deviation
@@ -137,7 +133,7 @@ module Bagatela
         enum = merge(table).to_enum
         loop do
           x, y = enum.next, enum.peek
-          if include?(x) and !include?(y)
+          if include?(x) and table.include?(y)
             #departures[x]['duration'] = y-x
             departures[x] = y>x ? y-x : 24*60-x+y
             enum.next

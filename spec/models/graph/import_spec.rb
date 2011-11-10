@@ -25,9 +25,9 @@ describe Import do
         when Regexp.new('/_design/Timetables/_view/by_line')
           {:rows => [
             {:value => {:_key=>['L','FOO'], :stop_id=>'a', :tables=>{'*'=>{'0'=>['00','10']}}}},
-            {:value => {:_key=>['L','FOO'], :stop_id=>'b', :tables=>{'*'=>{'0'=>['02','12']}}}},
-            {:value => {:_key=>['L','FOO'], :stop_id=>'c', :tables=>{'*'=>{'0'=>['01','04']}}}},
-            {:value => {:_key=>['L','FOO'], :stop_id=>'d', :tables=>{'*'=>{'0'=>['03','06']}}}}
+            {:value => {:_key=>['L','FOO'], :stop_id=>'b', :tables=>{'*'=>{'0'=>['04','14']}}}},
+            {:value => {:_key=>['L','FOO'], :stop_id=>'c', :tables=>{'*'=>{'0'=>['01','08']}}}},
+            {:value => {:_key=>['L','FOO'], :stop_id=>'d', :tables=>{'*'=>{'0'=>['05','12']}}}}
           ]}.to_json
         when Regexp.new('/_design/Stops/_view/by_name')
           {:rows => [
@@ -247,8 +247,8 @@ describe Import do
           {:rows => [
             {:value => {:_key=>['A','Baz'], :stop_id=>'a', :tables=>{"*"=>{"12"=>["00","10","20"]}}}},
             {:value => {:_key=>['A','Baz'], :stop_id=>'b', :tables=>{"*"=>{"12"=>["12"]}}}},
-            {:value => {:_key=>['A','Baz'], :stop_id=>'c', :tables=>{"*"=>{"12"=>["02","14","22"]}}}},
-            {:value => {:_key=>['A','Baz'], :stop_id=>'d', :tables=>{"*"=>{"12"=>["03","15","23"]}}}}
+            {:value => {:_key=>['A','Baz'], :stop_id=>'c', :tables=>{"*"=>{"12"=>["02","15","22"]}}}},
+            {:value => {:_key=>['A','Baz'], :stop_id=>'d', :tables=>{"*"=>{"12"=>["03","16","23"]}}}}
           ]}.to_json
         when Regexp.new('/_design/Stops/_view/by_name')
           {:rows => [
@@ -298,8 +298,8 @@ describe Import do
         when Regexp.new('/_design/Timetables/_view/by_line')
           {:rows => [
             {:value => {:_key=>['A','Baz'], :stop_id=>'a', :tables=>{"*"=>{"12"=>["10","20","30"]}}}},
-            {:value => {:_key=>['A','Baz'], :stop_id=>'b', :tables=>{"*"=>{"12"=>["11","21"]}}}},
-            {:value => {:_key=>['A','Baz'], :stop_id=>'c', :tables=>{"*"=>{"12"=>["12","23","35"]}}}}
+            {:value => {:_key=>['A','Baz'], :stop_id=>'b', :tables=>{"*"=>{"12"=>["12","22"]}}}},
+            {:value => {:_key=>['A','Baz'], :stop_id=>'c', :tables=>{"*"=>{"12"=>["15","25","32"]}}}}
           ]}.to_json
         when Regexp.new('/_design/Stops/_view/by_name')
           {:rows => [
@@ -321,10 +321,10 @@ describe Import do
         case uri
         when Regexp.new('/_design/Timetables/_view/by_line')
           {:rows => [
-            {:value => {:_key=>['A','Baz'], :stop_id=>'a', :tables=>{"*"=>{"12"=>["10","20","30","40"]}}}},
+            {:value => {:_key=>['A','Baz'], :stop_id=>'a', :tables=>{"*"=>{"12"=>["10","20","30","40","50"]}}}},
             {:value => {:_key=>['A','Baz'], :stop_id=>'b', :tables=>{"*"=>{"12"=>["15","34"]}}}},
-            {:value => {:_key=>['A','Baz'], :stop_id=>'c', :tables=>{"*"=>{"12"=>["21","42"]}}}},
-            {:value => {:_key=>['A','Baz'], :stop_id=>'d', :tables=>{"*"=>{"12"=>["17","23","37","43"]}}}}
+            {:value => {:_key=>['A','Baz'], :stop_id=>'c', :tables=>{"*"=>{"12"=>["21","42","52"]}}}},
+            {:value => {:_key=>['A','Baz'], :stop_id=>'d', :tables=>{"*"=>{"12"=>["17","23","37","43","53"]}}}}
           ]}.to_json
         when Regexp.new('/_design/Stops/_view/by_name')
           {:rows => [
@@ -343,5 +343,8 @@ describe Import do
       relationships.should have_key(['c','d'])
     end
 
+  end
+
+  describe "line score" do
   end
 end
