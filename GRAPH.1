@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BAGATELA\-GRAPH" "1" "September 2011" "Stanisław Wasiutyński" ""
+.TH "BAGATELA\-GRAPH" "1" "November 2011" "Stanisław Wasiutyński" ""
 .
 .SH "NAME"
 \fBbagatela\-graph\fR \- połączona struktura do wyszukiwania i analizy połączeń
@@ -28,6 +28,19 @@ http://graph\.bagate\.la/<YYYY\-MM\-DD>
 .P
 Zawiera on w sobie dane ze wszystkich miast (obsługiwanych tego dnia)\.
 .
+.P
+\fB\fR
+.
+.IP "" 4
+.
+.nf
+
+http://graph\.bagate\.la/demo
+.
+.fi
+.
+.IP "" 0
+.
 .SS "Przykłady"
 Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli \fBcurl\fR i zostały wykonane w systemie GNU/Linux\.
 .
@@ -45,7 +58,7 @@ curl http://graph\.bagate\.la \-\-verbose
 (również do dokumentacji) jest mile widziana! Weź \fIhttps://github\.com/Stanley/bagatela\fR na widły i poproś o akceptacje zmian\.
 .
 .SH "ZAPYTANIA O DANE"
-Ponieważ dane są przechowywane w grafowej bazie danych Neo4J \fIhttp://neo4j\.org/\fR, która udostępnia interfejs REST, nasz interfejs programistyczny jest z nim całkowicie zgodny\. Jego szczegóły opisano w dokumentacji Neo4J REST API \fIhttp://components\.neo4j\.org/neo4j\-server/milestone/rest\.html\fR\.
+Interfejs programistyczny jest oparty o serwer Rexster \fIhttp://rexster\.tinkerpop\.com\fR, który udostępnia dane przechowywane w bazie danych Neo4J \fIhttp://neo4j\.org/\fR\. Jego szczegóły opisano w dokumentacji Rexster REST API \fIhttps://github\.com/tinkerpop/rexster/wiki/Basic\-REST\-API\fR\.
 .
 .SS "Zasoby"
 Graf składa się wyłącznie z wierzchołków i skierowanych relacji między nimi, zwanych krawędziami\. Dalszy podział tych zasobów na klasy jest umowny, gdyż ich atrybuty nie są ograniczone żadną strukturą\.
@@ -54,7 +67,7 @@ Graf składa się wyłącznie z wierzchołków i skierowanych relacji między ni
 Indeks wierzchołków lub krawędzi służy do znalezienia punktu wejścia do grafu w celu trawersacji, a nie wyszukiwania konkretnych danych\.
 .
 .SS "Odkrywalność"
-Struktura grafu jest ze sobą połączona, co znaczy że dane które on zawiera, są od siebie zależne\. Naturalną konsekwencją tego jest API, które zwraca te zależności w postaci linków, czyli adresów URI, zawsze tam gdzie ma to sens\. Zaleca się w ten sposób "odkrywać" graf, zamiast polegać na dokumentacji, gdyż uchroni nas to przez możliwymi zmianami w API w przyszłości\. Odkrywanie najlepiej zacząć od korzenia:
+Graf jest strukturą połączoną, co znaczy że dane które on zawiera, są od siebie zależne\. Naturalną konsekwencją tego jest API, które zwraca te zależności w postaci linków, czyli adresów URI, zawsze tam gdzie ma to sens\. Zaleca się w ten sposób "odkrywać" graf, zamiast polegać na dokumentacji, gdyż uchroni nas to przez możliwymi zmianami API w przyszłości\. Odkrywanie najlepiej zacząć od korzenia:
 .
 .P
 Ścieżka: \fB/\fR
@@ -78,11 +91,40 @@ curl http://graph\.bagate\.la/2011\-08\-18/
 .
 .IP "" 0
 .
+.SS "Archiwa"
+W dowolnej chwili dostępne są grafy dla dnia bieżącego oraz siedmiu następnych\. Dane historyczne są archiwizowane do formatu tar\.gz \fIhttp://en\.wikipedia\.org/wiki/Tar_(file_format)\fR i dostępne jedynie w następujący sposób:
+.
+.P
+Ścieżka: \fB\.tar\.gz\fR
+.
+.br
+Metoda: \fBGET\fR
+.
+.br
+Odpowiedź: \fI200\fR \- zarchiwizowany folder bazy danych Neo4J\. \fI404\fR \- graf nie istnieje (brak danych z danego dnia lub zły format daty)\.
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+wget http://graph\.bagate\.la/2011\-08\-18\.tar\.gz
+tar zxvf 2011\-08\-18\.tar\.gz
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Dane mogą zostać wykorzystane np\. jako źródło danych lokalnej bazy danych Neo4J, do wizualizacji grafu w programie Gephi \fIhttps://gephi\.org/\fR (wymagany plugin: Neo4j Graph Database support \fIhttps://gephi\.org/plugins/neo4j\-graph\-database\-support/\fR oraz zalecany plugin: geolayout \fIhttps://gephi\.org/plugins/geolayout/\fR) itp\.
+.
 .SH "WĘZEŁ"
 Wierzchołek w grafie\. Reprezentuje punkt na mapie\. Węzły są tworzone na podstawie przystanków \fIAPI\.1\.html#PRZYSTANEK\fR\.
 .
 .P
-Ścieżka: \fB/node/<id>\fR
+Ścieżka: \fB/vertices/<id>\fR
 .
 .br
 Metoda: \fBGET\fR
@@ -100,7 +142,7 @@ Przykładowe użycie:
 .
 .nf
 
-curl http://graph\.bagate\.la/2011\-09\-09/node/7
+curl http://graph\.bagate\.la/2011\-09\-09/vertices/7
 .
 .fi
 .
@@ -129,7 +171,10 @@ W sytuacji, gdy nie mamy wiedzy o tym który dokładnie przystanek każdy rozkł
 Wierzchołki w grafie są indeksowane jedynie po źródle pochodzenia, czyli bazie danych i identyfikatorze dokumentu\. Skorzystaj z wyszukiwarki \fIAPI\.1\.html#Wyszukiwarka\fR, aby odnaleźć przystanek według dowolnych kryteriów\.
 .
 .P
-Ścieżka: \fB/index/node/source/<database>/<id>\fR
+Uwaga: ten indeks istnieje tylko po to aby obejść problem braku dowolnych identyfikatorów w bazie Neo4j\. Jeżeli ten problem zostanie rozwiązany, węzły będą miały te same indetyfikatory co ich źródło, a ten indeks zostanie zlikwidowany\.
+.
+.P
+Ścieżka: \fB/indices/<database>?id=<id>\fR
 .
 .br
 Metoda: \fBGET\fR
@@ -147,7 +192,7 @@ Przykładowe użycie:
 .
 .nf
 
-curl http://graph\.bagate\.la/2011\-08\-18/index/node/source/kr/000e0590ceae3be9ada4466fc112ca65dc0dc36a
+curl http://graph\.bagate\.la/2011\-08\-18/indices/kr?id=000e0590ceae3be9ada4466fc112ca65dc0dc36a
 .
 .fi
 .
@@ -157,16 +202,29 @@ curl http://graph\.bagate\.la/2011\-08\-18/index/node/source/kr/000e0590ceae3be9
 Relacja między dwoma węzłami\. Zachodzi gdy istnieje przynajmniej jedna linia, która kursuje między nimi bezpośrednio (np\. linia jeżdżąca po przystankach \fIA\fR &rarr; \fIB\fR &rarr; \fIC\fR, składa się z dokładnie dwóch połączeń: \fIA\fR do \fIB\fR i \fIB\fR do \fIC\fR)\.
 .
 .P
-Ścieżka: \fB/node/<id>/relationships/<dir>/CONNECTS\fR
+Ścieżka: \fB/vertices/<id>/<dir>E?_label=connects\fR
 .
 .br
 Metoda: \fBGET\fR
 .
 .br
-Parametry: \fBid\fR \- identyfikator węzła, \fBdir\fR \- kierunek relacji\. Może być \fIin\fR, \fIout\fR lub \fIall\fR\.
+Parametry: \fBid\fR \- identyfikator węzła, \fBdir\fR \- kierunek relacji\. Może być \fIin\fR, \fIout\fR lub \fIboth\fR\.
 .
 .br
 Odpowiedź: \fI200\fR \- połączenia (przychodzące, wychodzące lub wszystkie) z węzła \fBid\fR\.
+.
+.P
+Przykładowe użycie:
+.
+.IP "" 4
+.
+.nf
+
+curl http://graph\.bagate\.la/2011\-11\-10/vertices/31/outE?_label=connects
+.
+.fi
+.
+.IP "" 0
 .
 .SS "Atrybuty"
 .
@@ -196,13 +254,13 @@ Obiekt typu tablicy asocjacyjnej, zawierającej następujące pary:
 Relacja między dwoma węzłami klasy \fIStop\fR\. Jeżeli istnieje relacja z węzła \fIA\fR do \fIB\fR to istnieje też druga, inna relacja z węzła \fIB\fR do \fIA\fR\.
 .
 .P
-Ścieżka: \fB/node/<id>/relationships/<dir>/TRANSFERS\fR
+Ścieżka: \fB/vertices/<id>/<dir>E?_label=transfers\fR
 .
 .br
 Metoda: \fBGET\fR
 .
 .br
-Parametry: \fBid\fR \- identyfikator węzła, \fBdir\fR \- kierunek relacji\. Może być \fIin\fR, \fIout\fR lub \fIall\fR\.
+Parametry: \fBid\fR \- identyfikator węzła, \fBdir\fR \- kierunek relacji\. Może być \fIin\fR, \fIout\fR lub \fIboth\fR\.
 .
 .br
 Odpowiedź: \fI200\fR \- przesiadki (do, z lub wszystkie) z węzła \fB<id>\fR\.
@@ -215,37 +273,34 @@ Odpowiedź: \fI200\fR \- przesiadki (do, z lub wszystkie) z węzła \fB<id>\fR\.
 .IP "" 0
 .
 .SH "TRAWERSACJA GRAFU"
-Przechodzenie grafu w zdefiniowany sposób\. Zaczynamy zawsze od jednego wierzchołka, a następnie, po jego krawędziach, odwiedzamy kolejne wierzchołki (wiele w tym samym czasie) itd\. Celem tego procesu może być uzyskanie: węzłów, krawędzi lub obu tych typów, odwiedzonych w procesie trawersacji\.
+Przechodzenie grafu w zdefiniowany sposób\. Zaczynamy zawsze od jednego wierzchołka (lub krawędzi), a następnie, po jego krawędziach (lub jej wierzchołkach), odwiedzamy kolejne encje (wiele w tym samym czasie)\. Celem tego procesu może być uzyskanie np\.: węzłów, krawędzi lub obu tych typów, odwiedzonych w procesie trawersacji\.
 .
 .P
-Ścieżka: \fB/node/<id>/traverse/<return_type>\fR
+Do definicji sposobu przechodzenia grafu służy Gremlin \fIhttp://gremlin\.tinkerpop\.com/\fR, będący rozszerzeniem języka Groovy \fIhttp://groovy\.codehaus\.org/\fR\. Pozwala on na wykonywanie szeregu operacji ad\-hoc na grafie\.
+.
+.P
+Ścieżka: \fB/gremlin\fR
 .
 .br
 Metoda: \fBPOST\fR
 .
 .br
-Parametry: \fBid\fR \- identyfikator węzła początkowego, \fBreturn_type\fR \- typ zwracanych danych\. Może być: \fInode\fR, \fIrelationship\fR, \fIpath\fR lub \fIfullpath\fR\.
-.
-.br
-Parametry ładunku:
+Parametry:
 .
 .IP "\(bu" 4
-\fBorder\fR
+\fBrexster\.showTypes\fR \- displays the properties of the elements with their native data type (default is false),
 .
 .IP "\(bu" 4
-\fBuniqueness\fR
+\fBrexster\.returnKeys\fR \- the element property keys to return (default is to return all element properties),
 .
 .IP "\(bu" 4
-\fBrelationships\fR
+\fBrexster\.offset\.start\fR \- start index for a paged set of data to be returned,
 .
 .IP "\(bu" 4
-\fBprune_evaluator\fR
+\fBrexster\.offset\.end\fR \- end index for a paged set of data to be returned
 .
 .IP "\(bu" 4
-\fBreturn_filter\fR
-.
-.IP "\(bu" 4
-\fBmax_depth\fR
+\fBscript\fR \- the Gremlin script to be evaluated
 .
 .IP "" 0
 .
@@ -259,87 +314,36 @@ Przykładowe użycie:
 .
 .nf
 
-curl \-XPOST http://graph\.bagate\.la/2011\-08\-18/node/100/traverse/path \-d {}
-.
-.fi
-.
-.IP "" 0
-.
-.SH "ŚCIEŻKI"
-Znajdywanie jednej lub wielu ścieżek między dwoma wierzchołkami grafu zgodnie z jednym z algorytmów teorii grafów\. Ścieżka jest sekwencją wierzchołków grafu w której każdy z nich jest związany krawędzią z kolejnym wierzchołkiem w tej sekwencji\.
-.
-.P
-Ścieżka: \fB/node/<id>/path\fR
-.
-.br
-Metoda: \fBPOST\fR
-.
-.br
-Parametry: \fBid\fR \- identyfikator węzła początkowego\.
-.
-.br
-Parametry ładunku:
-.
-.IP "\(bu" 4
-\fBto\fR \- węzeł docelowy\.
-.
-.IP "\(bu" 4
-\fBrelationships\fR \- lista dozwolonych typów relacji\.
-.
-.IP "\(bu" 4
-\fBmax_depth\fR \- limit długości pojedynczej ścieżki wyrażony w wierzchołkach\.
-.
-.IP "\(bu" 4
-\fBalgorithm\fR \- algorytm\. Jeden z: \fIshortestPath\fR, \fIallPaths\fR, \fIallSimplePaths\fR, \fIdijkstra\fR\.
-.
-.IP "" 0
-.
-.P
-Odpowiedź: \fI200\fR \- ścieżka, to jest lista węzłów i krawędzi je łączących\.
-.
-.P
-Przykładowe użycie:
-.
-.IP "" 4
-.
-.nf
-
-curl
+curl \-XPOST http://graph\.bagate\.la/2011\-11\-10/gremlin \-d {}
 .
 .fi
 .
 .IP "" 0
 .
 .P
-Ścieżka: \fB/node/<id>/paths\fR
+Ścieżka: \fB/gremlin?script=<script>\fR
 .
 .br
-Metoda: \fBPOST\fR
+Metoda: \fBGET\fR
 .
 .br
-Parametry zapytania i ładunku jak powyżej\.
-.
-.br
-Odpowiedź:
-.
-.P
-Przykładowe użycie:
+Parametry: \fBid\fR \- identyfikator węzła początkowego, \fBscript\fR \-
 .
 .IP "" 4
 .
 .nf
 
-curl
+curl \-XGET http://graph\.bagate\.la/2011\-11\-10/gremlin?script=
 .
 .fi
 .
 .IP "" 0
 .
 .SH "POŁĄCZENIA KOMUNIKACYJNE"
-Połączenie komunikacyjne jest ścieżką, która składa się z węzłów, połączonych konkretnym odjazdem (lub przesiadką), a nie listą wszystkich kursów (odjazdów) w danym połączeniu\. Ponieważ wynik jest związany z czasem, zarówno kursy jak i węzły będą zależeć od czasu, będącym jednym z parametrów tego zapytania\.
+Połączenie komunikacyjne jest ścieżką, która składa się z węzłów, połączonych konkretnym odjazdem (lub przesiadką)\. W przeciwieństwie do zwykłej trawersacji, nie jest to lista wszystkich kursów (odjazdów) w danym połączeniu\. Ponieważ wynik jest związany z czasem, zarówno kursy jak i węzły mogą zależeć od czasu, będącym jednym z parametrów tego zapytania\.
 .
 .P
-Ścieżka: \fB/node/<id>/connection\fR
+Ścieżka: \fIjuż wkrótce\fR
 .
 .br
 Metoda: \fBPOST\fR
@@ -374,7 +378,7 @@ Przykładowe użycie:
 .
 .nf
 
-curl http://graph\.bagate\.la/2011\-08\-18/node/189/connection \-d {}
+curl
 .
 .fi
 .

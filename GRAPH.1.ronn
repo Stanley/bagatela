@@ -22,6 +22,10 @@ Dla każdego dnia instnieje osobny graf:
 
 Zawiera on w sobie dane ze wszystkich miast (obsługiwanych tego dnia).
 
+<b><font color="red">UWAGA: Graph API jest w fazie beta i przez pewien okres API dostępne będzie jedynie przez adres:</font></b>
+
+    http://graph.bagate.la/demo
+
 ### Przykłady
 Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli
 `curl` i zostały wykonane w systemie GNU/Linux.
@@ -34,11 +38,10 @@ Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli
 
 ZAPYTANIA O DANE
 -------------------------
-Ponieważ dane są przechowywane w grafowej bazie danych
-[Neo4J](http://neo4j.org/), która udostępnia interfejs REST, nasz interfejs
-programistyczny jest z nim całkowicie zgodny. Jego szczegóły opisano w
-[dokumentacji Neo4J REST
-API](http://components.neo4j.org/neo4j-server/milestone/rest.html).
+Interfejs programistyczny jest oparty o serwer
+[Rexster](http://rexster.tinkerpop.com), który udostępnia dane przechowywane w
+bazie danych [Neo4J](http://neo4j.org/). Jego szczegóły opisano w dokumentacji
+[Rexster REST API](https://github.com/tinkerpop/rexster/wiki/Basic-REST-API).
 
 ### Zasoby
 Graf składa się wyłącznie z wierzchołków i skierowanych relacji między nimi,
@@ -50,11 +53,11 @@ Indeks wierzchołków lub krawędzi służy do znalezienia punktu wejścia do gr
 celu trawersacji, a nie wyszukiwania konkretnych danych.
 
 ### Odkrywalność
-Struktura grafu jest ze sobą połączona, co znaczy że dane które on zawiera, są
+Graf jest strukturą połączoną, co znaczy że dane które on zawiera, są
 od siebie zależne. Naturalną konsekwencją tego jest API, które zwraca te
 zależności w postaci linków, czyli adresów URI, zawsze tam gdzie ma to sens.
 Zaleca się w ten sposób "odkrywać" graf, zamiast polegać na dokumentacji, gdyż
-uchroni nas to przez możliwymi zmianami w API w przyszłości. Odkrywanie
+uchroni nas to przez możliwymi zmianami API w przyszłości. Odkrywanie
 najlepiej zacząć od korzenia:
 
 Ścieżka: `/`  
@@ -66,12 +69,34 @@ Przykładowe użycie:
 
     curl http://graph.bagate.la/2011-08-18/
 
+### Archiwa
+W dowolnej chwili dostępne są grafy dla dnia bieżącego oraz siedmiu następnych.
+Dane historyczne są archiwizowane do formatu
+[tar.gz](http://en.wikipedia.org/wiki/Tar_\(file_format\)) i dostępne jedynie w
+następujący sposób:
+
+Ścieżka: `.tar.gz`  
+Metoda: `GET`  
+Odpowiedź: *200* - zarchiwizowany folder bazy danych Neo4J. *404* - graf nie
+istnieje (brak danych z danego dnia lub zły format daty).
+
+Przykładowe użycie:
+
+    wget http://graph.bagate.la/2011-08-18.tar.gz
+    tar zxvf 2011-08-18.tar.gz
+
+Dane mogą zostać wykorzystane np. jako źródło danych lokalnej bazy danych
+Neo4J, do wizualizacji grafu w programie [Gephi](https://gephi.org/) (wymagany
+plugin: [Neo4j Graph Database
+support](https://gephi.org/plugins/neo4j-graph-database-support/) oraz zalecany
+plugin: [geolayout](https://gephi.org/plugins/geolayout/)) itp.
+
 WĘZEŁ
 -----
 Wierzchołek w grafie. Reprezentuje punkt na mapie. Węzły są tworzone na
 podstawie [przystanków](API.1.html#PRZYSTANEK).
 
-Ścieżka: `/node/<id>`  
+Ścieżka: `/vertices/<id>`  
 Metoda: `GET`  
 Parametry: `id` - identyfikator węzła.  
 Odpowiedź: *200* - wartości atrybutów i referencje do relacji węzła. *404* -
@@ -79,7 +104,7 @@ węzeł nie istnieje.
 
 Przykładowe użycie:
 
-    curl http://graph.bagate.la/2011-09-09/node/7
+    curl http://graph.bagate.la/2011-09-09/vertices/7
 
 ### Atrybuty
 
@@ -105,14 +130,19 @@ danych i identyfikatorze dokumentu. Skorzystaj z
 [wyszukiwarki](API.1.html#Wyszukiwarka), aby odnaleźć przystanek według
 dowolnych kryteriów.
 
-Ścieżka: `/index/node/source/<database>/<id>`  
+Uwaga: ten indeks istnieje tylko po to aby obejść problem braku dowolnych
+identyfikatorów w bazie Neo4j. Jeżeli ten problem zostanie rozwiązany, węzły
+będą miały te same indetyfikatory co ich źródło, a ten indeks zostanie
+zlikwidowany.
+
+Ścieżka: `/indices/<database>?id=<id>`  
 Metoda: `GET`  
 Parametry: `database` - baza danych, `id` - identyfikator dokumentu.  
 Odpowiedź: *200* - 
 
 Przykładowe użycie:
 
-    curl http://graph.bagate.la/2011-08-18/index/node/source/kr/000e0590ceae3be9ada4466fc112ca65dc0dc36a
+    curl http://graph.bagate.la/2011-08-18/indices/kr?id=000e0590ceae3be9ada4466fc112ca65dc0dc36a
 
 POŁĄCZENIE
 ----------
@@ -121,10 +151,14 @@ przynajmniej jedna linia, która kursuje między nimi bezpośrednio (np. linia
 jeżdżąca po przystankach *A* &rarr; *B* &rarr; *C*, składa się z dokładnie
 dwóch połączeń: *A* do *B* i *B* do *C*).
 
-Ścieżka: `/node/<id>/relationships/<dir>/CONNECTS`  
+Ścieżka: `/vertices/<id>/<dir>E?_label=connects`  
 Metoda: `GET`  
-Parametry: `id` - identyfikator węzła, `dir` - kierunek relacji. Może być *in*, *out* lub *all*.  
+Parametry: `id` - identyfikator węzła, `dir` - kierunek relacji. Może być *in*, *out* lub *both*.  
 Odpowiedź: *200* - połączenia (przychodzące, wychodzące lub wszystkie) z węzła `id`.
+
+Przykładowe użycie:
+
+    curl http://graph.bagate.la/2011-11-10/vertices/31/outE?_label=connects
 
 ### Atrybuty
 * `_classname` - zawsze *"Connection"*.
@@ -151,9 +185,9 @@ PRZESIADKA
 Relacja między dwoma węzłami klasy *Stop*. Jeżeli istnieje relacja z węzła
 *A* do *B* to istnieje też druga, inna relacja z węzła *B* do *A*.
 
-Ścieżka: `/node/<id>/relationships/<dir>/TRANSFERS`  
+Ścieżka: `/vertices/<id>/<dir>E?_label=transfers`  
 Metoda: `GET`  
-Parametry: `id` - identyfikator węzła, `dir` - kierunek relacji. Może być *in*, *out* lub *all*.  
+Parametry: `id` - identyfikator węzła, `dir` - kierunek relacji. Może być *in*, *out* lub *both*.  
 Odpowiedź: *200* - przesiadki (do, z lub wszystkie) z węzła `<id>`.
 
 ### Atrybuty
@@ -163,22 +197,25 @@ jednego węzła do drugiego. Np.: *1*.
 TRAWERSACJA GRAFU
 -----------------
 Przechodzenie grafu w zdefiniowany sposób. Zaczynamy zawsze od jednego
-wierzchołka, a następnie, po jego krawędziach, odwiedzamy kolejne wierzchołki
-(wiele w tym samym czasie) itd.  Celem tego procesu może być uzyskanie: węzłów,
-krawędzi lub obu tych typów, odwiedzonych w procesie trawersacji.
+wierzchołka (lub krawędzi), a następnie, po jego krawędziach (lub jej
+wierzchołkach), odwiedzamy kolejne encje (wiele w tym samym czasie).
+Celem tego procesu może być uzyskanie np.: węzłów, krawędzi lub obu tych typów,
+odwiedzonych w procesie trawersacji.
 
-Ścieżka: `/node/<id>/traverse/<return_type>`  
+Do definicji sposobu przechodzenia grafu służy
+[Gremlin](http://gremlin.tinkerpop.com/), będący rozszerzeniem języka
+[Groovy](http://groovy.codehaus.org/). Pozwala on na wykonywanie szeregu
+operacji ad-hoc na grafie.
+
+Ścieżka: `/gremlin`  
 Metoda: `POST`  
-Parametry: `id` - identyfikator węzła początkowego, `return_type` - typ zwracanych
-danych. Może być: *node*, *relationship*, *path* lub *fullpath*.  
-Parametry ładunku:
+Parametry: 
 
-* `order`
-* `uniqueness`
-* `relationships`
-* `prune_evaluator`
-* `return_filter`
-* `max_depth`
+* `rexster.showTypes` - displays the properties of the elements with their native data type (default is false),
+* `rexster.returnKeys` - the element property keys to return (default is to return all element properties),
+* `rexster.offset.start` - start index for a paged set of data to be returned,
+* `rexster.offset.end` - end index for a paged set of data to be returned
+* `script` - the Gremlin script to be evaluated
 
 Odpowiedź: *200* - węzły, krawędzie, ścieżka (identyfikatory węzłów i krawędzi)
 lub pełna ścieżka wraz z atrybutami węzłów i krawędzi. *404* - węzeł `id` nie
@@ -186,48 +223,23 @@ istnieje.
 
 Przykładowe użycie:
 
-    curl -XPOST http://graph.bagate.la/2011-08-18/node/100/traverse/path -d {}
+    curl -XPOST http://graph.bagate.la/2011-11-10/gremlin -d {}
 
-ŚCIEŻKI
--------
-Znajdywanie jednej lub wielu ścieżek między dwoma wierzchołkami grafu zgodnie
-z jednym z algorytmów teorii grafów. Ścieżka jest sekwencją wierzchołków grafu
-w której każdy z nich jest związany krawędzią z kolejnym wierzchołkiem w tej
-sekwencji.
+Ścieżka: `/gremlin?script=<script>`  
+Metoda: `GET`  
+Parametry: `id` - identyfikator węzła początkowego, `script` - 
 
-Ścieżka: `/node/<id>/path`  
-Metoda: `POST`  
-Parametry: `id` - identyfikator węzła początkowego.  
-Parametry ładunku:  
-
-* `to` - węzeł docelowy.
-* `relationships` - lista dozwolonych typów relacji.
-* `max_depth` - limit długości pojedynczej ścieżki wyrażony w wierzchołkach.
-* `algorithm` - algorytm. Jeden z: *shortestPath*, *allPaths*, *allSimplePaths*, *dijkstra*.
-
-Odpowiedź: *200* - ścieżka, to jest lista węzłów i krawędzi je łączących.
-
-Przykładowe użycie:
-
-    curl
-
-Ścieżka: `/node/<id>/paths`  
-Metoda: `POST`  
-Parametry zapytania i ładunku jak powyżej.  
-Odpowiedź:
-
-Przykładowe użycie:
-
-    curl
+    curl -XGET http://graph.bagate.la/2011-11-10/gremlin?script=
 
 POŁĄCZENIA KOMUNIKACYJNE
 ------------------------
 Połączenie komunikacyjne jest ścieżką, która składa się z węzłów, połączonych
-konkretnym odjazdem (lub przesiadką), a nie listą wszystkich kursów (odjazdów)
-w danym połączeniu. Ponieważ wynik jest związany z czasem, zarówno kursy jak i
-węzły będą zależeć od czasu, będącym jednym z parametrów tego zapytania.
+konkretnym odjazdem (lub przesiadką). W przeciwieństwie do zwykłej trawersacji,
+nie jest to lista wszystkich kursów (odjazdów) w danym połączeniu. Ponieważ
+wynik jest związany z czasem, zarówno kursy jak i węzły mogą zależeć od czasu,
+będącym jednym z parametrów tego zapytania.
 
-Ścieżka: `/node/<id>/connection`  
+Ścieżka: *już wkrótce*  
 Metoda: `POST`  
 Parametry: `id` - identyfikator węzła początkowego.  
 Parametry ładunku:  
@@ -246,7 +258,7 @@ połączenie komunikacyjne, pomiędzy dwoma wierzchołkami grafu.
 
 Przykładowe użycie:
 
-    curl http://graph.bagate.la/2011-08-18/node/189/connection -d {}
+    curl 
 
 [Zobacz scenariusze testujące](http://relishapp.com/stanley/bagatela/docs/graph/connections)
 

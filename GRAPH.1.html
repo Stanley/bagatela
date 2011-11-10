@@ -70,7 +70,6 @@
     <a href="#PO-CZENIE">POŁĄCZENIE</a>
     <a href="#PRZESIADKA">PRZESIADKA</a>
     <a href="#TRAWERSACJA-GRAFU">TRAWERSACJA GRAFU</a>
-    <a href="#-CIE-KI">ŚCIEŻKI</a>
     <a href="#PO-CZENIA-KOMUNIKACYJNE">POŁĄCZENIA KOMUNIKACYJNE</a>
   </div>
 
@@ -107,6 +106,11 @@ zapytań typu GET i POST. Dane przyjmowane i zwracane są w formacie
 
 <p>Zawiera on w sobie dane ze wszystkich miast (obsługiwanych tego dnia).</p>
 
+<p><b><font color="red">UWAGA: Graph API jest w fazie beta i przez pewien okres API dostępne będzie jedynie przez adres:</font></b></p>
+
+<pre><code>http://graph.bagate.la/demo
+</code></pre>
+
 <h3 id="Przyk-ady">Przykłady</h3>
 
 <p>Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli
@@ -122,11 +126,10 @@ zapytań typu GET i POST. Dane przyjmowane i zwracane są w formacie
 
 <h2 id="ZAPYTANIA-O-DANE">ZAPYTANIA O DANE</h2>
 
-<p>Ponieważ dane są przechowywane w grafowej bazie danych
-<a href="http://neo4j.org/">Neo4J</a>, która udostępnia interfejs REST, nasz interfejs
-programistyczny jest z nim całkowicie zgodny. Jego szczegóły opisano w
-<a href="http://components.neo4j.org/neo4j-server/milestone/rest.html">dokumentacji Neo4J REST
-API</a>.</p>
+<p>Interfejs programistyczny jest oparty o serwer
+<a href="http://rexster.tinkerpop.com">Rexster</a>, który udostępnia dane przechowywane w
+bazie danych <a href="http://neo4j.org/">Neo4J</a>. Jego szczegóły opisano w dokumentacji
+<a href="https://github.com/tinkerpop/rexster/wiki/Basic-REST-API">Rexster REST API</a>.</p>
 
 <h3 id="Zasoby">Zasoby</h3>
 
@@ -141,11 +144,11 @@ celu trawersacji, a nie wyszukiwania konkretnych danych.</p>
 
 <h3 id="Odkrywalno-">Odkrywalność</h3>
 
-<p>Struktura grafu jest ze sobą połączona, co znaczy że dane które on zawiera, są
+<p>Graf jest strukturą połączoną, co znaczy że dane które on zawiera, są
 od siebie zależne. Naturalną konsekwencją tego jest API, które zwraca te
 zależności w postaci linków, czyli adresów URI, zawsze tam gdzie ma to sens.
 Zaleca się w ten sposób "odkrywać" graf, zamiast polegać na dokumentacji, gdyż
-uchroni nas to przez możliwymi zmianami w API w przyszłości. Odkrywanie
+uchroni nas to przez możliwymi zmianami API w przyszłości. Odkrywanie
 najlepiej zacząć od korzenia:</p>
 
 <p>Ścieżka: <code>/</code><br />
@@ -158,12 +161,36 @@ istnieje (brak danych z danego dnia lub zły format daty).</p>
 <pre><code>curl http://graph.bagate.la/2011-08-18/
 </code></pre>
 
+<h3 id="Archiwa">Archiwa</h3>
+
+<p>W dowolnej chwili dostępne są grafy dla dnia bieżącego oraz siedmiu następnych.
+Dane historyczne są archiwizowane do formatu
+<a href="http://en.wikipedia.org/wiki/Tar_(file_format)">tar.gz</a> i dostępne jedynie w
+następujący sposób:</p>
+
+<p>Ścieżka: <code>.tar.gz</code><br />
+Metoda: <code>GET</code><br />
+Odpowiedź: <em>200</em> - zarchiwizowany folder bazy danych Neo4J. <em>404</em> - graf nie
+istnieje (brak danych z danego dnia lub zły format daty).</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>wget http://graph.bagate.la/2011-08-18.tar.gz
+tar zxvf 2011-08-18.tar.gz
+</code></pre>
+
+<p>Dane mogą zostać wykorzystane np. jako źródło danych lokalnej bazy danych
+Neo4J, do wizualizacji grafu w programie <a href="https://gephi.org/">Gephi</a> (wymagany
+plugin: <a href="https://gephi.org/plugins/neo4j-graph-database-support/">Neo4j Graph Database
+support</a> oraz zalecany
+plugin: <a href="https://gephi.org/plugins/geolayout/">geolayout</a>) itp.</p>
+
 <h2 id="W-ZE-">WĘZEŁ</h2>
 
 <p>Wierzchołek w grafie. Reprezentuje punkt na mapie. Węzły są tworzone na
 podstawie <a href="API.1.html#PRZYSTANEK">przystanków</a>.</p>
 
-<p>Ścieżka: <code>/node/&lt;id></code><br />
+<p>Ścieżka: <code>/vertices/&lt;id></code><br />
 Metoda: <code>GET</code><br />
 Parametry: <code>id</code> - identyfikator węzła.<br />
 Odpowiedź: <em>200</em> - wartości atrybutów i referencje do relacji węzła. <em>404</em> -
@@ -171,7 +198,7 @@ węzeł nie istnieje.</p>
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>curl http://graph.bagate.la/2011-09-09/node/7
+<pre><code>curl http://graph.bagate.la/2011-09-09/vertices/7
 </code></pre>
 
 <h3 id="Atrybuty">Atrybuty</h3>
@@ -202,14 +229,19 @@ danych i identyfikatorze dokumentu. Skorzystaj z
 <a href="API.1.html#Wyszukiwarka">wyszukiwarki</a>, aby odnaleźć przystanek według
 dowolnych kryteriów.</p>
 
-<p>Ścieżka: <code>/index/node/source/&lt;database>/&lt;id></code><br />
+<p>Uwaga: ten indeks istnieje tylko po to aby obejść problem braku dowolnych
+identyfikatorów w bazie Neo4j. Jeżeli ten problem zostanie rozwiązany, węzły
+będą miały te same indetyfikatory co ich źródło, a ten indeks zostanie
+zlikwidowany.</p>
+
+<p>Ścieżka: <code>/indices/&lt;database>?id=&lt;id></code><br />
 Metoda: <code>GET</code><br />
 Parametry: <code>database</code> - baza danych, <code>id</code> - identyfikator dokumentu.<br />
 Odpowiedź: <em>200</em> -</p>
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>curl http://graph.bagate.la/2011-08-18/index/node/source/kr/000e0590ceae3be9ada4466fc112ca65dc0dc36a
+<pre><code>curl http://graph.bagate.la/2011-08-18/indices/kr?id=000e0590ceae3be9ada4466fc112ca65dc0dc36a
 </code></pre>
 
 <h2 id="PO-CZENIE">POŁĄCZENIE</h2>
@@ -219,10 +251,15 @@ przynajmniej jedna linia, która kursuje między nimi bezpośrednio (np. linia
 jeżdżąca po przystankach <em>A</em> &rarr; <em>B</em> &rarr; <em>C</em>, składa się z dokładnie
 dwóch połączeń: <em>A</em> do <em>B</em> i <em>B</em> do <em>C</em>).</p>
 
-<p>Ścieżka: <code>/node/&lt;id>/relationships/&lt;dir&gt;/CONNECTS</code><br />
+<p>Ścieżka: <code>/vertices/&lt;id>/&lt;dir&gt;E?_label=connects</code><br />
 Metoda: <code>GET</code><br />
-Parametry: <code>id</code> - identyfikator węzła, <code>dir</code> - kierunek relacji. Może być <em>in</em>, <em>out</em> lub <em>all</em>.<br />
+Parametry: <code>id</code> - identyfikator węzła, <code>dir</code> - kierunek relacji. Może być <em>in</em>, <em>out</em> lub <em>both</em>.<br />
 Odpowiedź: <em>200</em> - połączenia (przychodzące, wychodzące lub wszystkie) z węzła <code>id</code>.</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl http://graph.bagate.la/2011-11-10/vertices/31/outE?_label=connects
+</code></pre>
 
 <h3 id="Atrybuty">Atrybuty</h3>
 
@@ -257,9 +294,9 @@ początkowego), lub po linii prostej.</li>
 <p>Relacja między dwoma węzłami klasy <em>Stop</em>. Jeżeli istnieje relacja z węzła
 <em>A</em> do <em>B</em> to istnieje też druga, inna relacja z węzła <em>B</em> do <em>A</em>.</p>
 
-<p>Ścieżka: <code>/node/&lt;id>/relationships/&lt;dir&gt;/TRANSFERS</code><br />
+<p>Ścieżka: <code>/vertices/&lt;id>/&lt;dir&gt;E?_label=transfers</code><br />
 Metoda: <code>GET</code><br />
-Parametry: <code>id</code> - identyfikator węzła, <code>dir</code> - kierunek relacji. Może być <em>in</em>, <em>out</em> lub <em>all</em>.<br />
+Parametry: <code>id</code> - identyfikator węzła, <code>dir</code> - kierunek relacji. Może być <em>in</em>, <em>out</em> lub <em>both</em>.<br />
 Odpowiedź: <em>200</em> - przesiadki (do, z lub wszystkie) z węzła <code>&lt;id></code>.</p>
 
 <h3 id="Atrybuty">Atrybuty</h3>
@@ -273,23 +310,26 @@ jednego węzła do drugiego. Np.: <em>1</em>.</li>
 <h2 id="TRAWERSACJA-GRAFU">TRAWERSACJA GRAFU</h2>
 
 <p>Przechodzenie grafu w zdefiniowany sposób. Zaczynamy zawsze od jednego
-wierzchołka, a następnie, po jego krawędziach, odwiedzamy kolejne wierzchołki
-(wiele w tym samym czasie) itd.  Celem tego procesu może być uzyskanie: węzłów,
-krawędzi lub obu tych typów, odwiedzonych w procesie trawersacji.</p>
+wierzchołka (lub krawędzi), a następnie, po jego krawędziach (lub jej
+wierzchołkach), odwiedzamy kolejne encje (wiele w tym samym czasie).
+Celem tego procesu może być uzyskanie np.: węzłów, krawędzi lub obu tych typów,
+odwiedzonych w procesie trawersacji.</p>
 
-<p>Ścieżka: <code>/node/&lt;id>/traverse/&lt;return_type></code><br />
+<p>Do definicji sposobu przechodzenia grafu służy
+<a href="http://gremlin.tinkerpop.com/">Gremlin</a>, będący rozszerzeniem języka
+<a href="http://groovy.codehaus.org/">Groovy</a>. Pozwala on na wykonywanie szeregu
+operacji ad-hoc na grafie.</p>
+
+<p>Ścieżka: <code>/gremlin</code><br />
 Metoda: <code>POST</code><br />
-Parametry: <code>id</code> - identyfikator węzła początkowego, <code>return_type</code> - typ zwracanych
-danych. Może być: <em>node</em>, <em>relationship</em>, <em>path</em> lub <em>fullpath</em>.<br />
-Parametry ładunku:</p>
+Parametry:</p>
 
 <ul>
-<li><code>order</code></li>
-<li><code>uniqueness</code></li>
-<li><code>relationships</code></li>
-<li><code>prune_evaluator</code></li>
-<li><code>return_filter</code></li>
-<li><code>max_depth</code></li>
+<li><code>rexster.showTypes</code> - displays the properties of the elements with their native data type (default is false),</li>
+<li><code>rexster.returnKeys</code> - the element property keys to return (default is to return all element properties),</li>
+<li><code>rexster.offset.start</code> - start index for a paged set of data to be returned,</li>
+<li><code>rexster.offset.end</code> - end index for a paged set of data to be returned</li>
+<li><code>script</code> - the Gremlin script to be evaluated</li>
 </ul>
 
 
@@ -299,54 +339,25 @@ istnieje.</p>
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>curl -XPOST http://graph.bagate.la/2011-08-18/node/100/traverse/path -d {}
+<pre><code>curl -XPOST http://graph.bagate.la/2011-11-10/gremlin -d {}
 </code></pre>
 
-<h2 id="-CIE-KI">ŚCIEŻKI</h2>
+<p>Ścieżka: <code>/gremlin?script=&lt;script&gt;</code><br />
+Metoda: <code>GET</code><br />
+Parametry: <code>id</code> - identyfikator węzła początkowego, <code>script</code> -</p>
 
-<p>Znajdywanie jednej lub wielu ścieżek między dwoma wierzchołkami grafu zgodnie
-z jednym z algorytmów teorii grafów. Ścieżka jest sekwencją wierzchołków grafu
-w której każdy z nich jest związany krawędzią z kolejnym wierzchołkiem w tej
-sekwencji.</p>
-
-<p>Ścieżka: <code>/node/&lt;id>/path</code><br />
-Metoda: <code>POST</code><br />
-Parametry: <code>id</code> - identyfikator węzła początkowego.<br />
-Parametry ładunku:</p>
-
-<ul>
-<li><code>to</code> - węzeł docelowy.</li>
-<li><code>relationships</code> - lista dozwolonych typów relacji.</li>
-<li><code>max_depth</code> - limit długości pojedynczej ścieżki wyrażony w wierzchołkach.</li>
-<li><code>algorithm</code> - algorytm. Jeden z: <em>shortestPath</em>, <em>allPaths</em>, <em>allSimplePaths</em>, <em>dijkstra</em>.</li>
-</ul>
-
-
-<p>Odpowiedź: <em>200</em> - ścieżka, to jest lista węzłów i krawędzi je łączących.</p>
-
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl
-</code></pre>
-
-<p>Ścieżka: <code>/node/&lt;id>/paths</code><br />
-Metoda: <code>POST</code><br />
-Parametry zapytania i ładunku jak powyżej.<br />
-Odpowiedź:</p>
-
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl
+<pre><code>curl -XGET http://graph.bagate.la/2011-11-10/gremlin?script=
 </code></pre>
 
 <h2 id="PO-CZENIA-KOMUNIKACYJNE">POŁĄCZENIA KOMUNIKACYJNE</h2>
 
 <p>Połączenie komunikacyjne jest ścieżką, która składa się z węzłów, połączonych
-konkretnym odjazdem (lub przesiadką), a nie listą wszystkich kursów (odjazdów)
-w danym połączeniu. Ponieważ wynik jest związany z czasem, zarówno kursy jak i
-węzły będą zależeć od czasu, będącym jednym z parametrów tego zapytania.</p>
+konkretnym odjazdem (lub przesiadką). W przeciwieństwie do zwykłej trawersacji,
+nie jest to lista wszystkich kursów (odjazdów) w danym połączeniu. Ponieważ
+wynik jest związany z czasem, zarówno kursy jak i węzły mogą zależeć od czasu,
+będącym jednym z parametrów tego zapytania.</p>
 
-<p>Ścieżka: <code>/node/&lt;id>/connection</code><br />
+<p>Ścieżka: <em>już wkrótce</em><br />
 Metoda: <code>POST</code><br />
 Parametry: <code>id</code> - identyfikator węzła początkowego.<br />
 Parametry ładunku:</p>
@@ -368,7 +379,7 @@ połączenie komunikacyjne, pomiędzy dwoma wierzchołkami grafu.</p>
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>curl http://graph.bagate.la/2011-08-18/node/189/connection -d {}
+<pre><code>curl 
 </code></pre>
 
 <p><a href="http://relishapp.com/stanley/bagatela/docs/graph/connections">Zobacz scenariusze testujące</a></p>
@@ -391,7 +402,7 @@ połączenie komunikacyjne, pomiędzy dwoma wierzchołkami grafu.</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Stanisław Wasiutyński</li>
-    <li class='tc'>September 2011</li>
+    <li class='tc'>November 2011</li>
     <li class='tr'>bagatela-graph(1)</li>
   </ol>
 
