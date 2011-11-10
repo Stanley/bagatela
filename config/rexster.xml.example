@@ -11,10 +11,10 @@
   <graphs>
     <graph>
       <graph-name>2011-09-13</graph-name>
-      <graph-type>com.tinkerpop.rexster.config.Neo4jGraphConfiguration</graph-type>
+      <graph-type>neo4jgraph</graph-type>
       <!--<graph-file>/home/code/bagatela/db/production/2011-09-13</graph-file>-->
-      <graph-file>/home/code/bagatela/db</graph-file>
-      <read-only>true</read-only>
+      <graph-location>/home/code/bagatela/db</graph-location>
+      <graph-read-only>true</graph-read-only>
       <properties>
         <!-- Memory mapped I/O settings -->
         <!-- For high traversal speed it is important to have the nodestore.db and relationshipstore.db files. -->
