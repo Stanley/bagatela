@@ -39,23 +39,3 @@ class String
       gsub(/\s{2,}/, ' ')
   end
 end
-
-module Bagatela
-  module Resources
-    # Load configuration from YAML file.
-    config_file = File.join('config', 'database.yaml')
-    begin
-      config = YAML.load_file(config_file)
-      raise "Invalid configuration - #{config_file}" if !config.is_a?(Hash)
-      $stdout.puts "Configuration from #{config_file}"
-    rescue => err
-      $stderr.puts "WARNING: Could not read configuration. Using defaults."
-      $stderr.puts "\t" + err.to_s
-      config = {}
-    end
-
-    # Use provided configuration or default values
-    COUCHDB      = config['couchdb']       || 'http://localhost:5984'
-    ELASTICSEACH = config['elasticsearch'] || 'http://localhost:9200'
-  end
-end

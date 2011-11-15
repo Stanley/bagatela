@@ -1,3 +1,0 @@
-development:
-  couchdb: 'http://localhost:5984'
-  elasticsearch: 'http://localhost:9200'

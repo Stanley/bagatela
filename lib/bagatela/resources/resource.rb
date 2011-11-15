@@ -14,7 +14,7 @@ module Bagatela
       # Returns an array of documents.
       def self.view(db, view_name, options={})
         JSON.parse(
-          RestClient.get(URI.escape("#{COUCHDB}/#{db}" +
+          RestClient.get(URI.escape("#{db}" +
             "/_design/#{self}/_view/#{view_name}" +
             '?'+ options.each_pair.map{|key,val| "#{key}=#{val}"}.join('&')
           ))
