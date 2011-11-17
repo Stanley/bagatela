@@ -4,8 +4,8 @@ bagatela-api(1) -- dane o komunikacji miejskiej od przewoźników
 WSTĘP DO API
 ------------
 API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych
-([przystanków]( #PRZYSTANEK ), [rozkładów jazdy]( #ROZK-AD-JAZDY )) i usług
-([wyszukiwarka przystanków](#Wyszukiwarka)) z poziomu aplikacji trzecich.
+([przystanków]( #PRZYSTANEK ), [rozkładów jazdy]( #ROZK-AD-JAZDY )) z poziomu
+aplikacji trzecich.
 
 API jest zgodne ze wzorcem
 [REST](http://en.wikipedia.org/wiki/Representational_State_Transfer).
@@ -366,73 +366,6 @@ Parametr: `widok`
 -->
 
 [Zobacz scenariusze testujące *"_design/Stops"*.](https://github.com/Stanley/bagatela/blob/master/features/stops_design.feature)
-
-### Wyszukiwarka
-Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji.
-Ponieważ silnikiem wyszukiwarki jest elasticsearch, pełna dokumentacja API
-znajduje się na stronie:
-<http://www.elasticsearch.org/guide/reference/api/search/>.
-
-Ścieżka: `/_search/Stops?q=<fraza>`  
-Metoda: `GET`  
-Paramerty:
-
-* `q` - fraza. Akceptuje mi. wieloznaczniki *\** i *?* oraz wyrażenia logiczne *OR* i *AND*.
-* `sort` (opcjonalnie) - sortowanie, np.: *"name:asc"* (po nazwie, rosnąco). Domyślnie po trafności.
-* `size` (opcjonalnie) - maksymalna liczba dokumentów spełniających kryteria zapytania.
-* W zapytaniu możliwe są również inne opcje, wszystkie zostały opisane na: <http://www.elasticsearch.org/guide/reference/api/search/uri-request.html>.
-
-Odpowiedź: lista przystanków spełniających kryteria tj. zawierają *frazę* w
-nazwie lub lokalizacji.
-
-Frazę można doprecyzować, dopisując przed nią *name:* lub *address:*, co
-ograniczy wyszukiwanie do określonego pola.
-
-Przykładowe użycia:
- 
-    curl -XGET http://api.bagate.la/kr/_search/Stops?q=baszt*
-
-Zwróci wszystkie przystanki, których nazwa lub lokalizacja zawiera słowo zaczynające się od: *"baszt"*.
-
-    curl -XGET http://api.bagate.la/kr/_search/Stops?q=dworzec%20AND%20location:basztowa
-
-Zwróci wszystkie przystanki, których nazwa lub lokalizacja zawiera słowo
-*"dworzec"*, a lokalizacja zawiera słowo *"basztowa"*.
-
-**Alternatywne użycie:**
-
-Ścieżka: `/_search/Stops`  
-Metoda: `POST`  
-Ładunek: Zapytanie DSL w formacie JSON
-
-DSL (język zapytania) jest udokumentowany na stronie:
-<http://www.elasticsearch.org/guide/reference/query-dsl/>. Ta forma pozwala
-formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka.
-
-Przykładowe użycie:
- 
-    curl -XPOST http://api.bagate.la/kr/_search/Stops -d '{
-      "query": {
-        "filtered" : {
-          "query" : {
-            "match_all" : {}
-          },
-          "filter" : {
-            "geo_distance" : {
-              "distance" : "1km",
-              "location" : {
-                "lat" : 50.06551,
-                "lon" : 19.94693
-              }
-            }
-          }
-        }
-      }
-    }'
-
-Zwróci wszystkie przystanki w promieniu *1* kilometra od Dworca Głównego w Krakowie (punkt: *50.06551, 19.94693*).
-
-[Zobacz scenariusze testujące.](https://github.com/Stanley/bagatela/blob/master/features/stops_search.feature)
 
 REPLIKACJE
 ----------

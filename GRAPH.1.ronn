@@ -5,7 +5,7 @@ WSTĘP DO API
 ------------
 API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych
 ([węzłów](#W-ZE-), [połączeń](#PO-CZENIE), [przesiadek](#PRZESIADKA)) i usług
-([wyszukiwarka połączeń](#PO-CZENIA-KOMUNIKACYJNE)) z poziomu aplikacji
+([wyszukiwarka encji](#WYSZUKIWARKA), [wyszukiwarka połączeń](#PO-CZENIA-KOMUNIKACYJNE)) z poziomu aplikacji
 trzecich.
 
 API jest zgodne ze wzorcem
@@ -40,17 +40,16 @@ ZAPYTANIA O DANE
 -------------------------
 Interfejs programistyczny jest oparty o serwer
 [Rexster](http://rexster.tinkerpop.com), który udostępnia dane przechowywane w
-bazie danych [Neo4J](http://neo4j.org/). Jego szczegóły opisano w dokumentacji
-[Rexster REST API](https://github.com/tinkerpop/rexster/wiki/Basic-REST-API).
+bazie danych [OrientDB](http://www.orientechnologies.com/). Jego szczegóły
+opisano w dokumentacji [Rexster REST
+API](https://github.com/tinkerpop/rexster/wiki/Basic-REST-API).
 
 ### Zasoby
 Graf składa się wyłącznie z wierzchołków i skierowanych relacji między nimi,
 zwanych krawędziami. Dalszy podział tych zasobów na klasy jest umowny, gdyż ich
-atrybuty nie są ograniczone żadną strukturą.
-
-### Indeksy
-Indeks wierzchołków lub krawędzi służy do znalezienia punktu wejścia do grafu w
-celu trawersacji, a nie wyszukiwania konkretnych danych.
+atrybuty nie są ograniczone żadną strukturą. OrientDB organizuje dane w tzw.
+[klastrach](http://code.google.com/p/orient/wiki/Concepts#Cluster), które są
+przypisane do każdej klasy.
 
 ### Odkrywalność
 Graf jest strukturą połączoną, co znaczy że dane które on zawiera, są
@@ -71,25 +70,32 @@ Przykładowe użycie:
 
 ### Archiwa
 W dowolnej chwili dostępne są grafy dla dnia bieżącego oraz siedmiu następnych.
-Dane historyczne są archiwizowane do formatu
-[tar.gz](http://en.wikipedia.org/wiki/Tar_\(file_format\)) i dostępne jedynie w
-następujący sposób:
+Dane historyczne są archiwizowane i dostępne jedynie w następujący sposób:
 
-Ścieżka: `.tar.gz`  
+Ścieżka: `.gz`  
 Metoda: `GET`  
-Odpowiedź: *200* - zarchiwizowany folder bazy danych Neo4J. *404* - graf nie
+Odpowiedź: *200* - zarchiwizowana baza danych. *404* - graf nie
 istnieje (brak danych z danego dnia lub zły format daty).
 
 Przykładowe użycie:
 
-    wget http://graph.bagate.la/2011-08-18.tar.gz
-    tar zxvf 2011-08-18.tar.gz
+    $ cd <ścieżka do orientdb>
+    $ wget http://graph.bagate.la/2011-08-18.gz
+    $ ./bin/console.sh
+    OrientDB console v.1.0rc6 (build @BUILD@) www.orientechnologies.com
+    Type 'help' to display all the commands supported.'
 
-Dane mogą zostać wykorzystane np. jako źródło danych lokalnej bazy danych
-Neo4J, do wizualizacji grafu w programie [Gephi](https://gephi.org/) (wymagany
-plugin: [Neo4j Graph Database
-support](https://gephi.org/plugins/neo4j-graph-database-support/) oraz zalecany
-plugin: [geolayout](https://gephi.org/plugins/geolayout/)) itp.
+    > create database local:/tmp/bagatela admin admin local
+    Creating database [local:/tmp/bagatela] using the storage type [local]...
+    Database created successfully.
+
+    Current database is: local:/tmp/bagatela
+
+    > import database 2011-08-18.gz
+    Importing database from file 2011-08-18.gz...
+
+Dane mogą zostać wykorzystane np. do stworzenia lokalnej instancji bazy danych
+OrientDB, wizualizacji grafu, analizy itp.
 
 WĘZEŁ
 -----
@@ -108,8 +114,8 @@ Przykładowe użycie:
 
 ### Atrybuty
 
-* `_classname` - *"Stop"* - gdy reprezentuje fizyczny przystanek (wiata albo
-słupek) lub *"Hub"* (szczegóły poniżej).
+* `_id` - unikalny identyfikator w formie: *"#&lt;cluser&gt;:&lt;position&gt;"*. Np. *"#8:16"*
+* `_type` - zawsze *"vertex"*.
 * `lat` - szerokość geograficzna. Np.: *50.123*. 
 * `lon` - długość geograficzna. Np.: *19.987*.
 * `source` - adres URI do dokumentu, na podstawie którego został utworzony ten
@@ -122,27 +128,8 @@ jazdy reprezentuje (brak wartości `stop_id` w dokumencie
 będzie reprezentowany na grafie tylko przez jeden węzeł klasy *Hub*. Sprawi to,
 że nie pojawią się relacje przesiadek, dlatego przy trawersacji nie będziemy w
 stanie stwierdzić czy nastąpiło przejście z jednego przystanku do drugiego o
-tej samej nazwie.
-
-### Indeks
-Wierzchołki w grafie są indeksowane jedynie po źródle pochodzenia, czyli bazie
-danych i identyfikatorze dokumentu. Skorzystaj z
-[wyszukiwarki](API.1.html#Wyszukiwarka), aby odnaleźć przystanek według
-dowolnych kryteriów.
-
-Uwaga: ten indeks istnieje tylko po to aby obejść problem braku dowolnych
-identyfikatorów w bazie Neo4j. Jeżeli ten problem zostanie rozwiązany, węzły
-będą miały te same indetyfikatory co ich źródło, a ten indeks zostanie
-zlikwidowany.
-
-Ścieżka: `/indices/<database>?id=<id>`  
-Metoda: `GET`  
-Parametry: `database` - baza danych, `id` - identyfikator dokumentu.  
-Odpowiedź: *200* - 
-
-Przykładowe użycie:
-
-    curl http://graph.bagate.la/2011-08-18/indices/kr?id=000e0590ceae3be9ada4466fc112ca65dc0dc36a
+tej samej nazwie. Klasa *Stop* reprezentuje fizyczny przystanek (wiata albo
+słupek).
 
 POŁĄCZENIE
 ----------
@@ -161,20 +148,20 @@ Przykładowe użycie:
     curl http://graph.bagate.la/2011-11-10/vertices/31/outE?_label=connects
 
 ### Atrybuty
-* `_classname` - zawsze *"Connection"*.
+* `_id` - unikalny identyfikator w formie: *"#<cluser>:<position>"*. Np. *"#9:10"*
+* `_inV` - indentyfikator węzła wejściowego.
+* `_label` - zawsze *"connects"*.
+* `_outE` - indentyfikator węzła wyjściowego.
+* `_type` - zawsze *"edge"*.
 * `rides` - lista kursów wszystkich linii na danej krawędzi. Atrybut typu
 tablicy asocjacyjnej. Przechowuje pary, w których godzinie odjazdu (w formacie
-liczby minut od północy; np. dla *"12:00"* jest to *720*) odpowiada tablica z
-informacjami o połączeniu (patrz niżej). UWAGA: ponieważ Neo4J natywnie nie
-wspiera wartości tego typu, tablica jest serializowana za pomocą
-[MessagePack](http://msgpack.org/) do ciągu znaków i tak jest przechowywana w
-bazie. Do odkodowania wartości będziemy potrzebowali dodatkowej
-[biblioteki](http://wiki.msgpack.org/display/MSGPACK/QuickStart).
+liczby minut od północy; np. dla *"12:00"* jest to *"720"*) odpowiada tablica z
+informacjami o połączeniu (patrz niżej).
 * `length` - długość odcinka w metrach. Liczona wzdłuż trasy (jeżeli ta jest
 zdefiniowana w polu `polylines` [przystanku](API.1.html#PRZYSTANEK)
 początkowego), lub po linii prostej.
 
-### Atrybuty informacji o połączeniu
+### Informacje o połączeniu
 Obiekt typu tablicy asocjacyjnej, zawierającej następujące pary:
 
 * `line` - numer linii. Np. *"4"*.
@@ -191,8 +178,83 @@ Parametry: `id` - identyfikator węzła, `dir` - kierunek relacji. Może być *i
 Odpowiedź: *200* - przesiadki (do, z lub wszystkie) z węzła `<id>`.
 
 ### Atrybuty
+* `_id` - unikalny identyfikator w formie: *"#<cluser>:<position>"*. Np. *"#10:1"*
+* `_inV` - indentyfikator węzła wejściowego.
+* `_label` - zawsze *"transfers"*.
+* `_outE` - indentyfikator węzła wyjściowego.
+* `_type` - zawsze *"edge"*.
 * `penatly` - orientacyjny czas w minutach, potrzeby do przemieszczenia się z
 jednego węzła do drugiego. Np.: *1*.
+
+WYSZUKIWARKA
+------------
+Usługa, która pozwala na wyszukiwanie węzłów i relacji według dowolnych
+kryteriów. Zwrócony element często jest jedynie zalążkiem do wyszukiwania
+ścieżek i innych struktur powstających w procesie [trawersacji
+grafu](#TRAWERSACJA-GRAFU).  Ponieważ silnikiem wyszukiwarki jest
+elasticsearch, pełna dokumentacja API znajduje się na stronie:
+<http://www.elasticsearch.org/guide/reference/api/search/>.
+
+Ścieżka: `/search?q=<fraza>`  
+Metoda: `GET`  
+Paramerty:
+
+* `q` - fraza. Akceptuje mi. wieloznaczniki *\** i *?* oraz wyrażenia logiczne *OR* i *AND*.
+* `sort` (opcjonalnie) - sortowanie, np.: *"name:asc"* (po nazwie, rosnąco). Domyślnie po trafności.
+* `size` (opcjonalnie) - maksymalna liczba dokumentów spełniających kryteria zapytania.
+* W zapytaniu możliwe są również inne opcje, wszystkie zostały opisane na: <http://www.elasticsearch.org/guide/reference/api/search/uri-request.html>.
+
+Odpowiedź: lista węzłów spełniających kryteria tj. zawierają *frazę* w
+nazwie lub lokalizacji.
+
+Frazę można doprecyzować, dopisując przed nią *name:* lub *address:*, co
+ograniczy wyszukiwanie do określonego pola.
+
+Przykładowe użycia:
+ 
+    curl -XGET http://graph.bagate.la/2011-11-15/search?q=baszt*
+
+Zwróci wszystkie węzły, których nazwa lub lokalizacja zawiera słowo zaczynające się od: *"baszt"*.
+
+    curl -XGET http://graph.bagate.la/2011-11-15/search?q=dworzec%20AND%20location:basztowa
+
+Zwróci wszystkie węzły, których nazwa lub lokalizacja zawiera słowo
+*"dworzec"*, a lokalizacja zawiera słowo *"basztowa"*.
+
+**Alternatywne użycie:**
+
+Ścieżka: `/search`  
+Metoda: `POST`  
+Ładunek: Zapytanie DSL w formacie JSON
+
+DSL (język zapytania) jest udokumentowany na stronie:
+<http://www.elasticsearch.org/guide/reference/query-dsl/>. Ta forma pozwala
+formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka.
+
+Przykładowe użycie:
+ 
+    curl -XPOST http://graph.bagate.la/2011-11-15/search -d '{
+      "query": {
+        "filtered" : {
+          "query" : {
+            "match_all" : {}
+          },
+          "filter" : {
+            "geo_distance" : {
+              "distance" : "1km",
+              "location" : {
+                "lat" : 50.06551,
+                "lon" : 19.94693
+              }
+            }
+          }
+        }
+      }
+    }'
+
+Zwróci wszystkie węzły w promieniu *1* kilometra od Dworca Głównego w Krakowie (punkt: *50.06551, 19.94693*).
+
+[Zobacz scenariusze testujące.](https://github.com/Stanley/bagatela/blob/master/features/vertex_search.feature)
 
 TRAWERSACJA GRAFU
 -----------------

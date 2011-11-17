@@ -69,6 +69,7 @@
     <a href="#W-ZE-">WĘZEŁ</a>
     <a href="#PO-CZENIE">POŁĄCZENIE</a>
     <a href="#PRZESIADKA">PRZESIADKA</a>
+    <a href="#WYSZUKIWARKA">WYSZUKIWARKA</a>
     <a href="#TRAWERSACJA-GRAFU">TRAWERSACJA GRAFU</a>
     <a href="#PO-CZENIA-KOMUNIKACYJNE">POŁĄCZENIA KOMUNIKACYJNE</a>
   </div>
@@ -88,7 +89,7 @@
 
 <p>API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych
 (<a href="#W-ZE-" data-bare-link="true">węzłów</a>, <a href="#PO-CZENIE" data-bare-link="true">połączeń</a>, <a href="#PRZESIADKA" data-bare-link="true">przesiadek</a>) i usług
-(<a href="#PO-CZENIA-KOMUNIKACYJNE" data-bare-link="true">wyszukiwarka połączeń</a>) z poziomu aplikacji
+(<a href="#WYSZUKIWARKA" data-bare-link="true">wyszukiwarka encji</a>, <a href="#PO-CZENIA-KOMUNIKACYJNE" data-bare-link="true">wyszukiwarka połączeń</a>) z poziomu aplikacji
 trzecich.</p>
 
 <p>API jest zgodne ze wzorcem
@@ -128,19 +129,17 @@ zapytań typu GET i POST. Dane przyjmowane i zwracane są w formacie
 
 <p>Interfejs programistyczny jest oparty o serwer
 <a href="http://rexster.tinkerpop.com">Rexster</a>, który udostępnia dane przechowywane w
-bazie danych <a href="http://neo4j.org/">Neo4J</a>. Jego szczegóły opisano w dokumentacji
-<a href="https://github.com/tinkerpop/rexster/wiki/Basic-REST-API">Rexster REST API</a>.</p>
+bazie danych <a href="http://www.orientechnologies.com/">OrientDB</a>. Jego szczegóły
+opisano w dokumentacji <a href="https://github.com/tinkerpop/rexster/wiki/Basic-REST-API">Rexster REST
+API</a>.</p>
 
 <h3 id="Zasoby">Zasoby</h3>
 
 <p>Graf składa się wyłącznie z wierzchołków i skierowanych relacji między nimi,
 zwanych krawędziami. Dalszy podział tych zasobów na klasy jest umowny, gdyż ich
-atrybuty nie są ograniczone żadną strukturą.</p>
-
-<h3 id="Indeksy">Indeksy</h3>
-
-<p>Indeks wierzchołków lub krawędzi służy do znalezienia punktu wejścia do grafu w
-celu trawersacji, a nie wyszukiwania konkretnych danych.</p>
+atrybuty nie są ograniczone żadną strukturą. OrientDB organizuje dane w tzw.
+<a href="http://code.google.com/p/orient/wiki/Concepts#Cluster">klastrach</a>, które są
+przypisane do każdej klasy.</p>
 
 <h3 id="Odkrywalno-">Odkrywalność</h3>
 
@@ -164,26 +163,33 @@ istnieje (brak danych z danego dnia lub zły format daty).</p>
 <h3 id="Archiwa">Archiwa</h3>
 
 <p>W dowolnej chwili dostępne są grafy dla dnia bieżącego oraz siedmiu następnych.
-Dane historyczne są archiwizowane do formatu
-<a href="http://en.wikipedia.org/wiki/Tar_(file_format)">tar.gz</a> i dostępne jedynie w
-następujący sposób:</p>
+Dane historyczne są archiwizowane i dostępne jedynie w następujący sposób:</p>
 
-<p>Ścieżka: <code>.tar.gz</code><br />
+<p>Ścieżka: <code>.gz</code><br />
 Metoda: <code>GET</code><br />
-Odpowiedź: <em>200</em> - zarchiwizowany folder bazy danych Neo4J. <em>404</em> - graf nie
+Odpowiedź: <em>200</em> - zarchiwizowana baza danych. <em>404</em> - graf nie
 istnieje (brak danych z danego dnia lub zły format daty).</p>
 
 <p>Przykładowe użycie:</p>
 
-<pre><code>wget http://graph.bagate.la/2011-08-18.tar.gz
-tar zxvf 2011-08-18.tar.gz
+<pre><code>$ cd &lt;ścieżka do orientdb>
+$ wget http://graph.bagate.la/2011-08-18.gz
+$ ./bin/console.sh
+OrientDB console v.1.0rc6 (build @BUILD@) www.orientechnologies.com
+Type 'help' to display all the commands supported.'
+
+&gt; create database local:/tmp/bagatela admin admin local
+Creating database [local:/tmp/bagatela] using the storage type [local]...
+Database created successfully.
+
+Current database is: local:/tmp/bagatela
+
+&gt; import database 2011-08-18.gz
+Importing database from file 2011-08-18.gz...
 </code></pre>
 
-<p>Dane mogą zostać wykorzystane np. jako źródło danych lokalnej bazy danych
-Neo4J, do wizualizacji grafu w programie <a href="https://gephi.org/">Gephi</a> (wymagany
-plugin: <a href="https://gephi.org/plugins/neo4j-graph-database-support/">Neo4j Graph Database
-support</a> oraz zalecany
-plugin: <a href="https://gephi.org/plugins/geolayout/">geolayout</a>) itp.</p>
+<p>Dane mogą zostać wykorzystane np. do stworzenia lokalnej instancji bazy danych
+OrientDB, wizualizacji grafu, analizy itp.</p>
 
 <h2 id="W-ZE-">WĘZEŁ</h2>
 
@@ -204,8 +210,8 @@ węzeł nie istnieje.</p>
 <h3 id="Atrybuty">Atrybuty</h3>
 
 <ul>
-<li><code>_classname</code> - <em>"Stop"</em> - gdy reprezentuje fizyczny przystanek (wiata albo
-słupek) lub <em>"Hub"</em> (szczegóły poniżej).</li>
+<li><code>_id</code> - unikalny identyfikator w formie: <em>"#&lt;cluser&gt;:&lt;position&gt;"</em>. Np. <em>"#8:16"</em></li>
+<li><code>_type</code> - zawsze <em>"vertex"</em>.</li>
 <li><code>lat</code> - szerokość geograficzna. Np.: <em>50.123</em>.</li>
 <li><code>lon</code> - długość geograficzna. Np.: <em>19.987</em>.</li>
 <li><code>source</code> - adres URI do dokumentu, na podstawie którego został utworzony ten
@@ -220,29 +226,8 @@ jazdy reprezentuje (brak wartości <code>stop_id</code> w dokumencie
 będzie reprezentowany na grafie tylko przez jeden węzeł klasy <em>Hub</em>. Sprawi to,
 że nie pojawią się relacje przesiadek, dlatego przy trawersacji nie będziemy w
 stanie stwierdzić czy nastąpiło przejście z jednego przystanku do drugiego o
-tej samej nazwie.</p>
-
-<h3 id="Indeks">Indeks</h3>
-
-<p>Wierzchołki w grafie są indeksowane jedynie po źródle pochodzenia, czyli bazie
-danych i identyfikatorze dokumentu. Skorzystaj z
-<a href="API.1.html#Wyszukiwarka">wyszukiwarki</a>, aby odnaleźć przystanek według
-dowolnych kryteriów.</p>
-
-<p>Uwaga: ten indeks istnieje tylko po to aby obejść problem braku dowolnych
-identyfikatorów w bazie Neo4j. Jeżeli ten problem zostanie rozwiązany, węzły
-będą miały te same indetyfikatory co ich źródło, a ten indeks zostanie
-zlikwidowany.</p>
-
-<p>Ścieżka: <code>/indices/&lt;database>?id=&lt;id></code><br />
-Metoda: <code>GET</code><br />
-Parametry: <code>database</code> - baza danych, <code>id</code> - identyfikator dokumentu.<br />
-Odpowiedź: <em>200</em> -</p>
-
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl http://graph.bagate.la/2011-08-18/indices/kr?id=000e0590ceae3be9ada4466fc112ca65dc0dc36a
-</code></pre>
+tej samej nazwie. Klasa <em>Stop</em> reprezentuje fizyczny przystanek (wiata albo
+słupek).</p>
 
 <h2 id="PO-CZENIE">POŁĄCZENIE</h2>
 
@@ -264,22 +249,22 @@ Odpowiedź: <em>200</em> - połączenia (przychodzące, wychodzące lub wszystki
 <h3 id="Atrybuty">Atrybuty</h3>
 
 <ul>
-<li><code>_classname</code> - zawsze <em>"Connection"</em>.</li>
+<li><code>_id</code> - unikalny identyfikator w formie: <em>"#<var>cluser</var>:<var>position</var>"</em>. Np. <em>"#9:10"</em></li>
+<li><code>_inV</code> - indentyfikator węzła wejściowego.</li>
+<li><code>_label</code> - zawsze <em>"connects"</em>.</li>
+<li><code>_outE</code> - indentyfikator węzła wyjściowego.</li>
+<li><code>_type</code> - zawsze <em>"edge"</em>.</li>
 <li><code>rides</code> - lista kursów wszystkich linii na danej krawędzi. Atrybut typu
 tablicy asocjacyjnej. Przechowuje pary, w których godzinie odjazdu (w formacie
-liczby minut od północy; np. dla <em>"12:00"</em> jest to <em>720</em>) odpowiada tablica z
-informacjami o połączeniu (patrz niżej). UWAGA: ponieważ Neo4J natywnie nie
-wspiera wartości tego typu, tablica jest serializowana za pomocą
-<a href="http://msgpack.org/">MessagePack</a> do ciągu znaków i tak jest przechowywana w
-bazie. Do odkodowania wartości będziemy potrzebowali dodatkowej
-<a href="http://wiki.msgpack.org/display/MSGPACK/QuickStart">biblioteki</a>.</li>
+liczby minut od północy; np. dla <em>"12:00"</em> jest to <em>"720"</em>) odpowiada tablica z
+informacjami o połączeniu (patrz niżej).</li>
 <li><code>length</code> - długość odcinka w metrach. Liczona wzdłuż trasy (jeżeli ta jest
 zdefiniowana w polu <code>polylines</code> <a href="API.1.html#PRZYSTANEK">przystanku</a>
 początkowego), lub po linii prostej.</li>
 </ul>
 
 
-<h3 id="Atrybuty-informacji-o-po-czeniu">Atrybuty informacji o połączeniu</h3>
+<h3 id="Informacje-o-po-czeniu">Informacje o połączeniu</h3>
 
 <p>Obiekt typu tablicy asocjacyjnej, zawierającej następujące pary:</p>
 
@@ -302,10 +287,91 @@ Odpowiedź: <em>200</em> - przesiadki (do, z lub wszystkie) z węzła <code>&lt;
 <h3 id="Atrybuty">Atrybuty</h3>
 
 <ul>
+<li><code>_id</code> - unikalny identyfikator w formie: <em>"#<var>cluser</var>:<var>position</var>"</em>. Np. <em>"#10:1"</em></li>
+<li><code>_inV</code> - indentyfikator węzła wejściowego.</li>
+<li><code>_label</code> - zawsze <em>"transfers"</em>.</li>
+<li><code>_outE</code> - indentyfikator węzła wyjściowego.</li>
+<li><code>_type</code> - zawsze <em>"edge"</em>.</li>
 <li><code>penatly</code> - orientacyjny czas w minutach, potrzeby do przemieszczenia się z
 jednego węzła do drugiego. Np.: <em>1</em>.</li>
 </ul>
 
+
+<h2 id="WYSZUKIWARKA">WYSZUKIWARKA</h2>
+
+<p>Usługa, która pozwala na wyszukiwanie węzłów i relacji według dowolnych
+kryteriów. Zwrócony element często jest jedynie zalążkiem do wyszukiwania
+ścieżek i innych struktur powstających w procesie <a href="#TRAWERSACJA-GRAFU" data-bare-link="true">trawersacji
+grafu</a>.  Ponieważ silnikiem wyszukiwarki jest
+elasticsearch, pełna dokumentacja API znajduje się na stronie:
+<a href="http://www.elasticsearch.org/guide/reference/api/search/" data-bare-link="true">http://www.elasticsearch.org/guide/reference/api/search/</a>.</p>
+
+<p>Ścieżka: <code>/search?q=&lt;fraza></code><br />
+Metoda: <code>GET</code><br />
+Paramerty:</p>
+
+<ul>
+<li><code>q</code> - fraza. Akceptuje mi. wieloznaczniki <em>*</em> i <em>?</em> oraz wyrażenia logiczne <em>OR</em> i <em>AND</em>.</li>
+<li><code>sort</code> (opcjonalnie) - sortowanie, np.: <em>"name:asc"</em> (po nazwie, rosnąco). Domyślnie po trafności.</li>
+<li><code>size</code> (opcjonalnie) - maksymalna liczba dokumentów spełniających kryteria zapytania.</li>
+<li>W zapytaniu możliwe są również inne opcje, wszystkie zostały opisane na: <a href="http://www.elasticsearch.org/guide/reference/api/search/uri-request.html" data-bare-link="true">http://www.elasticsearch.org/guide/reference/api/search/uri-request.html</a>.</li>
+</ul>
+
+
+<p>Odpowiedź: lista węzłów spełniających kryteria tj. zawierają <em>frazę</em> w
+nazwie lub lokalizacji.</p>
+
+<p>Frazę można doprecyzować, dopisując przed nią <em>name:</em> lub <em>address:</em>, co
+ograniczy wyszukiwanie do określonego pola.</p>
+
+<p>Przykładowe użycia:</p>
+
+<pre><code>curl -XGET http://graph.bagate.la/2011-11-15/search?q=baszt*
+</code></pre>
+
+<p>Zwróci wszystkie węzły, których nazwa lub lokalizacja zawiera słowo zaczynające się od: <em>"baszt"</em>.</p>
+
+<pre><code>curl -XGET http://graph.bagate.la/2011-11-15/search?q=dworzec%20AND%20location:basztowa
+</code></pre>
+
+<p>Zwróci wszystkie węzły, których nazwa lub lokalizacja zawiera słowo
+<em>"dworzec"</em>, a lokalizacja zawiera słowo <em>"basztowa"</em>.</p>
+
+<p><strong>Alternatywne użycie:</strong></p>
+
+<p>Ścieżka: <code>/search</code><br />
+Metoda: <code>POST</code><br />
+Ładunek: Zapytanie DSL w formacie JSON</p>
+
+<p>DSL (język zapytania) jest udokumentowany na stronie:
+<a href="http://www.elasticsearch.org/guide/reference/query-dsl/" data-bare-link="true">http://www.elasticsearch.org/guide/reference/query-dsl/</a>. Ta forma pozwala
+formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka.</p>
+
+<p>Przykładowe użycie:</p>
+
+<pre><code>curl -XPOST http://graph.bagate.la/2011-11-15/search -d '{
+  "query": {
+    "filtered" : {
+      "query" : {
+        "match_all" : {}
+      },
+      "filter" : {
+        "geo_distance" : {
+          "distance" : "1km",
+          "location" : {
+            "lat" : 50.06551,
+            "lon" : 19.94693
+          }
+        }
+      }
+    }
+  }
+}'
+</code></pre>
+
+<p>Zwróci wszystkie węzły w promieniu <em>1</em> kilometra od Dworca Głównego w Krakowie (punkt: <em>50.06551, 19.94693</em>).</p>
+
+<p><a href="https://github.com/Stanley/bagatela/blob/master/features/vertex_search.feature">Zobacz scenariusze testujące.</a></p>
 
 <h2 id="TRAWERSACJA-GRAFU">TRAWERSACJA GRAFU</h2>
 

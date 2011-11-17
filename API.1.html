@@ -86,8 +86,8 @@
 <h2 id="WST-P-DO-API">WSTĘP DO API</h2>
 
 <p>API (Interfejs Programowania Aplikacji) umożliwia programowy dostęp do danych
-(<a href="#PRZYSTANEK" data-bare-link="true">przystanków</a>, <a href="#ROZK-AD-JAZDY" data-bare-link="true">rozkładów jazdy</a>) i usług
-(<a href="#Wyszukiwarka" data-bare-link="true">wyszukiwarka przystanków</a>) z poziomu aplikacji trzecich.</p>
+(<a href="#PRZYSTANEK" data-bare-link="true">przystanków</a>, <a href="#ROZK-AD-JAZDY" data-bare-link="true">rozkładów jazdy</a>) z poziomu
+aplikacji trzecich.</p>
 
 <p>API jest zgodne ze wzorcem
 <a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>.
@@ -487,80 +487,6 @@ Parametr: `widok`
 
 <p><a href="https://github.com/Stanley/bagatela/blob/master/features/stops_design.feature">Zobacz scenariusze testujące <em>"_design/Stops"</em>.</a></p>
 
-<h3 id="Wyszukiwarka">Wyszukiwarka</h3>
-
-<p>Usługa, która pozwala na wyszukiwanie przystanków po nazwie lub lokalizacji.
-Ponieważ silnikiem wyszukiwarki jest elasticsearch, pełna dokumentacja API
-znajduje się na stronie:
-<a href="http://www.elasticsearch.org/guide/reference/api/search/" data-bare-link="true">http://www.elasticsearch.org/guide/reference/api/search/</a>.</p>
-
-<p>Ścieżka: <code>/_search/Stops?q=&lt;fraza></code><br />
-Metoda: <code>GET</code><br />
-Paramerty:</p>
-
-<ul>
-<li><code>q</code> - fraza. Akceptuje mi. wieloznaczniki <em>*</em> i <em>?</em> oraz wyrażenia logiczne <em>OR</em> i <em>AND</em>.</li>
-<li><code>sort</code> (opcjonalnie) - sortowanie, np.: <em>"name:asc"</em> (po nazwie, rosnąco). Domyślnie po trafności.</li>
-<li><code>size</code> (opcjonalnie) - maksymalna liczba dokumentów spełniających kryteria zapytania.</li>
-<li>W zapytaniu możliwe są również inne opcje, wszystkie zostały opisane na: <a href="http://www.elasticsearch.org/guide/reference/api/search/uri-request.html" data-bare-link="true">http://www.elasticsearch.org/guide/reference/api/search/uri-request.html</a>.</li>
-</ul>
-
-
-<p>Odpowiedź: lista przystanków spełniających kryteria tj. zawierają <em>frazę</em> w
-nazwie lub lokalizacji.</p>
-
-<p>Frazę można doprecyzować, dopisując przed nią <em>name:</em> lub <em>address:</em>, co
-ograniczy wyszukiwanie do określonego pola.</p>
-
-<p>Przykładowe użycia:</p>
-
-<pre><code>curl -XGET http://api.bagate.la/kr/_search/Stops?q=baszt*
-</code></pre>
-
-<p>Zwróci wszystkie przystanki, których nazwa lub lokalizacja zawiera słowo zaczynające się od: <em>"baszt"</em>.</p>
-
-<pre><code>curl -XGET http://api.bagate.la/kr/_search/Stops?q=dworzec%20AND%20location:basztowa
-</code></pre>
-
-<p>Zwróci wszystkie przystanki, których nazwa lub lokalizacja zawiera słowo
-<em>"dworzec"</em>, a lokalizacja zawiera słowo <em>"basztowa"</em>.</p>
-
-<p><strong>Alternatywne użycie:</strong></p>
-
-<p>Ścieżka: <code>/_search/Stops</code><br />
-Metoda: <code>POST</code><br />
-Ładunek: Zapytanie DSL w formacie JSON</p>
-
-<p>DSL (język zapytania) jest udokumentowany na stronie:
-<a href="http://www.elasticsearch.org/guide/reference/query-dsl/" data-bare-link="true">http://www.elasticsearch.org/guide/reference/query-dsl/</a>. Ta forma pozwala
-formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka.</p>
-
-<p>Przykładowe użycie:</p>
-
-<pre><code>curl -XPOST http://api.bagate.la/kr/_search/Stops -d '{
-  "query": {
-    "filtered" : {
-      "query" : {
-        "match_all" : {}
-      },
-      "filter" : {
-        "geo_distance" : {
-          "distance" : "1km",
-          "location" : {
-            "lat" : 50.06551,
-            "lon" : 19.94693
-          }
-        }
-      }
-    }
-  }
-}'
-</code></pre>
-
-<p>Zwróci wszystkie przystanki w promieniu <em>1</em> kilometra od Dworca Głównego w Krakowie (punkt: <em>50.06551, 19.94693</em>).</p>
-
-<p><a href="https://github.com/Stanley/bagatela/blob/master/features/stops_search.feature">Zobacz scenariusze testujące.</a></p>
-
 <h2 id="REPLIKACJE">REPLIKACJE</h2>
 
 <p>Replikacje są wykorzystywane do synchronizacji dwóch kopii tej samej bazy danych.</p>
@@ -614,7 +540,7 @@ nadzędzia <a href="http://cukes.info/">Cucumber</a>.</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Stanisław Wasiutyński</li>
-    <li class='tc'>September 2011</li>
+    <li class='tc'>November 2011</li>
     <li class='tr'>bagatela-api(1)</li>
   </ol>
 
