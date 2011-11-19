@@ -30,7 +30,25 @@ Zawiera on w sobie dane ze wszystkich miast (obsługiwanych tego dnia).
 Wszystkie przykłady interakcji z API korzystają z prostego narzędzia konsoli
 `curl` i zostały wykonane w systemie GNU/Linux.
 
-    curl http://graph.bagate.la --verbose
+    $ curl http://graph.bagate.la --verbose
+    * About to connect() to graph.bagate.la port 80 (#0)
+    *   Trying 31.222.178.135... connected
+    > GET / HTTP/1.1
+    > User-Agent: curl/7.22.0 (x86_64-unknown-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.0e zlib/1.2.5 libssh2/1.3.0
+    > Host: graph.bagate.la
+    > Accept: */*
+    > 
+    < HTTP/1.1 200 OK
+    < Server: nginx/1.0.9
+    < Date: Thu, 17 Nov 2011 18:27:44 GMT
+    < Content-Type: application/json;charset=UTF-8
+    < Transfer-Encoding: chunked
+    < Connection: keep-alive
+    < Access-Control-Allow-Origin: *
+    < 
+    * Connection #0 to host graph.bagate.la left intact
+    * Closing connection #0
+    {"version":"0.7-SNAPSHOT","name":"Rexster: A Graph Server","graphs":["demo"],"queryTime":0.138796,"upTime":"0[d]:00[h]:03[m]:40[s]"}
 
 ### Kontrybucja
 (również do dokumentacji) jest mile widziana! Weź
@@ -66,7 +84,8 @@ istnieje (brak danych z danego dnia lub zły format daty).
 
 Przykładowe użycie:
 
-    curl http://graph.bagate.la/2011-08-18/
+    $ curl http://graph.bagate.la/demo/
+    {"version":"0.7-SNAPSHOT","name":"demo","graph":"readonlyindexablegraph[orientgraph[local:\/home\/orientdb\/demo]]","readOnly":true,"type":"com.tinkerpop.blueprints.pgm.impls.orientdb.OrientGraph","queryTime":2.618832,"upTime":"0[d]:00[h]:04[m]:51[s]","extensions":[{"title":"evaluate an ad-hoc Gremlin script for a graph.","method":"GET","href":"tp\/gremlin"},{"title":"evaluate an ad-hoc Gremlin script for a graph.","method":"POST","href":"tp\/gremlin"}]}
 
 ### Archiwa
 W dowolnej chwili dostępne są grafy dla dnia bieżącego oraz siedmiu następnych.
@@ -110,7 +129,8 @@ węzeł nie istnieje.
 
 Przykładowe użycie:
 
-    curl http://graph.bagate.la/2011-09-09/vertices/7
+    $ curl http://graph.bagate.la/demo/vertices/7:77
+    {"version":"0.7-SNAPSHOT","results":{"lon":19.93278833333333,"name":"Teatr Bagatela","lat":50.06352999999999,"_id":"#7:77","_type":"vertex"},"queryTime":1.458626}
 
 ### Atrybuty
 
@@ -145,7 +165,7 @@ Odpowiedź: *200* - połączenia (przychodzące, wychodzące lub wszystkie) z w�
 
 Przykładowe użycie:
 
-    curl http://graph.bagate.la/2011-11-10/vertices/31/outE?_label=connects
+    $ curl http://graph.bagate.la/2011-11-10/vertices/31/outE?_label=connects
 
 ### Atrybuty
 * `_id` - unikalny identyfikator w formie: *"#<cluser>:<position>"*. Np. *"#9:10"*
@@ -210,16 +230,18 @@ nazwie lub lokalizacji.
 Frazę można doprecyzować, dopisując przed nią *name:* lub *address:*, co
 ograniczy wyszukiwanie do określonego pola.
 
+<!--
 Przykładowe użycia:
  
-    curl -XGET http://graph.bagate.la/2011-11-15/search?q=baszt*
+    $ curl -XGET http://graph.bagate.la/2011-11-15/search?q=baszt*
 
 Zwróci wszystkie węzły, których nazwa lub lokalizacja zawiera słowo zaczynające się od: *"baszt"*.
 
-    curl -XGET http://graph.bagate.la/2011-11-15/search?q=dworzec%20AND%20location:basztowa
+    $ curl -XGET http://graph.bagate.la/2011-11-15/search?q=dworzec%20AND%20location:basztowa
 
 Zwróci wszystkie węzły, których nazwa lub lokalizacja zawiera słowo
 *"dworzec"*, a lokalizacja zawiera słowo *"basztowa"*.
+-->
 
 **Alternatywne użycie:**
 
@@ -231,9 +253,10 @@ DSL (język zapytania) jest udokumentowany na stronie:
 <http://www.elasticsearch.org/guide/reference/query-dsl/>. Ta forma pozwala
 formułować bardziej skomplikowane zapytania, ale wymaga znajomości języka.
 
+<!--
 Przykładowe użycie:
  
-    curl -XPOST http://graph.bagate.la/2011-11-15/search -d '{
+    $ curl -XPOST http://graph.bagate.la/2011-11-15/search -d '{
       "query": {
         "filtered" : {
           "query" : {
@@ -255,6 +278,7 @@ Przykładowe użycie:
 Zwróci wszystkie węzły w promieniu *1* kilometra od Dworca Głównego w Krakowie (punkt: *50.06551, 19.94693*).
 
 [Zobacz scenariusze testujące.](https://github.com/Stanley/bagatela/blob/master/features/vertex_search.feature)
+-->
 
 TRAWERSACJA GRAFU
 -----------------
@@ -269,7 +293,7 @@ Do definicji sposobu przechodzenia grafu służy
 [Groovy](http://groovy.codehaus.org/). Pozwala on na wykonywanie szeregu
 operacji ad-hoc na grafie.
 
-Ścieżka: `/gremlin`  
+Ścieżka: `/tp/gremlin`  
 Metoda: `POST`  
 Parametry: 
 
@@ -283,15 +307,17 @@ Odpowiedź: *200* - węzły, krawędzie, ścieżka (identyfikatory węzłów i k
 lub pełna ścieżka wraz z atrybutami węzłów i krawędzi. *404* - węzeł `id` nie
 istnieje.
 
+<!--
 Przykładowe użycie:
 
-    curl -XPOST http://graph.bagate.la/2011-11-10/gremlin -d {}
+    $ curl -XPOST http://graph.bagate.la/2011-11-10/gremlin -d {}
 
 Ścieżka: `/gremlin?script=<script>`  
 Metoda: `GET`  
 Parametry: `id` - identyfikator węzła początkowego, `script` - 
 
-    curl -XGET http://graph.bagate.la/2011-11-10/gremlin?script=
+    $ curl -XGET http://graph.bagate.la/2011-11-10/gremlin?script=
+-->
 
 POŁĄCZENIA KOMUNIKACYJNE
 ------------------------
@@ -318,11 +344,13 @@ Odpowiedź: *200* - teoretycznie (zgodnie z algorytmem
 [A*](http://en.wikipedia.org/wiki/A*_search_algorithm)) najszybsze czasowo
 połączenie komunikacyjne, pomiędzy dwoma wierzchołkami grafu.
 
+<!--
 Przykładowe użycie:
 
-    curl 
+    $ curl 
 
 [Zobacz scenariusze testujące](http://relishapp.com/stanley/bagatela/docs/graph/connections)
+-->
 
 <script type="text/javascript">
   var _gaq = _gaq || [];

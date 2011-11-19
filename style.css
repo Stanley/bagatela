@@ -20,17 +20,19 @@ a:hover {
 }
 
 h1 {
-  padding: 20px;
-  font-family: "Cabin Sketch", lucida grande, tahoma, sans-serif
+  margin: 0;
+  padding: 30px 0;
+  font-family: "Cabin Sketch", lucida grande, tahoma, sans-serif;
 }
 
-h1, .content {
- width: 600px;
- margin: auto;
+.center {
+  width: 600px;
+  margin: auto;
+  position: relative
 }
 
 p {
- text-align: justify
+  text-align: justify
 }
 
 .button {    
