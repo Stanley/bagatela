@@ -104,9 +104,11 @@ zapytań typu GET i POST. Dane przyjmowane i zwracane są w formacie
 
 <p>Oto kody miast, których rozkłady są aktualnie gromadzone (oczekuj nowych miast):</p>
 
-<pre><code>sk - Górnośląski Okręg Przemysłowy (od 20.06.2011)
-kr - Kraków (od 20.06.2011)
-dw - Wrocław (od 20.06.2011)
+<pre><code>sk - Górnośląski Okręg Przemysłowy (od 14.01.2012)
+kr - Kraków (od 14.01.2012)
+po - Poznań (od 14.01.2012)
+zs - Szczecin (od 15.01.2012)
+dw - Wrocław (od 14.01.2012)
 </code></pre>
 
 <h3 id="Przyk-ady">Przykłady</h3>
@@ -119,23 +121,22 @@ dw - Wrocław (od 20.06.2011)
 
 <pre><code>* About to connect() to api.bagate.la port 80 (#0)
 *   Trying 31.222.178.135... connected
-* Connected to api.bagate.la (31.222.178.135) port 80 (#0)
 > GET / HTTP/1.1
-> User-Agent: curl/7.21.3 (x86_64-pc-linux-gnu) libcurl/7.21.3 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18
+> User-Agent: curl/7.23.1 (x86_64-unknown-linux-gnu) libcurl/7.23.1 OpenSSL/1.0.0f zlib/1.2.5 libssh2/1.3.0
 > Host: api.bagate.la
 > Accept: */*
 > 
 < HTTP/1.1 200 OK
-< Content-Type: application/json
+< Server: nginx/1.0.9
+< Date: Sun, 15 Jan 2012 20:26:10 GMT
+< Content-Type: text/plain;charset=utf-8
 < Connection: keep-alive
-< Status: 200
-< X-Powered-By: Phusion Passenger (mod_rails/mod_rack) 3.0.7
-< Content-Length: 48
-< Server: nginx/1.0.4 + Phusion Passenger 3.0.7 (mod_rails/mod_rack)
+< Content-Length: 40
+< Cache-Control: must-revalidate
 < 
+{"couchdb":"Welcome","version":"1.1.0"}
 * Connection #0 to host api.bagate.la left intact
-* Closing connection #0
-{"message":"Welcome aboard!","version":"40f6ca"}</code></pre>
+* Closing connection #0</code></pre>
 
 
 <h3 id="Debugging">Debugging</h3>
@@ -540,7 +541,7 @@ nadzędzia <a href="http://cukes.info/">Cucumber</a>.</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Stanisław Wasiutyński</li>
-    <li class='tc'>November 2011</li>
+    <li class='tc'>January 2012</li>
     <li class='tr'>bagatela-api(1)</li>
   </ol>
 
